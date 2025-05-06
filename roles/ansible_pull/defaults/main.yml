@@ -1,5 +1,5 @@
 ---
-ansible_pull_repo_url: "https://github.com/dmzoneill/ansible-feeditout-com.git"
+ansible_pull_repo_url: "https://github.com/dmzoneill/ansible-feeditout-com"
 ansible_pull_workdir: "/opt/ansible"
 ansible_pull_interval_minutes: 15
 ansible_pull_expected_ip: "185.219.84.242"
