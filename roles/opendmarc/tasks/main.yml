@@ -21,6 +21,14 @@
     directory_mode: '0755'
   notify: Restart opendmarc
 
+- name: Ensure postfix private socket directory for OpenDMARC exists
+  file:
+    path: /var/spool/postfix/private
+    state: directory
+    owner: opendmarc
+    group: postfix
+    mode: '0750'
+
 - name: Enable and start OpenDMARC service
   service:
     name: opendmarc
