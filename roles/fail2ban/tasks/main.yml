@@ -1,0 +1,47 @@
+---
+- name: Ensure fail2ban is installed
+  apt:
+    name: fail2ban
+    state: present
+    update_cache: true
+
+- name: Ensure /etc/fail2ban exists
+  file:
+    path: /etc/fail2ban
+    state: directory
+    mode: '0755'
+
+- name: Copy all files from role files/ to /etc/fail2ban/
+  copy:
+    src: "{{ f2b_file }}"
+    dest: "/etc/fail2ban/{{ f2b_file | basename }}"
+    owner: root
+    group: root
+    mode: '0644'
+  with_fileglob:
+    - "{{ role_path }}/files/*"
+  loop_control:
+    loop_var: f2b_file
+
+- name: Ensure Apache2 is started and enabled
+  service:
+    name: fail2ban
+    state: started
+    enabled: true
+
+- name: Get banned IPs from jail
+  command: "fail2ban-client status {{ fail2ban_jail }}"
+  register: jail_status
+
+- name: Extract banned IPs
+  set_fact:
+    banned_ips: "{{ jail_status.stdout | regex_search('Banned IP list:\\s*(.*)', '\\1') | default('') | trim | split(' ') }}"
+
+- name: Unban IPs if currently banned
+  command: "fail2ban-client set {{ fail2ban_jail }} unbanip {{ ip }}"
+  when: ip in banned_ips
+  loop: "{{ unban_ips }}"
+  loop_control:
+    loop_var: ip
+  register: unban_result
+  changed_when: true

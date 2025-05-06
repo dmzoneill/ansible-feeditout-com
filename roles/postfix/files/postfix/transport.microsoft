@@ -1,0 +1,5 @@
+/.*@hotmail.*/i		relay:[pro.eu.turbo-smtp.com]:25
+/.*@live.*/i	relay:[smtp-pulse.com]:587
+/.*@msn.*/i	relay:[smtp-pulse.com]:587
+/.*@passport.*/i	relay:[smtp-pulse.com]:587
+/.*@outlook.*/i		relay:[smtp-pulse.com]:587

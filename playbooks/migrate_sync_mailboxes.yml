@@ -1,0 +1,27 @@
+---
+- name: Migrate Postfix mail data from old to new server
+  hosts: old
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../host_vars/old.yml
+    - ../host_vars/new.yml
+
+  vars:
+    dest_host: "{{ hostvars['new']['ansible_host'] | default('new') }}"
+    mail_spool_dir: "/var/mail"
+
+  tasks:
+    - name: Ensure sshpass is installed
+      apt:
+        name: sshpass
+        state: present
+        update_cache: true
+
+    - name: Rsync /var/mail to new server
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        rsync -az \
+        -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
+        {{ mail_spool_dir }}/ root@{{ dest_host }}:{{ mail_spool_dir }}/
+      delegate_to: localhost

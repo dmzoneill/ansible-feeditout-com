@@ -1,0 +1,52 @@
+---
+- name: Debug target host info
+  debug:
+    msg: "This host is configured for ansible-pull setup."
+  when: is_ansible_pull_host | default(false)
+  tags: always
+
+- name: Ensure Ansible is installed
+  package:
+    name: ansible
+    state: present
+  when: is_ansible_pull_host | default(false)
+
+- name: Create workdir for ansible-pull
+  file:
+    path: "{{ ansible_pull_workdir }}"
+    state: directory
+    mode: '0755'
+  when: is_ansible_pull_host | default(false)
+
+- name: Clone ansible-pull repo if not present
+  git:
+    repo: "{{ ansible_pull_repo_url }}"
+    dest: "{{ ansible_pull_workdir }}"
+    update: yes
+  when: is_ansible_pull_host | default(false)
+
+- name: Deploy ansible-pull systemd service
+  template:
+    src: ansible-pull.service.j2
+    dest: /etc/systemd/system/ansible-pull.service
+    mode: '0644'
+  when: is_ansible_pull_host | default(false)
+
+- name: Deploy ansible-pull systemd timer
+  template:
+    src: ansible-pull.timer.j2
+    dest: /etc/systemd/system/ansible-pull.timer
+    mode: '0644'
+  when: is_ansible_pull_host | default(false)
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: true
+  when: is_ansible_pull_host | default(false)
+
+- name: Enable and start ansible-pull timer
+  systemd:
+    name: ansible-pull.timer
+    enabled: true
+    state: started
+  when: is_ansible_pull_host | default(false)

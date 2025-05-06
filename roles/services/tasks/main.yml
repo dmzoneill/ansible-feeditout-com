@@ -1,0 +1,11 @@
+---
+- name: Disable and stop unnecessary services
+  systemd:
+    name: "{{ service }}"
+    enabled: false
+    state: stopped
+    masked: true
+  loop: "{{ disable_services }}"
+  loop_control:
+    loop_var: service
+  ignore_errors: true  # Prevent failure on non-existent or template-based units

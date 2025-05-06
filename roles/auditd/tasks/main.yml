@@ -1,0 +1,32 @@
+---
+- name: Install auditd
+  apt:
+    name:
+      - auditd
+      - audispd-plugins
+    state: present
+    update_cache: true
+
+- name: Ensure /etc/audit exists
+  file:
+    path: /etc/audit
+    state: directory
+    mode: '0755'
+
+- name: Copy auditd configuration to /etc/audit
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: /etc/audit/
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: '0755'
+  notify: restart auditd
+  ignore_errors: true
+
+- name: Enable and start auditd service
+  service:
+    name: auditd
+    enabled: true
+    state: started
+  ignore_errors: true

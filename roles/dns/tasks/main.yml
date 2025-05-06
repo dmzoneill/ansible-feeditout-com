@@ -1,0 +1,79 @@
+---
+- name: Check if systemd-resolved service file exists
+  stat:
+    path: /lib/systemd/system/systemd-resolved.service
+  register: resolved_service_file
+
+- name: Disable and stop systemd-resolved
+  systemd:
+    name: systemd-resolved
+    enabled: no
+    state: stopped
+  when: disable_systemd_resolved and resolved_service_file.stat.exists
+
+- name: Check if resolv.conf is immutable
+  command: lsattr {{ resolv_conf_path }}
+  register: resolv_lsattr
+  changed_when: false
+  failed_when: false
+
+- name: Set fact if resolv.conf is immutable
+  set_fact:
+    resolv_conf_is_immutable: "{{ resolv_lsattr.stdout is search('^.*i.*\\s+{{ resolv_conf_path | regex_escape }}$') }}"
+
+- name: Remove immutable flag from resolv.conf if it is set
+  command: chattr -i {{ resolv_conf_path }}
+  when: resolv_conf_is_immutable
+  changed_when: true
+
+- name: Check if resolv.conf is a symlink
+  stat:
+    path: "{{ resolv_conf_path }}"
+    follow: false
+  register: resolv_stat
+
+- name: Remove resolv.conf if it is a symlink to systemd-resolved
+  file:
+    path: "{{ resolv_conf_path }}"
+    state: absent
+  when:
+    - disable_systemd_resolved
+    - resolv_stat.stat.islnk
+    - (resolv_conf_path | realpath) is search('/run/systemd/resolve')
+  ignore_errors: true
+
+- name: Read current resolv.conf
+  slurp:
+    src: "{{ resolv_conf_path }}"
+  register: resolv_conf_current
+  when: resolv_stat.stat.exists
+
+- name: Set empty resolv.conf content if it does not exist
+  set_fact:
+    resolv_conf_current:
+      content: ""
+  when: not resolv_stat.stat.exists
+
+- name: Determine if resolv.conf update is required
+  set_fact:
+    resolv_needs_update: "{{ required_lines | difference(existing_lines) | length > 0 }}"
+  vars:
+    required_lines: "{{ dns_nameservers | map('regex_replace', '^(.*)$', 'nameserver \\1') | list }}"
+    existing_lines: "{{ resolv_conf_current.content | b64decode | split('\n') }}"
+  when: resolv_conf_current is defined
+
+- name: Update resolv.conf with new DNS entries
+  copy:
+    dest: "{{ resolv_conf_path }}"
+    content: |
+      {% for ns in dns_nameservers %}
+      nameserver {{ ns }}
+      {% endfor %}
+    owner: root
+    group: root
+    mode: '0644'
+  when: resolv_needs_update
+
+- name: Re-apply immutable flag if it was originally set
+  command: chattr +i {{ resolv_conf_path }}
+  when: resolv_conf_is_immutable and resolv_needs_update

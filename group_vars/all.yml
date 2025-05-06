@@ -1,0 +1,3 @@
+---
+postfix_hostname: feeditout.com
+php_version: "8.3"

@@ -1,0 +1,5 @@
+---
+- name: Reload AppArmor profiles
+  service:
+    name: apparmor
+    state: restarted

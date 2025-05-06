@@ -1,0 +1,11 @@
+# Define services to explicitly disable
+disable_services:
+  - cyrus-imapd.service
+  - geoclue.service
+  - iio-sensor-proxy.service
+  - lynis.service
+  - man-db.service
+  - packagekit.service
+  - packagekit-offline-update.service
+  - usb_modeswitch@.service
+  - wpa_supplicant.service

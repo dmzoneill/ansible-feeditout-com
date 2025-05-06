@@ -1,0 +1,136 @@
+---
+- name: Prepare new server (ensure dave user and SSH access)
+  hosts: new
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../host_vars/old.yml  # contains ansible_become_password
+
+  pre_tasks:
+    - name: Remove SSH host key from control user's known_hosts
+      delegate_to: localhost
+      become: false
+      shell: |
+        ssh-keygen -R {{ inventory_hostname }} || true
+        ssh-keygen -R 176.126.87.62 || true
+
+  tasks:
+    - name: Ensure dave user exists with sudo access
+      user:
+        name: dave
+        shell: /bin/bash
+        state: present
+        groups: sudo
+        append: true
+
+    - name: Set dave's password from ansible_become_password
+      user:
+        name: dave
+        password: "{{ ansible_become_password | password_hash('sha512') }}"
+
+    - name: Create .ssh directory for dave
+      file:
+        path: /home/dave/.ssh
+        state: directory
+        mode: '0700'
+        owner: dave
+        group: dave
+
+    - name: Copy public key from control machine to new server
+      copy:
+        src: "{{ lookup('env','HOME') }}/.ssh/dmzoneill-2024.pub"
+        dest: "/home/dave/.ssh/authorized_keys"
+        owner: dave
+        group: dave
+        mode: '0600'
+
+- name: Rsync and restart service configs from old to new (root to root)
+  hosts: old
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../host_vars/new.yml
+    - ../host_vars/old.yml
+
+  vars:
+    dest_host: "{{ hostvars['new']['ansible_host'] | default('new') }}"
+    config_globs:
+      - /etc/apache2
+      - /etc/postsrsd
+      - /etc/clamav
+      - /etc/mysql*
+      - /etc/php*
+      - /etc/saslauthd
+      - /etc/opendmarc*
+      - /etc/imapd
+      - /etc/spamassassin
+      - /etc/opendkim*
+      - /etc/default/postsrsd
+      - /etc/prometheus/node_exporter
+      - /etc/fail2ban
+      - /etc/memcach*
+      - /etc/cyrmaster
+      - /etc/letsencrypt
+      - /etc/dkimkeys
+      - /etc/postfix
+    services_to_restart:
+      - apache2
+      - postsrsd
+      - clamav-daemon
+      - mariadb
+      - php7.4-fpm
+      - saslauthd
+      - opendmarc
+      - imap
+      - spamassassin
+      - opendkim
+      - fail2ban
+      - memcached
+      - cyrus-imapd
+      - postfix
+
+  tasks:
+    - name: Ensure sshpass is installed on old server
+      apt:
+        name: sshpass
+        state: present
+        update_cache: true
+
+    - name: Remove SSH host key from dave's known_hosts on old server
+      shell: ssh-keygen -f /home/dave/.ssh/known_hosts -R {{ dest_host }} || true
+      become: true
+
+    - name: Back up config dirs on new before overwrite (globbed)
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no root@{{ dest_host }} \
+        "for p in {{ item }}; do [ -e \"$$p\" ] && cp -a $$p $$p.bak.$(date +%s) || true; done"
+      with_items: "{{ config_globs }}"
+      delegate_to: localhost
+
+    - name: Rsync config directories/files to new host using sshpass (globbed)
+      shell: >
+        for p in {{ item }}; do
+          sshpass -p '{{ root_ssh_password }}' \
+          rsync -az --delete \
+          --exclude="*.log" --exclude="*.sock" --exclude="*.pid" --exclude="sshd_config" \
+          -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
+          "$p/" root@{{ dest_host }}:"$p/" || echo "Skipping $p";
+        done
+      with_items: "{{ config_globs }}"
+
+    - name: Enable services on new host
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no root@{{ dest_host }} \
+        "systemctl enable {{ item }} || echo '⚠️ Service {{ item }} not found'"
+      with_items: "{{ services_to_restart }}"
+      delegate_to: localhost
+
+    - name: Restart services on new host
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no root@{{ dest_host }} \
+        "systemctl restart {{ item }} || echo '⚠️ Service {{ item }} not found'"
+      with_items: "{{ services_to_restart }}"
+      delegate_to: localhost

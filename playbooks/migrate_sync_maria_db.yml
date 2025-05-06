@@ -1,0 +1,57 @@
+---
+- name: Sync MariaDB data from old to new server
+  hosts: old
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../host_vars/old.yml
+    - ../host_vars/new.yml
+
+  vars:
+    dest_host: "{{ hostvars['new']['ansible_host'] | default('new') }}"
+    mariadb_data_dir: "/var/lib/mysql"
+
+  tasks:
+    - name: Ensure sshpass is installed
+      apt:
+        name: sshpass
+        state: present
+        update_cache: true
+
+    - name: Stop MariaDB service on old server
+      service:
+        name: mariadb
+        state: stopped
+
+    - name: Stop MariaDB on destination host
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
+        root@{{ dest_host }} "systemctl stop mariadb"
+      delegate_to: localhost
+
+    - name: Rsync MariaDB data to new server
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        rsync -az --delete \
+        -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
+        {{ mariadb_data_dir }}/ root@{{ dest_host }}:{{ mariadb_data_dir }}/
+
+    - name: Ensure correct ownership of MariaDB data on new server
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
+        root@{{ dest_host }} "chown -R mysql:mysql {{ mariadb_data_dir }}"
+      delegate_to: localhost
+
+    - name: Start MariaDB service on new server
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
+        root@{{ dest_host }} "systemctl start mariadb"
+      delegate_to: localhost
+
+    - name: Start MariaDB service on old server
+      service:
+        name: mariadb
+        state: started

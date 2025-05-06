@@ -1,0 +1,28 @@
+---
+- name: Ensure OpenSSH server is installed
+  apt:
+    name: openssh-server
+    state: present
+    update_cache: true
+
+- name: Ensure /etc/ssh directory exists
+  file:
+    path: /etc/ssh
+    state: directory
+    mode: '0755'
+
+- name: Copy all sshd config files to /etc/ssh
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: /etc/ssh/
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: '0755'
+  notify: Restart sshd
+
+- name: Enable and start SSHD service
+  service:
+    name: ssh
+    enabled: true
+    state: started

@@ -1,0 +1,30 @@
+---
+- name: Install AppArmor and required tools
+  apt:
+    name:
+      - apparmor
+      - apparmor-utils
+    state: present
+    update_cache: true
+
+- name: Ensure /etc/apparmor.d exists
+  file:
+    path: /etc/apparmor.d
+    state: directory
+    mode: '0755'
+
+- name: Copy AppArmor profiles to /etc/apparmor.d/
+  copy:
+    src: "{{ role_path }}/files/apparmor.d/"
+    dest: /etc/apparmor.d/
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: '0755'
+  notify: Reload AppArmor profiles
+
+- name: Enable AppArmor service
+  service:
+    name: apparmor
+    enabled: true
+    state: started

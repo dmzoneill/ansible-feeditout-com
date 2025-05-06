@@ -1,0 +1,28 @@
+---
+- name: Install OpenDMARC
+  apt:
+    name: opendmarc
+    state: present
+    update_cache: true
+
+- name: Ensure /etc exists
+  file:
+    path: /etc
+    state: directory
+    mode: '0755'
+
+- name: Recursively copy OpenDMARC configuration to /etc
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: /etc/
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: '0755'
+  notify: Restart opendmarc
+
+- name: Enable and start OpenDMARC service
+  service:
+    name: opendmarc
+    enabled: true
+    state: started

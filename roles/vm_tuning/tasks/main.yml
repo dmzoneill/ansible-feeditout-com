@@ -1,0 +1,17 @@
+---
+- name: Disable ModemManager service
+  service:
+    name: ModemManager
+    state: stopped
+    enabled: false
+
+- name: Disable Avahi service
+  service:
+    name: avahi-daemon
+    state: stopped
+    enabled: false
+
+- name: Install sysstat for iostat
+  apt:
+    name: sysstat
+    state: present

@@ -1,0 +1,5 @@
+---
+- name: Ensure root password matches desired value
+  user:
+    name: root
+    password: "{{ root_ssh_password }}"

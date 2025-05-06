@@ -1,0 +1,63 @@
+---
+- name: Apply sysctl kernel hardening settings
+  sysctl:
+    name: "{{ param.key }}"
+    value: "{{ param.value }}"
+    state: present
+    reload: true
+  loop: "{{ kernel_params | dict2items }}"
+  loop_control:
+    loop_var: param
+
+- name: Ensure Spectre/Meltdown kernel mitigations are active
+  sysctl:
+    name: "{{ param.name }}"
+    value: "{{ param.value }}"
+    state: present
+  loop:
+    - { name: 'kernel.kptr_restrict', value: 2 }
+    - { name: 'kernel.unprivileged_bpf_disabled', value: 1 }
+  loop_control:
+    loop_var: param
+
+- name: Disable IPv6 if not in use
+  sysctl:
+    name: "{{ sysctl_key }}"
+    value: 1
+    state: present
+  loop:
+    - net.ipv6.conf.all.disable_ipv6
+    - net.ipv6.conf.default.disable_ipv6
+  loop_control:
+    loop_var: sysctl_key
+
+- name: Set additional kernel networking hardening parameters
+  sysctl:
+    name: "{{ param.name }}"
+    value: "{{ param.value }}"
+    state: present
+  loop:
+    - { name: 'net.ipv4.conf.default.accept_source_route', value: 0 }
+    - { name: 'net.ipv4.conf.default.accept_redirects', value: 0 }
+    - { name: 'net.ipv4.conf.default.send_redirects', value: 0 }
+    - { name: 'net.ipv4.conf.default.rp_filter', value: 1 }
+  loop_control:
+    loop_var: param
+
+- name: Disable loading of new kernel modules at runtime
+  sysctl:
+    name: kernel.modules_disabled
+    value: 1
+    state: present
+
+- name: Blacklist uncommon filesystems
+  copy:
+    dest: /etc/modprobe.d/hardened.conf
+    content: |
+      install cramfs /bin/true
+      install freevxfs /bin/true
+      install jffs2 /bin/true
+      install hfs /bin/true
+      install hfsplus /bin/true
+      install squashfs /bin/true
+      install udf /bin/true

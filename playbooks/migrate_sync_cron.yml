@@ -1,0 +1,79 @@
+---
+- name: Copy cronjobs from old to new server
+  hosts: old
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../host_vars/old.yml
+    - ../host_vars/new.yml
+
+  vars:
+    dest_host: "{{ hostvars['new']['ansible_host'] | default('new') }}"
+    cron_dir: "/var/spool/cron/crontabs"
+    root_cron_file: "{{ cron_dir }}/root"
+    dave_cron_file: "{{ cron_dir }}/dave"
+
+  tasks:
+    - name: Ensure sshpass is installed
+      apt:
+        name: sshpass
+        state: present
+        update_cache: true
+
+    - name: Check if root crontab exists
+      stat:
+        path: "{{ root_cron_file }}"
+      register: root_cron_stat
+
+    - name: Check if dave crontab exists
+      stat:
+        path: "{{ dave_cron_file }}"
+      register: dave_cron_stat
+
+    - name: Ensure destination cron directory exists (only if needed)
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
+        root@{{ dest_host }} "mkdir -p {{ cron_dir }} && chmod 1730 {{ cron_dir }}"
+      when: root_cron_stat.stat.exists or dave_cron_stat.stat.exists
+      delegate_to: localhost
+
+    - name: Copy root crontab to local temp
+      fetch:
+        src: "{{ root_cron_file }}"
+        dest: "/tmp/crontabs/root"
+        flat: true
+      when: root_cron_stat.stat.exists
+
+    - name: Push root crontab to new server
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        rsync -az -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
+        /tmp/crontabs/root root@{{ dest_host }}:{{ root_cron_file }}
+      when: root_cron_stat.stat.exists
+      delegate_to: localhost
+
+    - name: Copy dave crontab to local temp
+      fetch:
+        src: "{{ dave_cron_file }}"
+        dest: "/tmp/crontabs/dave"
+        flat: true
+      when: dave_cron_stat.stat.exists
+
+    - name: Push dave crontab to new server
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        rsync -az -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
+        /tmp/crontabs/dave root@{{ dest_host }}:{{ dave_cron_file }}
+      when: dave_cron_stat.stat.exists
+      delegate_to: localhost
+
+    - name: Set permissions on crontabs on new server
+      shell: >
+        sshpass -p "{{ root_ssh_password }}" \
+        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
+        root@{{ dest_host }} "
+          {{ 'chmod 600 ' + root_cron_file + ' && chown root:crontab ' + root_cron_file if root_cron_stat.stat.exists else '' }}
+          {{ 'chmod 600 ' + dave_cron_file + ' && chown dave:crontab ' + dave_cron_file if dave_cron_stat.stat.exists else '' }}"
+      when: root_cron_stat.stat.exists or dave_cron_stat.stat.exists
+      delegate_to: localhost

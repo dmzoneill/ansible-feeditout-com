@@ -1,0 +1,6 @@
+---
+cron_user_files:
+  - user: "dave"
+    src: "dave"
+  - user: "root"
+    src: "root"

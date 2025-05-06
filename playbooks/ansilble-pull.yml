@@ -1,0 +1,15 @@
+---
+- name: Reconcile migrated server
+  hosts: migrated
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../host_vars/migrated.yml
+
+  tasks:
+    - name: Include roles with ignore_errors
+      include_role:
+        name: "{{ item }}"
+      loop:
+        - ansible_pull
+      ignore_errors: true

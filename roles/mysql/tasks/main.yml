@@ -1,0 +1,41 @@
+---
+- name: Ensure MariaDB is installed
+  apt:
+    name: mariadb-server
+    state: present
+    update_cache: true
+
+- name: Ensure /etc/mysql exists
+  file:
+    path: /etc/mysql
+    state: directory
+    mode: '0755'
+
+- name: Copy all configuration files to /etc/mysql/
+  copy:
+    src: "{{ mysql_conf }}"
+    dest: "/etc/mysql/{{ mysql_conf | basename }}"
+    owner: root
+    group: root
+    force: false
+  with_fileglob:
+    - "{{ role_path }}/files/*"
+  loop_control:
+    loop_var: mysql_conf
+  when: "'debian-start' not in mysql_conf"
+  register: copied_mysql_configs
+
+- name: Copy /etc/mysql/debian-start preserving mode
+  copy:
+    src: "{{ role_path }}/files/debian-start"
+    dest: /etc/mysql/debian-start
+    owner: root
+    group: root
+    force: no
+  register: copied_debian_start
+
+- name: Restart and enable MariaDB service only if config changed
+  service:
+    name: mariadb
+    state: restarted
+  when: copied_mysql_configs is changed or copied_debian_start is changed

@@ -1,0 +1,42 @@
+---
+- name: Ensure dave user is ready on destination server
+  hosts: new
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../host_vars/new.yml   # only if you're storing ansible_become_password here
+    - ../host_vars/old.yml   # or wherever your ansible_become_password is stored
+
+  pre_tasks:
+    - name: Ensure become password is loaded
+      debug:
+        var: ansible_become_password
+
+    - name: Manually gather facts
+      setup:
+
+  tasks:
+    - name: Set dave's password using ansible_become_password
+      user:
+        name: dave
+        password: "{{ ansible_become_password | password_hash('sha512') }}"
+        shell: /bin/bash
+        groups: sudo
+        append: true
+        state: present
+
+    - name: Ensure dave's .ssh directory exists
+      file:
+        path: /home/dave/.ssh
+        state: directory
+        owner: dave
+        group: dave
+        mode: '0700'
+
+    - name: Copy public key to authorized_keys
+      copy:
+        src: ~/.ssh/dmzoneill-2024.pub
+        dest: /home/dave/.ssh/authorized_keys
+        owner: dave
+        group: dave
+        mode: '0600'

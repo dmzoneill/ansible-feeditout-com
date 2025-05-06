@@ -1,0 +1,51 @@
+---
+- name: Ensure iptables-persistent is installed
+  apt:
+    name: iptables-persistent
+    state: present
+    update_cache: true
+
+- name: Slurp live iptables rules from the system
+  slurp:
+    src: "{{ iptables_rules_path }}"
+  register: live_rules
+  ignore_errors: true  # in case rules file does not exist yet
+
+- name: Load reference rules file from role (local)
+  set_fact:
+    reference_rules_content: "{{ lookup('file', role_path + '/files/' + iptables_rules_file) }}"
+
+- name: Decode and strip comment lines from live rules
+  set_fact:
+    live_rules_cleaned: >-
+      {{
+        (live_rules.content | default('') | b64decode).split('\n')
+        | reject("match", "^# ")
+        | join('\n')
+      }}
+
+- name: Decode and strip comment lines from reference rules
+  set_fact:
+    reference_rules_cleaned: >-
+      {{
+        reference_rules_content.split('\n')
+        | reject("match", "^# ")
+        | join('\n')
+      }}
+
+- name: Set flag if iptables rules differ
+  set_fact:
+    rules_differ: "{{ live_rules_cleaned != reference_rules_cleaned }}"
+
+- name: Copy new iptables rules if they differ
+  copy:
+    src: "{{ iptables_rules_file }}"
+    dest: "{{ iptables_rules_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  when: rules_differ
+
+- name: Restore iptables rules from saved file
+  shell: iptables-restore < "{{ iptables_rules_path }}"
+  when: rules_differ

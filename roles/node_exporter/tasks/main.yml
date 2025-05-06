@@ -1,0 +1,29 @@
+---
+- name: Install Docker
+  apt:
+    name: docker.io
+    state: present
+    update_cache: true
+
+- name: Ensure Docker service is started and enabled
+  service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Run Node Exporter container
+  docker_container:
+    name: node_exporter
+    image: prom/node-exporter:latest
+    restart_policy: always
+    state: started
+    ports:
+      - "9100:9100"
+    volumes:
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/:/rootfs:ro"
+    command: >
+      --path.procfs=/host/proc
+      --path.sysfs=/host/sys
+      --path.rootfs=/rootfs

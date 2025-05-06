@@ -1,0 +1,13 @@
+---
+- name: Disable dynamic MOTD scripts
+  file:
+    path: /etc/update-motd.d/
+    state: absent
+
+- name: Set static MOTD banner from file
+  copy:
+    src: "{{ role_path }}/files/motd"
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: '0644'

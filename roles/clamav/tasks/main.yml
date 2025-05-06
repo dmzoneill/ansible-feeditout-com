@@ -1,0 +1,35 @@
+---
+- name: Check timestamp of last freshclam update
+  stat:
+    path: /var/lib/clamav/.freshclam_update
+  register: freshclam_timestamp
+
+- name: Set fact if update is due
+  set_fact:
+    freshclam_due: "{{ (ansible_date_time.epoch | int) - (freshclam_timestamp.stat.mtime | default(0)) > 86400 }}"
+
+- name: Stop freshclam service (only if due)
+  service:
+    name: clamav-freshclam
+    state: stopped
+    enabled: true
+  when: freshclam_due
+
+- name: Run freshclam update (only if due)
+  command: freshclam
+  register: freshclam_result
+  changed_when: "'bytecode.cld' in freshclam_result.stdout or 'is up to date' not in freshclam_result.stdout"
+  when: freshclam_due
+
+- name: Update timestamp file
+  file:
+    path: /var/lib/clamav/.freshclam_update
+    state: touch
+  when: freshclam_due
+
+- name: Start freshclam service again
+  service:
+    name: clamav-freshclam
+    state: started
+    enabled: true
+  when: freshclam_due

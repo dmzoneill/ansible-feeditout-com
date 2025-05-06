@@ -1,0 +1,27 @@
+---
+- name: Get current hostname
+  command: hostname
+  register: current_hostname
+  changed_when: false
+
+- name: Set the hostname using hostnamectl only if needed
+  command: hostnamectl set-hostname "{{ fqdn }}"
+  when: current_hostname.stdout != fqdn
+
+- name: Update /etc/hostname if needed
+  copy:
+    dest: /etc/hostname
+    content: "{{ hostname }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart systemd-hostnamed
+
+- name: Ensure /etc/hosts entry for FQDN exists
+  lineinfile:
+    path: /etc/hosts
+    regexp: "^{{ loopback_ip }}\\s+"
+    line: "{{ loopback_ip }} {{ fqdn }} {{ hostname }}"
+    state: present
+    create: true
+    backup: true

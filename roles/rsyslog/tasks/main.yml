@@ -1,0 +1,5 @@
+---
+- name: Ensure rsyslog is installed
+  apt:
+    name: rsyslog
+    state: present

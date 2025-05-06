@@ -1,0 +1,28 @@
+---
+- name: Install Postfix
+  apt:
+    name: postfix
+    state: present
+    update_cache: true
+
+- name: Ensure /etc/postfix exists
+  file:
+    path: /etc/postfix
+    state: directory
+    mode: '0755'
+
+- name: Recursively copy Postfix configuration to /etc/postfix
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: /etc/
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: '0755'
+  notify: Restart postfix
+
+- name: Enable and start Postfix service
+  service:
+    name: postfix
+    enabled: true
+    state: started

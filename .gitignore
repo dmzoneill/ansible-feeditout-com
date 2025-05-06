@@ -1,0 +1,7 @@
+.ansible-vault-pass
+playbooks/artifacts/*
+playbooks/backup/*
+playbooks/backups/*
+etc/*
+backups/*
+backup/*

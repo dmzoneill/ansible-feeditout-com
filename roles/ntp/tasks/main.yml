@@ -1,0 +1,25 @@
+---
+- name: Install NTP package
+  apt:
+    name: "{{ ntp_package }}"
+    state: present
+    update_cache: yes
+
+- name: Enable and start NTP service
+  systemd:
+    name: "{{ ntp_service }}"
+    state: started
+    enabled: yes
+
+- name: Set timezone to {{ ntp_timezone }}
+  timezone:
+    name: "{{ ntp_timezone }}"
+
+- name: Force sync time with NTP servers (no change event)
+  command: chronyc -a makestep
+  when: ntp_package == 'chrony'
+  changed_when: false
+
+- name: Update hardware clock from system time (no change event)
+  command: hwclock --systohc
+  changed_when: false

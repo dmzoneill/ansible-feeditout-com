@@ -1,0 +1,30 @@
+---
+- name: Install SpamAssassin and spamc
+  apt:
+    name:
+      - spamassassin
+      - spamc
+    state: present
+    update_cache: true
+
+- name: Ensure /etc/spamassassin exists
+  file:
+    path: /etc/spamassassin
+    state: directory
+    mode: '0755'
+
+- name: Copy all spamassassin config files to /etc/spamassassin
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: /etc/spamassassin/
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: '0755'
+  notify: Restart spamassassin
+
+- name: Enable and start SpamAssassin service
+  service:
+    name: spamd
+    enabled: true
+    state: started

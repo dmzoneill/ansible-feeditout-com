@@ -1,0 +1,20 @@
+---
+- name: Install memcached
+  apt:
+    name: memcached
+    state: present
+    update_cache: true
+
+- name: Copy custom memcached.conf
+  copy:
+    src: memcached.conf
+    dest: /etc/memcached.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure memcached is enabled and running
+  service:
+    name: memcached
+    state: started
+    enabled: true

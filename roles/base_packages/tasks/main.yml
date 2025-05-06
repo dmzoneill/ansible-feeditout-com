@@ -1,0 +1,32 @@
+---
+- name: Load package list from file
+  set_fact:
+    package_list: "{{ lookup('file', 'package-list.txt').splitlines() }}"
+    batch_size: 100
+
+- name: Group packages into batches
+  set_fact:
+    package_batches: "{{ package_list | batch(batch_size) }}"
+
+- name: Update apt cache once before installing
+  apt:
+    update_cache: true
+
+- name: Print progress for each batch
+  debug:
+    msg: "Processing batch {{ batch_index + 1 }}/{{ package_batches | length }}"
+  loop: "{{ package_batches }}"
+  loop_control:
+    index_var: batch_index
+    label: "batch {{ batch_index + 1 }}"
+
+- name: Install package batch
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: false
+  loop: "{{ package_batches }}"
+  loop_control:
+    index_var: batch_index
+    label: "batch {{ batch_index + 1 }}"
+  ignore_errors: true

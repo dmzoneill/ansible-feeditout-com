@@ -1,0 +1,22 @@
+---
+- name: Install postsrsd
+  apt:
+    name: postsrsd
+    state: present
+    update_cache: true
+
+- name: Recursively copy postsrsd configuration to /etc
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: /etc/
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: '0755'
+  notify: Restart postsrsd
+
+- name: Enable and start postsrsd service
+  service:
+    name: postsrsd
+    enabled: true
+    state: started

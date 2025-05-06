@@ -1,0 +1,43 @@
+---
+- name: Reconcile migrated server
+  hosts: migrated
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../host_vars/migrated.yml
+
+  tasks:
+    - name: Include roles with ignore_errors
+      include_role:
+        name: "{{ item }}"
+      loop:
+        - keyboard
+        - dns
+        - ntp
+        - ansible_pull
+        - clean
+        - hostname
+        - cron
+        - apache2
+        - php_fpm
+        - fail2ban
+        - clamav
+        - rsyslog
+        - memcached
+        - motd
+        - mysql
+        - node_exporter
+        - opendkim
+        - opendmarc
+        - postfix
+        - postsrsd
+        - spamassassin
+        - sshd
+        - unattended_upgrades
+        - vm_tuning
+        - iptables
+        - kernel
+        - auditd
+        - apparmor
+        - services
+      ignore_errors: true

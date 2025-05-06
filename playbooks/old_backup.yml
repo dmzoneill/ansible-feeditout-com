@@ -1,0 +1,54 @@
+---
+- name: Backup /home/dave and /etc from old
+  hosts: old
+  vars_files:
+    - ../host_vars/old.yml  # contains ansible_become_password
+  become: true
+  vars:
+    fetch_dest_base: "../backups/old/"
+  tasks:
+    - name: Ensure local backup destination exists
+      delegate_to: localhost
+      file:
+        path: "{{ fetch_dest_base }}"
+        state: directory
+        mode: '0755'
+
+    - name: Ensure local backup directory exists and is writable
+      delegate_to: localhost
+      become: false
+      file:
+        path: "{{ fetch_dest_base }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ lookup('env', 'USER') }}"
+        group: "{{ lookup('env', 'USER') }}"
+
+    - name: Archive /etc on old using sudo
+      archive:
+        path: /etc
+        dest: /tmp/etc_backup.tar.gz
+        format: gz
+
+    - name: Fetch /etc archive to control machine
+      fetch:
+        src: /tmp/etc_backup.tar.gz
+        dest: "{{ fetch_dest_base }}"
+        flat: true
+
+    - name: Remove temp archive /tmp/etc_backup.tar.gz
+      file:
+        path: /tmp/etc_backup.tar.gz
+        state: absent
+
+    - name: Synchronize /home/dave to local machine
+      synchronize:
+        mode: pull
+        src: /home/dave
+        dest: "{{ fetch_dest_base }}/home"
+        recursive: true
+        rsync_opts:
+          - "--delete"
+          - "--rsh='ssh -p 33 -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/dmzoneill-2024'"
+      delegate_to: localhost
+      become: false

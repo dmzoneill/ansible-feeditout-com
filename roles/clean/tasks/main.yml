@@ -1,0 +1,15 @@
+---
+- name: Ensure nginx is not installed
+  apt:
+    name: nginx
+    state: absent
+
+- name: Ensure cyrus is not installed
+  apt:
+    name: cyrus
+    state: absent
+
+- name: Ensure tripwire is not installed
+  apt:
+    name: tripwire
+    state: absent

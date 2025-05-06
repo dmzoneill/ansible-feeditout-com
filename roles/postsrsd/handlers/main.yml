@@ -1,0 +1,5 @@
+---
+- name: Restart postsrsd
+  service:
+    name: postsrsd
+    state: restarted

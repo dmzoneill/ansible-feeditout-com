@@ -1,0 +1,13 @@
+# OPENDKIM KEY TABLE
+# To use this file, uncomment the #KeyTable option in /etc/opendkim.conf,
+# then uncomment the following line and replace example.com with your domain
+# name, then restart OpenDKIM. Additional keys may be added on separate lines.
+
+default._dkim.feeditout.com feeditout.com:default:/etc/dkimkeys/keys/default.private
+default._dkim.fio.ie fio.ie:default:/etc/dkimkeys/keys/default.private
+default._dkim.risingsons.ie risingsons.ie:default:/etc/dkimkeys/keys/default.private
+default._dkim.stayathome.ie stayathome.ie:default:/etc/dkimkeys/keys/default.private
+default._dkim.cookiemunster.ie cookiemunster.ie:default:/etc/dkimkeys/keys/default.private
+default._dkim.ashtangayoga.ie ashtangayoga.ie:default:/etc/dkimkeys/keys/default.private
+default._dkim.mysore.ie mysore.ie:default:/etc/dkimkeys/keys/default.private
+default._dkim.ayc.ie ayc.ie:default:/etc/dkimkeys/keys/default.private

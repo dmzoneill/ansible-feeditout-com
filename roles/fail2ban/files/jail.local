@@ -1,0 +1,15 @@
+[sasl]
+enabled  = true
+port     = smtp
+filter   = postfix-sasl
+logpath  = /var/log/mail.log
+maxretry = 1
+
+[postfix-sasl]
+
+enabled  = true
+filter   = postfix-sasl
+action   = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]
+logpath  = /var/log/mail.log
+maxretry = 5
+bantime  = 24h

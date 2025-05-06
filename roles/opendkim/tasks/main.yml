@@ -1,0 +1,28 @@
+---
+- name: Install OpenDKIM
+  apt:
+    name: opendkim
+    state: present
+    update_cache: true
+
+- name: Ensure /etc exists
+  file:
+    path: /etc
+    state: directory
+    mode: '0755'
+
+- name: Recursively copy all OpenDKIM configuration to /etc
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: /etc/
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: '0755'
+  notify: Restart opendkim
+
+- name: Enable and start OpenDKIM service
+  service:
+    name: opendkim
+    enabled: true
+    state: started

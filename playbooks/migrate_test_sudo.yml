@@ -1,0 +1,9 @@
+---
+- hosts: new
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../host_vars/new.yml
+  tasks:
+    - name: Run a simple sudo command
+      command: sudo whoami

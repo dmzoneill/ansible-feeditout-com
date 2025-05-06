@@ -1,0 +1,16 @@
+[Unit]
+Description=Run ansible-pull from Git repository
+After=network.target
+
+[Service]
+Environment=ANSIBLE_CALLBACK_WHITELIST=profile_tasks
+ExecStart=/usr/bin/ansible-pull \
+  -i {{ ansible_pull_workdir }}/inventories/hosts_local.ini \
+  -U {{ ansible_pull_repo_url }} \
+  -d {{ ansible_pull_workdir }} \
+  --vault-password-file /etc/ansible/.vault_pass.txt \
+  playbooks/reconcile.yml
+WorkingDirectory={{ ansible_pull_workdir }}
+
+[Install]
+WantedBy=multi-user.target

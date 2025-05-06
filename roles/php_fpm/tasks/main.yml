@@ -1,0 +1,38 @@
+---
+- name: Ensure PHP-FPM is installed
+  apt:
+    name: "{{ php_fpm_package }}"
+    state: present
+    update_cache: yes
+
+- name: Ensure PHP-FPM configuration directory exists
+  file:
+    path: "{{ php_fpm_conf_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Deploy main PHP-FPM config file
+  copy:
+    src: php-fpm.conf
+    dest: "{{ php_fpm_conf_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart php-fpm
+  diff: true
+
+- name: Deploy www.conf pool configuration
+  copy:
+    src: www.conf
+    dest: "{{ php_fpm_pool_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart php-fpm
+  diff: true
+
+- name: Ensure PHP-FPM is enabled and started
+  systemd:
+    name: "{{ php_fpm_service }}"
+    state: started
+    enabled: true

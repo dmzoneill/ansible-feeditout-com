@@ -1,0 +1,9 @@
+---
+- name: Replicate server configuration
+  hosts: new
+  become: true
+  vars_files:
+    - ../host_vars/old.yml
+    - ../host_vars/new.yml
+  roles:
+    - base_packages

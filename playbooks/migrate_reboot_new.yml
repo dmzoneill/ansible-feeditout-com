@@ -1,0 +1,13 @@
+---
+- name: Reboot the new server
+  hosts: migrated
+  become: true
+  vars_files:
+    - ../host_vars/old.yml
+    - ../host_vars/new.yml
+  gather_facts: false
+  tasks:
+    - name: Reboot the machine
+      reboot:
+        reboot_timeout: 600
+        test_command: whoami

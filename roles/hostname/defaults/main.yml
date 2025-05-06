@@ -1,0 +1,5 @@
+---
+fqdn: "feeditout.com"
+hostname: "feeditout"
+loopback_ip: "127.0.1.1"
+domain: "feeditout.com"

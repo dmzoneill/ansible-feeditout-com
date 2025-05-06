@@ -1,0 +1,65 @@
+---
+- name: Ensure Apache2 is installed
+  apt:
+    name: apache2
+    state: present
+
+- name: Install required Apache modules
+  apt:
+    name:
+      - libapache2-mod-security2
+      - ssl-cert
+    state: present
+
+- name: Disable broken qos module if present
+  file:
+    path: /etc/apache2/mods-enabled/qos.load
+    state: absent
+  when: ansible_facts['distribution'] == 'Debian' and
+        ansible_facts['distribution_version'] is version('10', '>=') and
+        ansible_facts['distribution_version'] is version('13', '<') and
+        ansible_facts['os_family'] == 'Debian'
+  changed_when: false
+
+- name: Remove qos module package if installed
+  apt:
+    name: libapache2-mod-qos
+    state: absent
+  changed_when: false
+
+- name: Enable commonly needed Apache modules
+  apache2_module:
+    name: "{{ apache_mod }}"
+    state: present
+  loop:
+    - rewrite
+    - headers
+    - ssl
+    - security2
+  loop_control:
+    loop_var: apache_mod
+  notify: restart apache2
+
+- name: Ensure /etc/apache2 exists
+  file:
+    path: /etc/apache2
+    state: directory
+    mode: '0755'
+
+- name: Copy all files from role files/ to /etc/apache2/
+  copy:
+    src: "{{ apache_file }}"
+    dest: "/etc/apache2/{{ apache_file | basename }}"
+    owner: root
+    group: root
+    mode: '0644'
+  with_fileglob:
+    - "{{ role_path }}/files/*"
+  loop_control:
+    loop_var: apache_file
+
+- name: Ensure Apache2 is started and enabled
+  service:
+    name: apache2
+    state: started
+    enabled: true
