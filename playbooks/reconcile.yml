@@ -17,6 +17,7 @@
         - ansible_pull
         - clean
         - hostname
+        - redis
         - cron
         - apache2
         - php_fpm

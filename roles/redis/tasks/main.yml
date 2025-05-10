@@ -1,0 +1,88 @@
+---
+# roles/redis/tasks/main.yml
+- name: Install Redis
+  apt:
+    name: redis-server
+    state: present
+    update_cache: true
+
+- name: Create Redis TLS directory
+  file:
+    path: /etc/redis/tls
+    state: directory
+    owner: redis
+    group: redis
+    mode: '0755'
+
+- name: Generate self-signed cert and key (if not exists)
+  command: >
+    openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes
+    -keyout /etc/redis/tls/redis.key -out /etc/redis/tls/redis.crt
+    -subj "/CN=redis.local"
+  args:
+    creates: /etc/redis/tls/redis.crt
+
+- name: Set permissions on cert files
+  file:
+    path: "/etc/redis/tls/{{ item }}"
+    owner: redis
+    group: redis
+    mode: "0600"
+  loop:
+    - redis.crt
+    - redis.key
+
+- name: Disable persistence
+  replace:
+    path: /etc/redis/redis.conf
+    regexp: '^save '
+    replace: '# save '
+  notify: Restart Redis
+
+- name: Set Redis to bind on 0.0.0.0
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^bind '
+    line: 'bind 0.0.0.0'
+    state: present
+  notify: Restart Redis
+
+- name: Change Redis port to 6380
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^port '
+    line: 'port 6380'
+    state: present
+  notify: Restart Redis
+
+- name: Enable TLS in redis.conf
+  blockinfile:
+    path: /etc/redis/redis.conf
+    marker: "# {mark} ANSIBLE TLS SETTINGS"
+    block: |
+      tls-port 6380
+      port 0
+      tls-cert-file /etc/redis/tls/redis.crt
+      tls-key-file /etc/redis/tls/redis.key
+      tls-auth-clients no
+  notify: Restart Redis
+
+- name: Set requirepass
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^#?\s*requirepass '
+    line: "requirepass {{ redis_password }}"
+    state: present
+  notify: Restart Redis
+
+- name: Enable Redis on boot
+  systemd:
+    name: redis-server
+    enabled: yes
+    state: started
+
+# handlers/main.yml
+- name: Restart Redis
+  systemd:
+    name: redis-server
+    state: restarted
