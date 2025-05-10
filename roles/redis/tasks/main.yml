@@ -81,12 +81,6 @@
     enabled: yes
     state: started
 
-# handlers/main.yml
-- name: Restart Redis
-  systemd:
-    name: redis-server
-    state: restarted
-
 - name: Ensure systemd override directory exists
   file:
     path: /etc/systemd/system/redis-server.service.d
@@ -100,4 +94,7 @@
       [Service]
       ExecStart=
       ExecStart=/usr/bin/redis-server /etc/redis/redis.conf
-  notify: Reload systemd & Restart Redis
+  notify:
+    - Reload systemd daemon
+    - Reload systemd unit files
+    - Restart Redis
