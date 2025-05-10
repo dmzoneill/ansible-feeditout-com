@@ -33,6 +33,14 @@
     - redis.crt
     - redis.key
 
+- name: Ensure /run/redis exists for PID file
+  file:
+    path: /run/redis
+    state: directory
+    owner: redis
+    group: redis
+    mode: "0755"
+
 - name: Copy full redis.conf with TLS + password + no persistence
   template:
     src: redis.conf.j2
@@ -51,13 +59,15 @@
     state: directory
     mode: "0755"
 
-- name: Force Redis to use the correct redis.conf with TLS
+- name: Override systemd Redis service to support daemonize (Type=forking)
   copy:
     dest: /etc/systemd/system/redis-server.service.d/override.conf
     content: |
       [Service]
+      Type=forking
       ExecStart=
       ExecStart=/usr/bin/redis-server /etc/redis/redis.conf
+      PIDFile=/run/redis/redis-server.pid
   notify:
     - Reload systemd daemon
     - Reload systemd unit files
