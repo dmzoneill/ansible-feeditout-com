@@ -1,9 +1,11 @@
 ---
 # roles/redis/tasks/main.yml
 
-- name: Install Redis
+- name: Install Redis and Webdis
   apt:
-    name: redis-server
+    name:
+      - redis-server
+      - webdis
     state: present
     update_cache: true
 
@@ -78,3 +80,43 @@
     name: redis-server
     enabled: yes
     state: started
+
+- name: Configure Webdis
+  copy:
+    dest: /etc/webdis.json
+    content: |
+      {
+        "redis_host": "127.0.0.1",
+        "redis_port": 6379,
+        "redis_auth": "{{ redis_password }}",
+        "http_host": "0.0.0.0",
+        "http_port": 6380,
+        "https": true,
+        "ssl_certificate": "/etc/redis/tls/redis.crt",
+        "ssl_private_key": "/etc/redis/tls/redis.key",
+        "daemonize": true
+      }
+  notify: Restart Webdis
+
+- name: Enable Webdis on boot
+  systemd:
+    name: webdis
+    enabled: yes
+    state: started
+
+# handlers/main.yml
+- name: Restart Redis
+  systemd:
+    name: redis-server
+    state: restarted
+
+- name: Restart Webdis
+  systemd:
+    name: webdis
+    state: restarted
+
+- name: Reload systemd daemon
+  command: systemctl daemon-reexec
+
+- name: Reload systemd unit files
+  command: systemctl daemon-reload

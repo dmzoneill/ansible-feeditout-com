@@ -1,10 +1,6 @@
-bind 0.0.0.0
-port 0
-tls-port 6380
-
-tls-cert-file /etc/redis/tls/redis.crt
-tls-key-file /etc/redis/tls/redis.key
-tls-auth-clients no
+bind 127.0.0.1
+port 6379
+tls-port 0
 
 requirepass {{ redis_password }}
 
@@ -15,6 +11,9 @@ loglevel notice
 logfile /var/log/redis/redis-server.log
 databases 16
 
-# Disable persistence
+# Disable persistence completely
 save ""
 appendonly no
+
+# Optional: avoid warning if saving is completely disabled
+stop-writes-on-bgsave-error no
