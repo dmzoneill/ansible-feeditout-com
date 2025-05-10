@@ -1,13 +1,11 @@
 ---
-- name: Reload systemd & Restart Redis
-  block:
-    - name: Reload systemd daemon
-      command: systemctl daemon-reexec
+- name: Reload systemd daemon
+  command: systemctl daemon-reexec
 
-    - name: Reload systemd unit files
-      command: systemctl daemon-reload
+- name: Reload systemd unit files
+  command: systemctl daemon-reload
 
-    - name: Restart Redis
-      systemd:
-        name: redis-server
-        state: restarted
+- name: Restart Redis
+  systemd:
+    name: redis-server
+    state: restarted

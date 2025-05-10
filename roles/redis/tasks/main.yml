@@ -1,5 +1,6 @@
 ---
 # roles/redis/tasks/main.yml
+
 - name: Install Redis
   apt:
     name: redis-server
@@ -32,54 +33,17 @@
     - redis.crt
     - redis.key
 
-- name: Disable persistence
-  replace:
-    path: /etc/redis/redis.conf
-    regexp: '^save '
-    replace: '# save '
-  notify: Restart Redis
-
-- name: Set Redis to bind on 0.0.0.0
-  lineinfile:
-    path: /etc/redis/redis.conf
-    regexp: '^bind '
-    line: 'bind 0.0.0.0'
-    state: present
-  notify: Restart Redis
-
-- name: Change Redis port to 6380
-  lineinfile:
-    path: /etc/redis/redis.conf
-    regexp: '^port '
-    line: 'port 6380'
-    state: present
-  notify: Restart Redis
-
-- name: Enable TLS in redis.conf
-  blockinfile:
-    path: /etc/redis/redis.conf
-    marker: "# {mark} ANSIBLE TLS SETTINGS"
-    block: |
-      port 0
-      tls-port 6380
-      tls-cert-file /etc/redis/tls/redis.crt
-      tls-key-file /etc/redis/tls/redis.key
-      tls-auth-clients no
-  notify: Restart Redis
-
-- name: Set requirepass
-  lineinfile:
-    path: /etc/redis/redis.conf
-    regexp: '^#?\s*requirepass '
-    line: "requirepass {{ redis_password }}"
-    state: present
-  notify: Restart Redis
-
-- name: Enable Redis on boot
-  systemd:
-    name: redis-server
-    enabled: yes
-    state: started
+- name: Copy full redis.conf with TLS + password + no persistence
+  template:
+    src: redis.conf.j2
+    dest: /etc/redis/redis.conf
+    owner: redis
+    group: redis
+    mode: "0644"
+  notify:
+    - Reload systemd daemon
+    - Reload systemd unit files
+    - Restart Redis
 
 - name: Ensure systemd override directory exists
   file:
@@ -98,3 +62,9 @@
     - Reload systemd daemon
     - Reload systemd unit files
     - Restart Redis
+
+- name: Enable Redis on boot
+  systemd:
+    name: redis-server
+    enabled: yes
+    state: started

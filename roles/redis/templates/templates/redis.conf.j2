@@ -1,0 +1,20 @@
+bind 0.0.0.0
+port 0
+tls-port 6380
+
+tls-cert-file /etc/redis/tls/redis.crt
+tls-key-file /etc/redis/tls/redis.key
+tls-auth-clients no
+
+requirepass {{ redis_password }}
+
+protected-mode yes
+daemonize yes
+pidfile /run/redis/redis-server.pid
+loglevel notice
+logfile /var/log/redis/redis-server.log
+databases 16
+
+# Disable persistence
+save ""
+appendonly no
