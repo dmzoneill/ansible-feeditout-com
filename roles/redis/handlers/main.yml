@@ -9,3 +9,8 @@
   systemd:
     name: redis-server
     state: restarted
+
+- name: Restart Webdis
+  systemd:
+    name: webdis
+    state: restarted
