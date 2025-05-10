@@ -83,7 +83,7 @@
 
 - name: Configure Webdis
   copy:
-    dest: /etc/webdis.json
+    dest: /etc/webdis/webdis.json
     content: |
       {
         "redis_host": "127.0.0.1",
