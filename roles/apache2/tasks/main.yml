@@ -46,17 +46,15 @@
     state: directory
     mode: '0755'
 
-- name: Copy all files from role files/ to /etc/apache2/
+- name: Recursively copy apache2 configuration to /etc/apache2
   copy:
-    src: "{{ apache_file }}"
-    dest: "/etc/apache2/{{ apache_file | basename }}"
+    src: "{{ role_path }}/files/"
+    dest: /etc/apache2/
     owner: root
     group: root
-    mode: '0644'
-  with_fileglob:
-    - "{{ role_path }}/files/*"
-  loop_control:
-    loop_var: apache_file
+    mode: preserve
+    directory_mode: '0755'
+  notify: restart apache2
 
 - name: Ensure Apache2 is started and enabled
   service:
