@@ -32,6 +32,7 @@
 - name: Get banned IPs from jail
   command: "fail2ban-client status {{ fail2ban_jail }}"
   register: jail_status
+  changed_when: false
 
 - name: Extract banned IPs
   set_fact:

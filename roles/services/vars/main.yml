@@ -7,5 +7,4 @@ disable_services:
   - man-db.service
   - packagekit.service
   - packagekit-offline-update.service
-  - usb_modeswitch@.service
   - wpa_supplicant.service

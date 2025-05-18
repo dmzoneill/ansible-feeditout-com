@@ -49,3 +49,4 @@
 - name: Restore iptables rules from saved file
   shell: iptables-restore < "{{ iptables_rules_path }}"
   when: rules_differ
+  changed_when: false
