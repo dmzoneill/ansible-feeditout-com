@@ -27,13 +27,15 @@
 
 - name: Set permissions on cert files
   file:
-    path: "/etc/redis/tls/{{ item }}"
+    path: "/etc/redis/tls/{{ cert_file }}"
     owner: redis
     group: redis
     mode: "0600"
   loop:
     - redis.crt
     - redis.key
+  loop_control:
+    loop_var: cert_file
 
 - name: Ensure /run/redis exists for PID file
   file:
