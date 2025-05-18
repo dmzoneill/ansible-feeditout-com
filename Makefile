@@ -6,7 +6,7 @@ INVENTORY_LOCAL ?= inventories/hosts_local.ini
 VAULT_OPTS ?=  --vault-password-file ~/.ansible-vault-pass
 VERBOSITY ?=  -v
 
-.PHONY: all ping ensure-dave copy-dave test-sudo base-packages sync-services sync-mail harden-ssh sync-cron sync-mariadb reboot-new full-migration reconcile backup-old super-lint
+.PHONY: all ping ensure-dave copy-dave test-sudo base-packages sync-services sync-mail harden-ssh sync-cron sync-mariadb reboot-new full-migration reconcile backup-old super-lint migrated-sync-mariadb
 
 all: base-packages
 
@@ -42,6 +42,9 @@ sync-mariadb:
 
 reboot-new:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_reboot_new.yml $(VAULT_OPTS)
+
+migrated-sync-mariadb:
+	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_maria_db.yml $(VAULT_OPTS)
 
 full-migration:
 	@echo "Starting full setup process..."

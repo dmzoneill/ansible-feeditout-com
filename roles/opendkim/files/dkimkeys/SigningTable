@@ -25,6 +25,8 @@
 #example.com default._domainkey.example.com
 
 *@feeditout.com default._dkim.feeditout.com
+*@feeditout.site default._dkim.feeditout.site
+*@feeditout.xyz default._dkim.feeditout.xyz
 *@fio.ie default._dkim.fio.ie
 *@stayathome.ie default._dkim.stayathome.ie
 *@risingsons.ie default._dkim.risingsons.ie

@@ -24,7 +24,7 @@
 # 
 # m h  dom mon dow   command
 MAILTO="dave@fio.ie"
-#15 3 * * * /home/dave/bin/certbot.sh 
-#50 10 * * * /home/dave/bin/backup.sh
-#0 3 * * * /etc/apache2/create_mmap.sh
-#0 1 * * * /usr/bin/aide -c /etc/aide/aide.conf -u && cp /var/lib/aide/aide.db{.new,}
+15 3 * * * /home/dave/bin/certbot.sh 
+50 10 * * * /home/dave/bin/backup.sh
+0 3 * * * /etc/apache2/create_mmap.sh
+0 1 * * * /usr/bin/aide -c /etc/aide/aide.conf -u && cp /var/lib/aide/aide.db{.new,}

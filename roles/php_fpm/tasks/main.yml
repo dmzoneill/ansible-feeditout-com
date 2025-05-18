@@ -5,6 +5,12 @@
     state: present
     update_cache: yes
 
+- name: Ensure PHP-FPM mysql module installed
+  apt:
+    name: "{{ php_fpm_mysql_package }}"
+    state: present
+    update_cache: yes
+
 - name: Ensure PHP-FPM configuration directory exists
   file:
     path: "{{ php_fpm_conf_dir }}"

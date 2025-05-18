@@ -4,6 +4,8 @@
 # name, then restart OpenDKIM. Additional keys may be added on separate lines.
 
 default._dkim.feeditout.com feeditout.com:default:/etc/dkimkeys/keys/default.private
+default._dkim.feeditout.xyz feeditout.xyz:default:/etc/dkimkeys/keys/default.private
+default._dkim.feeditout.site feeditout.site:default:/etc/dkimkeys/keys/default.private
 default._dkim.fio.ie fio.ie:default:/etc/dkimkeys/keys/default.private
 default._dkim.risingsons.ie risingsons.ie:default:/etc/dkimkeys/keys/default.private
 default._dkim.stayathome.ie stayathome.ie:default:/etc/dkimkeys/keys/default.private
