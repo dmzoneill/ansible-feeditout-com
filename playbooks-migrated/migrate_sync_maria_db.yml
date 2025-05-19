@@ -1,0 +1,71 @@
+---
+- name: Sync MariaDB data from old to new server
+  hosts: old
+  become: true
+  vars_files:
+    - ../host_vars/old.yml
+  tasks:
+    - name: Stop MariaDB service on old server
+      service:
+        name: mariadb
+        state: stopped
+
+- name: Sync MariaDB data from old to new server
+  hosts: migrated
+  become: true
+  vars_files:
+    - ../host_vars/migrated.yml
+  tasks:
+    - name: Stop MariaDB service on old server
+      service:
+        name: mariadb
+        state: stopped
+
+- name: Sync MariaDB data from old to new server
+  hosts: old
+  become: true
+  vars_files:
+    - ../host_vars/old.yml
+    - ../host_vars/migrated.yml
+
+  vars:
+    dest_host: "{{ hostvars['new']['ansible_host'] | default('new') }}"
+    mariadb_data_dir: "/var/lib/mysql"
+    ssh_opts: "-p 33 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+  tasks:
+    - name: Rsync MariaDB data to new server temp path
+      shell: >
+        rsync -az --delete -e "ssh {{ ssh_opts }}" \
+        {{ mariadb_data_dir }}/ dave@{{ dest_host }}:/tmp/mysql_data/
+
+- name: Sync MariaDB data from old to new server
+  hosts: old
+  become: true
+  vars_files:
+    - ../host_vars/old.yml
+  tasks:
+    - name: Stop MariaDB service on old server
+      service:
+        name: mariadb
+        state: started
+
+- name: Move and fix ownership on destination
+  hosts: migrated
+  become: true
+  vars_files:
+    - ../host_vars/migrated.yml
+
+  tasks:
+    - name: Rsync from temp to actual MariaDB dir
+      shell: >
+        sudo rsync -az --delete /tmp/mysql_data/ /var/lib/mysql/
+
+    - name: Ensure correct ownership
+      shell: >
+        sudo chown -R mysql:mysql /var/lib/mysql
+
+    - name: Stop MariaDB service on old server
+      service:
+        name: mariadb
+        state: started

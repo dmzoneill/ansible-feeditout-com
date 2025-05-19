@@ -1,0 +1,40 @@
+---
+- name: Rsync /home/dave/www from old to migrated
+  hosts: migrated
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../host_vars/migrated.yml
+
+  tasks:
+    - name: Ensure rsync is installed
+      apt:
+        name: rsync
+        state: present
+        update_cache: true
+
+- name: Rsync /home/dave/www from old to migrated
+  hosts: old
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../host_vars/old.yml
+
+  tasks:
+    - name: Ensure sshpass is installed
+      apt:
+        name: sshpass
+        state: present
+        update_cache: true
+
+    - name: Remove old SSH known host entry (to prevent key mismatch error)
+      shell: ssh-keygen -f "/root/.ssh/known_hosts" -R "{{ hostvars['new']['ansible_host'] | default('new') }}"
+      ignore_errors: true
+
+    - name: Rsync www from old to migrated using sshpass and vault password
+      shell: >
+        sshpass -p "{{ ansible_become_password }}"
+        rsync -az -e "ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no"
+        /home/dave/www/
+        dave@{{ hostvars['new']['ansible_host'] | default('new') }}:/home/dave/www/
+      become: false

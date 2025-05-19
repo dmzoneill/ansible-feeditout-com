@@ -12,6 +12,7 @@
         name: "{{ item }}"
       loop:
         - keyboard
+        - grub
         - dns
         - ntp
         - ansible_pull
@@ -41,4 +42,6 @@
         - auditd
         - apparmor
         - services
+        - network_manager
+        - wayland
       ignore_errors: true

@@ -1,0 +1,36 @@
+---
+- name: Set systemd default target to multi-user.target
+  file:
+    src: /lib/systemd/system/multi-user.target
+    dest: /etc/systemd/system/default.target
+    state: link
+    force: yes
+
+- name: Disable graphical login managers if present
+  systemd:
+    name: "{{ dm_name }}"
+    enabled: false
+    state: stopped
+  loop:
+    - gdm
+    - gdm3
+    - sddm
+    - lightdm
+    - lxdm
+  loop_control:
+    loop_var: dm_name
+  ignore_errors: true
+
+- name: Mask display manager service to prevent auto-start
+  systemd:
+    name: "{{ dm_name }}"
+    masked: yes
+  loop:
+    - gdm
+    - gdm3
+    - sddm
+    - lightdm
+    - lxdm
+  loop_control:
+    loop_var: dm_name
+  ignore_errors: true
