@@ -16,7 +16,9 @@ base-packages:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_base_packages.yml $(VAULT_OPTS)
 
 ping:
-	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) all -m ping $(VAULT_OPTS)
+	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) old -m ping $(VAULT_OPTS)
+	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) new -m ping $(VAULT_OPTS)
+	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) new_prep -m ping $(VAULT_OPTS)
 
 new-ssh-key:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_ssh_key.yml $(VAULT_OPTS)
