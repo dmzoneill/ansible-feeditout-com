@@ -1,8 +1,31 @@
 ---
+# Fix MPM conflict first
+- name: Attempt to fix broken dpkg state before continuing
+  shell: apt-get install -f -y
+  changed_when: false
+  failed_when: false
+
+- name: Disable mpm_prefork if present to prevent install conflicts
+  shell: a2dismod mpm_prefork
+  args:
+    warn: false
+  register: disable_prefork
+  changed_when: disable_prefork.rc == 0
+  failed_when: false
+
+- name: Enable mpm_event module
+  shell: a2enmod mpm_event
+  args:
+    warn: false
+  register: enable_event
+  changed_when: enable_event.rc == 0
+  failed_when: false
+
 - name: Ensure Apache2 is installed
   apt:
     name: apache2
     state: present
+    update_cache: true
 
 - name: Install required Apache modules
   apt:
