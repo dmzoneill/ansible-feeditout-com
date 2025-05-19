@@ -1,0 +1,28 @@
+---
+- name: Add SSH public key to root's authorized_keys on "new"
+  hosts: new_prep
+  become: false
+  gather_facts: false
+
+  vars_files:
+    - ../host_vars/new.yml
+
+  tasks:
+    - name: Remove old SSH known_hosts entry for target host
+      delegate_to: localhost
+      become: false
+      command: "ssh-keygen -R {{ hostvars[inventory_hostname].ansible_host | default(inventory_hostname) }}"
+      changed_when: true
+
+    - name: Ensure /root/.ssh directory exists
+      file:
+        path: /root/.ssh
+        state: directory
+        mode: '0700'
+
+    - name: Add public key to /root/.ssh/authorized_keys
+      authorized_key:
+        user: root
+        key: "{{ root_public_key }}"
+        state: present
+        manage_dir: false

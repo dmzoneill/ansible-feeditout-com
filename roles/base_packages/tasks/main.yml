@@ -2,7 +2,7 @@
 - name: Load package list from file
   set_fact:
     package_list: "{{ lookup('file', 'package-list.txt').splitlines() }}"
-    batch_size: 100
+    batch_size: 50
 
 - name: Split package list into batches
   set_fact:
@@ -18,8 +18,8 @@
     index_var: batch_index
     label: "Batch {{ batch_index + 1 }}"
   register: install_results
-  changed_when: false  # Avoid reporting every batch as changed
-  ignore_errors: true  # In case apt-get still fails
+  changed_when: false
+  # ignore_errors: true  # In case apt-get still fails
 
 - name: Show summary of batch install results
   debug:

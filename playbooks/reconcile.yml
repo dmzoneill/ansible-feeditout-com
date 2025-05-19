@@ -12,15 +12,14 @@
         name: "{{ item }}"
       loop:
         - keyboard
-        - grub
         - dns
         - ntp
         - ansible_pull
+        - apache2
         - clean
         - hostname
         - redis
         - cron
-        - apache2
         - php_fpm
         - fail2ban
         - clamav
@@ -44,4 +43,5 @@
         - services
         - network_manager
         - wayland
+        - grub
       ignore_errors: true

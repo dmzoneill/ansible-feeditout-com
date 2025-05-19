@@ -1,27 +1,19 @@
 ---
-# Fix MPM conflict first
-- name: Attempt to fix broken dpkg state before continuing
-  shell: apt-get install -f -y
-  changed_when: false
+- name: Force disable mpm_prefork by removing symlinks if present
+  file:
+    path: /etc/apache2/mods-enabled/mpm_prefork.load
+    state: absent
+  register: prefork_removed
+  changed_when: prefork_removed.found is defined and prefork_removed.found
   failed_when: false
 
-- name: Disable mpm_prefork if present to prevent install conflicts
-  shell: "a2dismod mpm_prefork || true"
-  register: disable_prefork
-  changed_when: "'Module mpm_prefork disabled' in disable_prefork.stdout"
+- name: Remove mpm_prefork.conf if present
+  file:
+    path: /etc/apache2/mods-enabled/mpm_prefork.conf
+    state: absent
+  register: prefork_conf_removed
+  changed_when: prefork_conf_removed.found is defined and prefork_conf_removed.found
   failed_when: false
-
-- name: Enable mpm_event module
-  shell: "a2enmod mpm_event || true"
-  register: enable_event
-  changed_when: "'Module mpm_event enabled' in enable_event.stdout"
-  failed_when: false
-
-- name: Ensure Apache2 is installed
-  apt:
-    name: apache2
-    state: present
-    update_cache: true
 
 - name: Install required Apache modules
   apt:

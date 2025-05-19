@@ -1,6 +1,5 @@
 # Makefile for Ansible Server Cloning Project
 
-# INVENTORY_REMOTE ?= inventories/hosts_contabo.ini
 INVENTORY_REMOTE ?= inventories/hosts_avoro.ini
 INVENTORY_LOCAL ?= inventories/hosts_local.ini
 VAULT_OPTS ?=  --vault-password-file ~/.ansible-vault-pass
@@ -18,6 +17,9 @@ base-packages:
 
 ping:
 	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) all -m ping $(VAULT_OPTS)
+
+new-ssh-key:
+	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_ssh_key.yml $(VAULT_OPTS)
 
 test-sudo:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_test_sudo.yml $(VAULT_OPTS)
@@ -49,6 +51,7 @@ migrated-sync-mariadb:
 full-migration:
 	@echo "Starting full setup process..."
 	- $(MAKE) ping
+	$(MAKE) new-ssh-key
 	$(MAKE) ensure-dave
 	$(MAKE) copy-dave
 	$(MAKE) test-sudo
@@ -56,8 +59,9 @@ full-migration:
 	$(MAKE) sync-services
 	$(MAKE) sync-mariadb
 	$(MAKE) sync-mail
-	$(MAKE) harden-ssh
-	$(MAKE) reboot-new
+	- $(MAKE) harden-ssh
+	- $(MAKE) reboot-new
+	- $(MAKE) reconcile
 
 reconcile:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml $(VAULT_OPTS)
