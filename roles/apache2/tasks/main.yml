@@ -12,11 +12,30 @@
         package: libapache2-mod-evasive
       - name: geoip
         package: libapache2-mod-geoip
+    required_apache_modules:
+      - name: mpm_prefork
+        package: apache2
+      - name: php8.2
+        package: libapache2-mod-php8.2
 
-- name: Ensure Apache PHP module is installed
+- name: Ensure required Apache module packages are installed
   apt:
-    name: libapache2-mod-php8.2
+    name: "{{ required.package }}"
     state: present
+  loop: "{{ required_apache_modules }}"
+  loop_control:
+    loop_var: required
+    label: "{{ required.package }}"
+
+- name: Enable required Apache modules
+  apache2_module:
+    name: "{{ required.name }}"
+    state: present
+  loop: "{{ required_apache_modules }}"
+  loop_control:
+    loop_var: required
+    label: "{{ required.name }}"
+  notify: restart apache2
 
 - name: Disable broken Apache modules by removing .load files
   file:
