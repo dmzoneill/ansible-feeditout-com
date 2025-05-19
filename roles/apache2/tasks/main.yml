@@ -1,82 +1,49 @@
 ---
-- name: Force disable mpm_prefork by removing symlinks if present
-  file:
-    path: /etc/apache2/mods-enabled/mpm_prefork.load
-    state: absent
-  register: prefork_removed
-  changed_when: prefork_removed.found is defined and prefork_removed.found
-  failed_when: false
+- name: Define list of broken Apache modules and their optional packages
+  set_fact:
+    broken_apache_modules:
+      - name: mpm_prefork
+        package: null
+      - name: qos
+        package: libapache2-mod-qos
+      - name: fcgid
+        package: libapache2-mod-fcgid
+      - name: evasive
+        package: libapache2-mod-evasive
+      - name: geoip
+        package: libapache2-mod-geoip
 
-- name: Remove mpm_prefork.conf if present
+- name: Disable broken Apache modules by removing .load files
   file:
-    path: /etc/apache2/mods-enabled/mpm_prefork.conf
+    path: "/etc/apache2/mods-enabled/{{ mod.name }}.load"
     state: absent
-  register: prefork_conf_removed
-  changed_when: prefork_conf_removed.found is defined and prefork_conf_removed.found
-  failed_when: false
-
-- name: Disable broken qos module if present
-  file:
-    path: /etc/apache2/mods-enabled/qos.load
-    state: absent
-  when: ansible_facts['distribution'] == 'Debian' and
-        ansible_facts['distribution_version'] is version('10', '>=') and
-        ansible_facts['distribution_version'] is version('13', '<') and
-        ansible_facts['os_family'] == 'Debian'
+  loop: "{{ broken_apache_modules }}"
+  loop_control:
+    loop_var: mod
+    label: "{{ mod.name }}.load"
   changed_when: false
   failed_when: false
 
-- name: Disable broken fcgid module if present
+- name: Remove broken Apache modules' .conf files
   file:
-    path: /etc/apache2/mods-enabled/fcgid.load
+    path: "/etc/apache2/mods-enabled/{{ mod.name }}.conf"
     state: absent
+  loop: "{{ broken_apache_modules }}"
+  loop_control:
+    loop_var: mod
+    label: "{{ mod.name }}.conf"
   changed_when: false
   failed_when: false
 
-- name: Remove fcgid.conf if present
-  file:
-    path: /etc/apache2/mods-enabled/fcgid.conf
-    state: absent
-  changed_when: false
-  failed_when: false
-
-- name: Ensure mod_fcgid package is removed
+- name: Remove broken Apache module packages if installed
   apt:
-    name: libapache2-mod-fcgid
+    name: "{{ mod.package }}"
     state: absent
-  changed_when: false
-
-- name: Remove qos.conf if present
-  file:
-    path: /etc/apache2/mods-enabled/qos.conf
-    state: absent
-  changed_when: false
-  failed_when: false
-
-- name: Ensure qos module package is removed
-  apt:
-    name: libapache2-mod-qos
-    state: absent
-  changed_when: false
-
-- name: Disable broken evasive module if present
-  file:
-    path: /etc/apache2/mods-enabled/evasive.load
-    state: absent
-  changed_when: false
-  failed_when: false
-
-- name: Remove evasive.conf if present
-  file:
-    path: /etc/apache2/mods-enabled/evasive.conf
-    state: absent
-  changed_when: false
-  failed_when: false
-
-- name: Ensure evasive module package is removed
-  apt:
-    name: libapache2-mod-evasive
-    state: absent
+  when: mod.package is not none
+  loop: "{{ broken_apache_modules }}"
+  loop_control:
+    loop_var: mod
+    label: "{{ mod.package }}"
   changed_when: false
 
 - name: Install required Apache modules
