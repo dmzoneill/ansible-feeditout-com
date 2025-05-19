@@ -6,19 +6,15 @@
   failed_when: false
 
 - name: Disable mpm_prefork if present to prevent install conflicts
-  shell: a2dismod mpm_prefork
-  args:
-    warn: false
+  shell: "a2dismod mpm_prefork || true"
   register: disable_prefork
-  changed_when: disable_prefork.rc == 0
+  changed_when: "'Module mpm_prefork disabled' in disable_prefork.stdout"
   failed_when: false
 
 - name: Enable mpm_event module
-  shell: a2enmod mpm_event
-  args:
-    warn: false
+  shell: "a2enmod mpm_event || true"
   register: enable_event
-  changed_when: enable_event.rc == 0
+  changed_when: "'Module mpm_event enabled' in enable_event.stdout"
   failed_when: false
 
 - name: Ensure Apache2 is installed
