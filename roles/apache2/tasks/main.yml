@@ -18,6 +18,22 @@
       - name: php8.2
         package: libapache2-mod-php8.2
 
+- name: Ensure mpm_event module symlink exists (bootstrap fix)
+  file:
+    src: /etc/apache2/mods-available/mpm_event.load
+    dest: /etc/apache2/mods-enabled/mpm_event.load
+    state: link
+    force: true
+  notify: restart apache2
+
+- name: Ensure mpm_event.conf symlink exists (optional)
+  file:
+    src: /etc/apache2/mods-available/mpm_event.conf
+    dest: /etc/apache2/mods-enabled/mpm_event.conf
+    state: link
+    force: true
+  notify: restart apache2
+
 - name: Ensure required Apache module packages are installed
   apt:
     name: "{{ required.package }}"
