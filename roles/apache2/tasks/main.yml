@@ -26,6 +26,26 @@
   changed_when: false
   failed_when: false
 
+- name: Disable broken fcgid module if present
+  file:
+    path: /etc/apache2/mods-enabled/fcgid.load
+    state: absent
+  changed_when: false
+  failed_when: false
+
+- name: Remove fcgid.conf if present
+  file:
+    path: /etc/apache2/mods-enabled/fcgid.conf
+    state: absent
+  changed_when: false
+  failed_when: false
+
+- name: Ensure mod_fcgid package is removed
+  apt:
+    name: libapache2-mod-fcgid
+    state: absent
+  changed_when: false
+
 - name: Remove qos.conf if present
   file:
     path: /etc/apache2/mods-enabled/qos.conf
