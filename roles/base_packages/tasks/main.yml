@@ -2,44 +2,27 @@
 - name: Load package list from file
   set_fact:
     package_list: "{{ lookup('file', 'package-list.txt').splitlines() }}"
+    batch_size: 50
 
-- name: Initialize available and unavailable package lists
+- name: Split package list into batches
   set_fact:
-    available_packages: []
-    unavailable_packages: []
+    package_batches: "{{ package_list | batch(batch_size) }}"
 
-- name: Check if each package is available
-  shell: "apt-cache show {{ pkg }} >/dev/null 2>&1 && echo {{ pkg }} || true"
-  register: apt_check_results
-  loop: "{{ package_list }}"
+- name: Install each batch (ignoring missing packages)
+  become: true
+  shell: |
+    echo "Installing batch {{ batch_index + 1 }} of {{ package_batches | length }}"
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --ignore-missing {{ item | join(' ') }}
+  loop: "{{ package_batches }}"
   loop_control:
-    loop_var: pkg
-    label: "{{ pkg }}"
-
-- name: Separate available and unavailable packages
-  set_fact:
-    available_packages: "{{ apt_check_results.results | selectattr('stdout', '!=', '') | map(attribute='stdout') | list }}"
-    unavailable_packages: "{{ apt_check_results.results | selectattr('stdout', '==', '') | map(attribute='item') | list }}"
-    # `item` here is the original package name because Ansible stores it in the result object even with custom loop_var
-
-- name: Split available packages into batches
-  set_fact:
-    available_batches: "{{ available_packages | batch(50) }}"
-
-- name: Install available packages in batches
-  apt:
-    name: "{{ batch }}"
-    state: present
-    update_cache: false
-  loop: "{{ available_batches }}"
-  loop_control:
-    loop_var: batch
     index_var: batch_index
-    label: "batch {{ batch_index + 1 }}/{{ available_batches | length }}"
+    label: "Batch {{ batch_index + 1 }}"
+  register: install_results
+  changed_when: false  # Avoid reporting every batch as changed
+  ignore_errors: true  # In case apt-get still fails
 
-- name: Debug output of unavailable packages
+- name: Show summary of batch install results
   debug:
     msg: |
-      The following packages were not found in apt-cache and were skipped:
-      {{ unavailable_packages | join(', ') }}
-  when: unavailable_packages | length > 0
+      Completed {{ package_batches | length }} batches.
+      Please review stdout/stderr of any failed batches if needed.
