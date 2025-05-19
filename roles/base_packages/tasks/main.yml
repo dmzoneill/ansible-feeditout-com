@@ -2,7 +2,7 @@
 - name: Load package list from file
   set_fact:
     package_list: "{{ lookup('file', 'package-list.txt').splitlines() }}"
-    batch_size: 50
+    batch_size: 100
 
 - name: Split package list into batches
   set_fact:
@@ -12,7 +12,7 @@
   become: true
   shell: |
     echo "Installing batch {{ batch_index + 1 }} of {{ package_batches | length }}"
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --ignore-missing {{ item | join(' ') }}
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --ignore-missing {{ item | join(' ') }}
   loop: "{{ package_batches }}"
   loop_control:
     index_var: batch_index

@@ -26,7 +26,7 @@
   when: resolv_conf_is_immutable
   changed_when: true
 
-- name: Check if resolv.conf is a symlink
+- name: Check if resolv.conf exists and is a symlink
   stat:
     path: "{{ resolv_conf_path }}"
     follow: false
@@ -38,11 +38,12 @@
     state: absent
   when:
     - disable_systemd_resolved
+    - resolv_stat.stat.exists
     - resolv_stat.stat.islnk
     - (resolv_conf_path | realpath) is search('/run/systemd/resolve')
   ignore_errors: true
 
-- name: Read current resolv.conf
+- name: Read current resolv.conf if it exists
   slurp:
     src: "{{ resolv_conf_path }}"
   register: resolv_conf_current

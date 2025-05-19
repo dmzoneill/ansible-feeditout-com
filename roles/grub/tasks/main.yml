@@ -1,17 +1,14 @@
 ---
-- name: Read existing GRUB_CMDLINE_LINUX line
-  slurp:
-    src: /etc/default/grub
-  register: grub_file
+- name: Get existing GRUB_CMDLINE_LINUX value
+  shell: |
+    grep '^GRUB_CMDLINE_LINUX=' /etc/default/grub | sed -E 's/^GRUB_CMDLINE_LINUX=["'\''](.*)["'\'']/\1/'
+  register: grub_cmdline_raw
+  changed_when: false
+  failed_when: false
 
-- name: Extract GRUB_CMDLINE_LINUX value
+- name: Set default value if not found
   set_fact:
-    grub_cmdline: >-
-      {{
-        (grub_file.content | b64decode)
-        | regex_search('^GRUB_CMDLINE_LINUX="(.*)"', '\\1', multiline=True)
-        | default('')
-      }}
+    grub_cmdline: "{{ grub_cmdline_raw.stdout | default('') }}"
 
 - name: Build updated GRUB_CMDLINE_LINUX with tty0 and without ttyS0
   set_fact:
