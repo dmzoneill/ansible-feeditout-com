@@ -13,6 +13,11 @@
       - name: geoip
         package: libapache2-mod-geoip
 
+- name: Ensure Apache PHP module is installed
+  apt:
+    name: libapache2-mod-php8.2
+    state: present
+
 - name: Disable broken Apache modules by removing .load files
   file:
     path: "/etc/apache2/mods-enabled/{{ mod.name }}.load"
