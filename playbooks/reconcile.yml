@@ -15,7 +15,6 @@
         - dns
         - ntp
         - ansible_pull
-        - apache2
         - clean
         - hostname
         - redis
@@ -30,7 +29,6 @@
         - node_exporter
         - opendkim
         - opendmarc
-        - postfix
         - postsrsd
         - spamassassin
         - sshd
@@ -44,4 +42,6 @@
         - network_manager
         - wayland
         - grub
+        - postfix
+        - apache2
       ignore_errors: true

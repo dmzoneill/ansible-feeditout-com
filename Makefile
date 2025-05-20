@@ -23,6 +23,9 @@ ping:
 new-ssh-key:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_ssh_key.yml $(VAULT_OPTS)
 
+ansible-secret:
+	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_ansible_secret.yml $(VAULT_OPTS)
+
 test-sudo:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_test_sudo.yml $(VAULT_OPTS)
 
@@ -54,6 +57,7 @@ full-migration:
 	@echo "Starting full setup process..."
 	- $(MAKE) ping
 	$(MAKE) new-ssh-key
+	$(MAKE) ansible-secret
 	$(MAKE) ensure-dave
 	$(MAKE) copy-dave
 	$(MAKE) test-sudo

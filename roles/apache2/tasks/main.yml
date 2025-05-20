@@ -7,10 +7,12 @@
         package: libapache2-mod-qos
       - name: evasive
         package: libapache2-mod-evasive
-      - name: geoip
-        package: libapache2-mod-geoip
       - name: php
         package: libapache2-mod-php8.2
+      - name: php8.2
+        package: libapache2-mod-php8.2
+      - name: security2
+        package: libapache2-mod-security2
     required_apache_modules:
       - name: mpm_event
         package: apache2
@@ -20,6 +22,10 @@
         package: apache2
       - name: setenvif
         package: apache2
+      - name: geoip
+        package: libapache2-mod-geoip
+      - name: fcgid
+        package: libapache2-mod-fcgid
 
 - name: Ensure /etc/apache2 exists
   file:
@@ -67,14 +73,57 @@
     loop_var: mod
   changed_when: false
 
-- name: Enable required Apache modules
-  apache2_module:
-    name: "{{ required_mod.name }}"
+- name: Ensure required Apache module packages are installed
+  apt:
+    name: "{{ required_mod.package }}"
     state: present
   loop: "{{ required_apache_modules }}"
   loop_control:
     loop_var: required_mod
+
+- name: Ensure mpm_event module .load symlink exists
+  file:
+    src: "/etc/apache2/mods-available/mpm_event.load"
+    dest: "/etc/apache2/mods-enabled/mpm_event.load"
+    state: link
+    force: true
   notify: restart apache2
+
+- name: Ensure mpm_event module .conf symlink exists
+  file:
+    src: "/etc/apache2/mods-available/mpm_event.conf"
+    dest: "/etc/apache2/mods-enabled/mpm_event.conf"
+    state: link
+    force: true
+  notify: restart apache2
+
+- name: Extract SSL cert paths from enabled site configs
+  shell: "grep -rhoE '^\\s*SSLCertificateFile\\s+\\S+' /etc/apache2/sites-enabled/ | awk '{print $2}' | sort -u"
+  register: ssl_cert_paths
+  changed_when: false
+
+- name: Check for missing or empty SSL cert files
+  stat:
+    path: "{{ item }}"
+  loop: "{{ ssl_cert_paths.stdout_lines }}"
+  register: cert_statuses
+
+- name: Run certbot if any referenced certs are missing or empty
+  command: /home/dave/bin/certbot.sh
+  args:
+    chdir: /home/dave
+  when: cert_statuses.results | selectattr('stat.exists', 'equalto', false) | list
+        or cert_statuses.results | selectattr('stat.size', 'defined') | selectattr('stat.size', 'equalto', 0) | list
+  register: certbot_result
+  changed_when: certbot_result.rc == 0
+  failed_when: certbot_result.rc != 0
+
+- name: Verify Apache config is currently valid before enabling modules
+  command: apache2ctl configtest
+  register: apache_configtest
+  changed_when: false
+  failed_when: "'Syntax OK' not in apache_configtest.stdout"
+  when: ansible_facts.os_family == 'Debian'
 
 - name: Enable required Apache modules
   apache2_module:
