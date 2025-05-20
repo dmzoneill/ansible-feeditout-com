@@ -129,8 +129,10 @@
 
 - name: Check for missing or empty SSL cert files
   stat:
-    path: "{{ item }}"
+    path: "{{ cert_path }}"
   loop: "{{ ssl_cert_paths.stdout_lines }}"
+  loop_control:
+    loop_var: cert_path
   register: cert_statuses
 
 - name: Run certbot if any referenced certs are missing or empty
@@ -150,13 +152,15 @@
 
 - name: Ensure each DocumentRoot directory exists
   file:
-    path: "{{ item }}"
+    path: "{{ docroot }}"
     state: directory
     owner: dave
     group: dave
     mode: '0755'
   loop: "{{ document_roots.stdout_lines }}"
-  when: item != '/'
+  loop_control:
+    loop_var: docroot
+  when: docroot != '/'
 
 - name: Verify Apache config is currently valid before enabling modules
   command: apache2ctl configtest
