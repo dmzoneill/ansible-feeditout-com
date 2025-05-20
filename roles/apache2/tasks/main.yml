@@ -118,6 +118,21 @@
   changed_when: certbot_result.rc == 0
   failed_when: certbot_result.rc != 0
 
+- name: Extract DocumentRoot paths from enabled site configs
+  shell: "grep -rhoE '^\\s*DocumentRoot\\s+\\S+' /etc/apache2/sites-enabled/ | awk '{print $2}' | sort -u"
+  register: document_roots
+  changed_when: false
+
+- name: Ensure each DocumentRoot directory exists
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: dave
+    group: dave
+    mode: '0755'
+  loop: "{{ document_roots.stdout_lines }}"
+  when: item != '/'
+
 - name: Verify Apache config is currently valid before enabling modules
   command: apache2ctl configtest
   register: apache_configtest

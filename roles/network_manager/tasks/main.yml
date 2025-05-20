@@ -11,6 +11,15 @@
     enabled: yes
     state: started
 
+- name: Ensure [main] section exists in NetworkManager.conf
+  blockinfile:
+    path: /etc/NetworkManager/NetworkManager.conf
+    block: |
+      [main]
+      dns=none
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DO NOT EDIT"
+  notify: Restart NetworkManager
+
 - name: Remove iface lines from /etc/network/interfaces (if any)
   lineinfile:
     path: /etc/network/interfaces
@@ -25,3 +34,10 @@
       nmcli con modify "$line" connection.autoconnect yes
     done
   changed_when: false
+
+- name: Restart NetworkManager
+  systemd:
+    name: NetworkManager
+    state: restarted
+  when: NetworkManager_restart_required is not defined or NetworkManager_restart_required
+  listen: Restart NetworkManager
