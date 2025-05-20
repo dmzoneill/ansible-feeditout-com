@@ -1,3 +1,4 @@
+---
 - name: Define Apache module lists
   set_fact:
     broken_apache_modules:
@@ -191,33 +192,8 @@
     file_type: file
   register: letsencrypt_renewals
 
-- name: Remove Let's Encrypt certs no longer used in Apache configs
-  block:
-    - name: Set cert domain fact from filename
-      set_fact:
-        cert_domain: "{{ cert.path | basename | regex_replace('\\.conf$', '') }}"
-      loop: "{{ letsencrypt_renewals.files }}"
-      loop_control:
-        loop_var: cert
-
-    - name: Remove stale certs and configs
-      block:
-        - name: Remove stale renewal file
-          file:
-            path: "/etc/letsencrypt/renewal/{{ cert_domain }}.conf"
-            state: absent
-
-        - name: Remove stale cert live directory
-          file:
-            path: "/etc/letsencrypt/live/{{ cert_domain }}"
-            state: absent
-
-        - name: Remove stale cert archive directory
-          file:
-            path: "/etc/letsencrypt/archive/{{ cert_domain }}"
-            state: absent
-
-      when: cert_domain not in apache_domains.stdout_lines
-      loop: "{{ letsencrypt_renewals.files }}"
-      loop_control:
-        loop_var: cert
+- name: Remove stale Let's Encrypt certs and configs
+  include_tasks: remove_cert.yml
+  loop: "{{ letsencrypt_renewals.files }}"
+  loop_control:
+    loop_var: cert
