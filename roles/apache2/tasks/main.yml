@@ -43,6 +43,28 @@
     directory_mode: '0755'
   notify: restart apache2
 
+- name: Get list of site configs defined in role
+  find:
+    paths: "{{ role_path }}/sites-enabled"
+    file_type: any
+    patterns: "*.conf"
+  register: role_sites
+
+- name: Get list of active site links on system
+  find:
+    paths: /etc/apache2/sites-enabled
+    file_type: any
+    patterns: "*.conf"
+  register: system_sites
+
+- name: Remove stale site symlinks not in role
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ system_sites.files }}"
+  when: item.path | basename not in (role_sites.files | map(attribute='path') | map('basename') | list)
+  notify: restart apache2
+
 - name: Disable broken Apache modules by removing .load files
   file:
     path: "/etc/apache2/mods-enabled/{{ mod.name }}.load"
@@ -137,8 +159,7 @@
   command: apache2ctl configtest
   register: apache_configtest
   changed_when: false
-  failed_when: "'Syntax OK' not in apache_configtest.stdout"
-  when: ansible_facts.os_family == 'Debian'
+  failed_when: "'Syntax OK' not in apache_configtest.stderr"
 
 - name: Enable required Apache modules
   apache2_module:
@@ -154,3 +175,49 @@
     name: apache2
     state: started
     enabled: true
+
+- name: Get list of all domains used in Apache configs (ServerName and ServerAlias)
+  shell: |
+    grep -rhoE '^\s*(ServerName|ServerAlias)\s+\S+' /etc/apache2/sites-enabled \
+    | awk '{print $2}' \
+    | sort -u
+  register: apache_domains
+  changed_when: false
+
+- name: Get list of Let's Encrypt renewal configs
+  find:
+    paths: /etc/letsencrypt/renewal
+    patterns: "*.conf"
+    file_type: file
+  register: letsencrypt_renewals
+
+- name: Remove Let's Encrypt certs no longer used in Apache configs
+  block:
+    - name: Set cert domain fact from filename
+      set_fact:
+        cert_domain: "{{ cert.path | basename | regex_replace('\\.conf$', '') }}"
+      loop: "{{ letsencrypt_renewals.files }}"
+      loop_control:
+        loop_var: cert
+
+    - name: Remove stale certs and configs
+      block:
+        - name: Remove stale renewal file
+          file:
+            path: "/etc/letsencrypt/renewal/{{ cert_domain }}.conf"
+            state: absent
+
+        - name: Remove stale cert live directory
+          file:
+            path: "/etc/letsencrypt/live/{{ cert_domain }}"
+            state: absent
+
+        - name: Remove stale cert archive directory
+          file:
+            path: "/etc/letsencrypt/archive/{{ cert_domain }}"
+            state: absent
+
+      when: cert_domain not in apache_domains.stdout_lines
+      loop: "{{ letsencrypt_renewals.files }}"
+      loop_control:
+        loop_var: cert
