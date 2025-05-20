@@ -51,19 +51,21 @@
     patterns: "*.conf"
   register: role_sites
 
-- name: Get list of active site links on system
+- name: Get list of active symlinks on system
   find:
     paths: /etc/apache2/sites-enabled
-    file_type: any
+    file_type: link
     patterns: "*.conf"
-  register: system_sites
+  register: system_site_links
 
 - name: Remove stale site symlinks not in role
   file:
-    path: "{{ item.path }}"
+    path: "{{ stale.path }}"
     state: absent
-  loop: "{{ system_sites.files }}"
-  when: item.path | basename not in (role_sites.files | map(attribute='path') | map('basename') | list)
+  loop: "{{ system_site_links.files }}"
+  loop_control:
+    loop_var: stale
+  when: stale.path | basename not in (role_sites.files | map(attribute='path') | map('basename') | list)
   notify: restart apache2
 
 - name: Disable broken Apache modules by removing .load files
