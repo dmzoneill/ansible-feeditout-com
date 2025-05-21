@@ -68,7 +68,9 @@
 - name: Rebuild postfix maps if source file exists
   command: "{{ item.tool }} hash:/etc/postfix/{{ item.src }}"
   args:
-    creates: "/etc/postfix/{{ item.src }}.db"
+    creates: "/etc/postfix/{{ map_file.src }}.db"
   loop: "{{ postfix_maps }}"
+  loop_control:
+    loop_var: map_file
   when: ansible_facts['distribution'] != 'Alpine'
   notify: Restart postfix
