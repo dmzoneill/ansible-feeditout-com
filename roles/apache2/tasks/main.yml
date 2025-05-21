@@ -46,7 +46,7 @@
 
 - name: Get list of site configs defined in role
   find:
-    paths: "{{ role_path }}/sites-enabled"
+    paths: "{{ role_path }}/files/sites-enabled"
     file_type: any
     patterns: "*.conf"
   register: role_sites
