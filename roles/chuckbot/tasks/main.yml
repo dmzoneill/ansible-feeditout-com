@@ -1,0 +1,70 @@
+- name: Ensure /opt/Chuckbot exists
+  file:
+    path: /opt/Chuckbot
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Check if /opt/Chuckbot is a Git repo
+  stat:
+    path: /opt/Chuckbot/.git
+  register: chuckbot_git
+
+- name: Get current remote if it exists
+  command: git remote get-url origin
+  args:
+    chdir: /opt/Chuckbot
+  register: git_remote
+  when: chuckbot_git.stat.exists
+  failed_when: false
+  changed_when: false
+
+- name: Clone repo if not present or invalid
+  git:
+    repo: git@github.com:dmzoneill/Chuckbot.git
+    dest: /opt/Chuckbot
+    version: main
+    update: yes
+    force: yes
+  when: not chuckbot_git.stat.exists or git_remote.stdout != "git@github.com:dmzoneill/Chuckbot.git"
+
+- name: Git pull if correct repo is present
+  git:
+    repo: git@github.com:dmzoneill/Chuckbot.git
+    dest: /opt/Chuckbot
+    update: yes
+  when: chuckbot_git.stat.exists and git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
+
+- name: Run npm ci in /opt/Chuckbot
+  command: npm ci
+  args:
+    chdir: /opt/Chuckbot
+  environment:
+    HOME: "{{ ansible_env.HOME }}"
+  register: npm_result
+  changed_when: "'added' in npm_result.stdout or 'updated' in npm_result.stdout"
+
+- name: Ensure ~/.config/systemd/user directory exists
+  file:
+    path: "{{ ansible_env.HOME }}/.config/systemd/user"
+    state: directory
+    mode: '0755'
+
+- name: Copy chuckbot.service to systemd user dir
+  copy:
+    src: /opt/Chuckbot/systemd/chuckbot.service
+    dest: "{{ ansible_env.HOME }}/.config/systemd/user/chuckbot.service"
+    mode: '0644'
+
+- name: Reload user systemd daemon
+  become: false
+  command: systemctl --user daemon-reexec
+
+- name: Enable chuckbot service
+  become: false
+  command: systemctl --user enable chuckbot.service
+
+- name: Restart chuckbot service
+  become: false
+  command: systemctl --user restart chuckbot.service
