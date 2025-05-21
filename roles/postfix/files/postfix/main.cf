@@ -42,8 +42,8 @@ recipient_canonical_maps = tcp:localhost:10002
 recipient_delimiter = + reject_invalid_hostname, reject_non_fqdn_hostname,
 sender_canonical_classes = envelope_sender
 sender_canonical_maps = tcp:localhost:10001
-virtual_alias_maps = hash:/etc/postfix/virtualalias.ashtangayoga.ie,hash:/etc/postfix/virtualalias.mysore.ie
-virtual_alias_domains = ashtangayoga.ie, ashtangayogacork.ie, mysore.ie, mysorecork.ie, ashtangacork.ie, ayc.ie, classbooker.ie
+virtual_alias_maps = hash:/etc/postfix/virtualalias.ashtangayoga.ie
+virtual_alias_domains = ashtangayoga.ie, ecu-emr.com, feeditout.xyz, feeditout.site
 
 smtpd_delay_reject = yes
 smtpd_error_sleep_time = 1s

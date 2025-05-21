@@ -51,3 +51,24 @@
       done
       /usr/sbin/postmap -F hash:/etc/postfix/sni
       /bin/systemctl restart postfix
+
+- name: Define list of postfix map files
+  set_fact:
+    postfix_maps:
+      - { src: "aliases",      tool: "postalias" }
+      - { src: "sender_access", tool: "postmap" }
+      - { src: "sender_checks", tool: "postmap" }
+      - { src: "sasl_passwd",   tool: "postmap" }
+      - { src: "client_checks", tool: "postmap" }
+      - { src: "header_checks", tool: "postmap" }
+      - { src: "bcc_maps",      tool: "postmap" }
+      - { src: "recipient_domains", tool: "postmap" }
+      - { src: "vhosts",        tool: "postmap" }
+
+- name: Rebuild postfix maps if source file exists
+  command: "{{ item.tool }} hash:/etc/postfix/{{ item.src }}"
+  args:
+    creates: "/etc/postfix/{{ item.src }}.db"
+  loop: "{{ postfix_maps }}"
+  when: ansible_facts['distribution'] != 'Alpine'
+  notify: Restart postfix

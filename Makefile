@@ -3,7 +3,7 @@
 INVENTORY_REMOTE ?= inventories/hosts_avoro.ini
 INVENTORY_LOCAL ?= inventories/hosts_local.ini
 VAULT_OPTS ?=  --vault-password-file ~/.ansible-vault-pass
-VERBOSITY ?=  -vv
+VERBOSITY ?=  -vvv
 
 .PHONY: all ping ensure-dave copy-dave test-sudo base-packages sync-services sync-mail harden-ssh sync-cron sync-mariadb reboot-new full-migration reconcile backup-old super-lint migrated-sync-mariadb
 
@@ -77,8 +77,7 @@ reconcile:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml $(VAULT_OPTS)
 
 reconcile-role:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml \
-		--extra-vars "role_to_run=$(ROLE)" $(VAULT_OPTS)
+	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml --extra-vars "role_to_run=$(ROLE)" $(VAULT_OPTS)
 
 ansible-pull:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_LOCAL) playbooks/ansible-pull.yml $(VAULT_OPTS)
