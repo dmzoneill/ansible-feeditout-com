@@ -1,17 +1,23 @@
-- name: Ensure /opt/Chuckbot exists
+---
+- name: Ensure /opt/Chuckbot exists (root)
+  become: true
   file:
     path: /opt/Chuckbot
     state: directory
-    owner: "dave"
-    group: "dave"
+    owner: dave
+    group: dave
     mode: '0755'
 
-- name: Check if /opt/Chuckbot is a Git repo
+- name: Check if /opt/Chuckbot is a Git repo (as dave)
+  become: true
+  become_user: dave
   stat:
     path: /opt/Chuckbot/.git
   register: chuckbot_git
 
-- name: Get current remote if it exists
+- name: Get current remote if it exists (as dave)
+  become: true
+  become_user: dave
   command: git remote get-url origin
   args:
     chdir: /opt/Chuckbot
@@ -20,7 +26,9 @@
   failed_when: false
   changed_when: false
 
-- name: Clone repo if not present or invalid
+- name: Clone repo if not present or invalid (as dave)
+  become: true
+  become_user: dave
   git:
     repo: git@github.com:dmzoneill/Chuckbot.git
     dest: /opt/Chuckbot
@@ -29,7 +37,9 @@
     force: yes
   when: not chuckbot_git.stat.exists or git_remote.stdout != "git@github.com:dmzoneill/Chuckbot.git"
 
-- name: Always pull latest from origin with rebase
+- name: Always pull latest from origin with rebase (as dave)
+  become: true
+  become_user: dave
   command: git pull --rebase
   args:
     chdir: /opt/Chuckbot
@@ -37,35 +47,53 @@
     - chuckbot_git.stat.exists
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
 
-- name: Run npm ci in /opt/Chuckbot
+- name: Run npm ci in /opt/Chuckbot (as dave)
+  become: true
+  become_user: dave
   command: npm ci
   args:
     chdir: /opt/Chuckbot
   environment:
-    HOME: "{{ ansible_env.HOME }}"
+    HOME: "/home/dave"
   register: npm_result
   changed_when: "'added' in npm_result.stdout or 'updated' in npm_result.stdout"
 
-- name: Ensure ~/.config/systemd/user directory exists
+- name: Ensure ~/.config/systemd/user directory exists (as dave)
+  become: true
+  become_user: dave
   file:
-    path: "{{ ansible_env.HOME }}/.config/systemd/user"
+    path: "/home/dave/.config/systemd/user"
     state: directory
     mode: '0755'
 
-- name: Copy chuckbot.service to systemd user dir
+- name: Copy chuckbot.service to systemd user dir (as dave)
+  become: true
+  become_user: dave
   copy:
     src: /opt/Chuckbot/systemd/chuckbot.service
-    dest: "{{ ansible_env.HOME }}/.config/systemd/user/chuckbot.service"
+    dest: "/home/dave/.config/systemd/user/chuckbot.service"
     mode: '0644'
 
-- name: Reload user systemd daemon
-  become: false
+- name: Reload user systemd daemon (as dave)
+  become: true
+  become_user: dave
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}/bus"
   command: systemctl --user daemon-reexec
 
-- name: Enable chuckbot service
-  become: false
+- name: Enable chuckbot service (as dave)
+  become: true
+  become_user: dave
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}/bus"
   command: systemctl --user enable chuckbot.service
 
-- name: Restart chuckbot service
-  become: false
+- name: Restart chuckbot service (as dave)
+  become: true
+  become_user: dave
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}/bus"
   command: systemctl --user restart chuckbot.service
