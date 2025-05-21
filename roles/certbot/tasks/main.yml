@@ -13,19 +13,43 @@
     owner: dave
     group: dave
 
+- name: Get list of all files to copy
+  find:
+    paths: "{{ role_path }}/files"
+    file_type: file
+  register: copied_files
+
 - name: Copy all files to /home/dave/bin
   copy:
-    src: "{{ item }}"
-    dest: "/home/dave/bin/{{ item }}"
+    src: "{{ file.path }}"
+    dest: "/home/dave/bin/{{ file.path | basename }}"
     mode: "0644"
     owner: dave
     group: dave
-  with_fileglob:
-    - "{{ role_path }}/files/*"
+  loop: "{{ copied_files.files }}"
+  loop_control:
+    loop_var: file
+
+- name: Get list of .sh scripts
+  find:
+    paths: "{{ role_path }}/files"
+    patterns: "*.sh"
+    file_type: file
+  register: sh_files
 
 - name: Make .sh files executable
   file:
-    path: "/home/dave/bin/{{ item | basename }}"
+    path: "/home/dave/bin/{{ script.path | basename }}"
     mode: "0755"
-  with_fileglob:
-    - "{{ role_path }}/files/*.sh"
+    owner: dave
+    group: dave
+    state: file
+  loop: "{{ sh_files.files }}"
+  loop_control:
+    loop_var: script
+
+- name: Run missing.sh to check and issue missing certs
+  command: /home/dave/bin/missing.sh
+  register: missing_sh_result
+  changed_when: false  # Set to true if certs are expected to change state
+  failed_when: missing_sh_result.rc != 0 and "'✅ No missing domains'" not in missing_sh_result.stdout
