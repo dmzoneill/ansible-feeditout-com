@@ -76,6 +76,9 @@ full-migration:
 reconcile:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml $(VAULT_OPTS)
 
+reconcile-role:
+	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml \
+		--extra-vars "role_to_run=$(ROLE)" $(VAULT_OPTS)
 
 ansible-pull:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_LOCAL) playbooks/ansible-pull.yml $(VAULT_OPTS)

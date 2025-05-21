@@ -1,4 +1,3 @@
----
 - name: Reconcile migrated server
   hosts: migrated
   become: true
@@ -44,4 +43,5 @@
         - postfix
         - apache2
         - services
+      when: role_to_run is not defined or role_to_run == item
       ignore_errors: true
