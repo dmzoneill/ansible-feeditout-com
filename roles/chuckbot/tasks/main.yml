@@ -29,13 +29,13 @@
     force: yes
   when: not chuckbot_git.stat.exists or git_remote.stdout != "git@github.com:dmzoneill/Chuckbot.git"
 
-- name: Git pull if correct repo is present
-  git:
-    repo: git@github.com:dmzoneill/Chuckbot.git
-    dest: /opt/Chuckbot
-    update: yes
-    force: yes  # override local changes
-  when: chuckbot_git.stat.exists and git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
+- name: Always pull latest from origin with rebase
+  command: git pull --rebase
+  args:
+    chdir: /opt/Chuckbot
+  when:
+    - chuckbot_git.stat.exists
+    - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
 
 - name: Run npm ci in /opt/Chuckbot
   command: npm ci
