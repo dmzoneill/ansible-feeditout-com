@@ -1,0 +1,53 @@
+<VirtualHost *:443>
+  
+  ServerName www.ashtangayoga.ie
+  ServerAlias ashtangayoga.ie
+  DocumentRoot /home/dave/www/ashtangayoga.ie
+  LogLevel debug
+  CustomLog /var/log/apache2/www.ashtangayoga.ie-access.log combined
+  ErrorLog /var/log/apache2/www.ashtangayoga.ie-error.log
+
+  SSLEngine on
+  SSLCertificateFile /etc/letsencrypt/live/ashtangayoga.ie/cert.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/ashtangayoga.ie/privkey.pem
+  SSLCertificateChainFile /etc/letsencrypt/live/ashtangayoga.ie/fullchain.pem
+
+  RewriteEngine On
+
+  <IfModule mpm_itk_module>
+    AssignUserId dave dave
+  </IfModule>
+  
+  <Directory />
+    Options +FollowSymLinks +Includes +ExecCGI
+    AllowOverride All
+    Require all granted
+  </Directory>
+
+</VirtualHost>
+
+<VirtualHost *:443>
+  ServerName home.ashtangayoga.ie
+
+  <Location />
+    Order allow,deny
+    Allow from all
+    Require all granted
+  </Location>
+
+  SSLEngine on
+  SSLCertificateFile /etc/letsencrypt/live/ashtangayoga.ie/cert.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/ashtangayoga.ie/privkey.pem
+  SSLCertificateChainFile /etc/letsencrypt/live/ashtangayoga.ie/fullchain.pem
+  
+  #DocumentRoot /home/dave/www/ashtangayoga.ie
+  #<Directory />
+  #  Options +FollowSymLinks +Includes +ExecCGI
+  #  AllowOverride All
+  #  Require all granted
+  #</Directory>
+  ProxyPass / http://172.17.0.2:8081/
+  ProxyPassReverse / http://172.17.0.2:8081/
+
+
+</VirtualHost>

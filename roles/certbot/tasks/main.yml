@@ -1,0 +1,31 @@
+---
+- name: Ensure certbot is installed
+  apt:
+    name: certbot
+    state: present
+    update_cache: true
+
+- name: Ensure /home/dave/bin exists
+  file:
+    path: /home/dave/bin
+    state: directory
+    mode: '0755'
+    owner: dave
+    group: dave
+
+- name: Copy all files to /home/dave/bin
+  copy:
+    src: "{{ item }}"
+    dest: "/home/dave/bin/{{ item }}"
+    mode: "0644"
+    owner: dave
+    group: dave
+  with_fileglob:
+    - "{{ role_path }}/files/*"
+
+- name: Make .sh files executable
+  file:
+    path: "/home/dave/bin/{{ item | basename }}"
+    mode: "0755"
+  with_fileglob:
+    - "{{ role_path }}/files/*.sh"

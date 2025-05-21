@@ -1,4 +1,10 @@
 ---
+- name: Ensure sulogin password is not enforced
+  lineinfile:
+    path: /etc/systemd/system.conf
+    regexp: '^SULOGIN_FORCE='
+    state: absent
+
 - name: Get existing GRUB_CMDLINE_LINUX value
   shell: |
     grep '^GRUB_CMDLINE_LINUX=' /etc/default/grub | sed -E 's/^GRUB_CMDLINE_LINUX=["'\''](.*)["'\'']/\1/'
@@ -10,12 +16,14 @@
   set_fact:
     grub_cmdline: "{{ grub_cmdline_raw.stdout | default('') }}"
 
-- name: Build updated GRUB_CMDLINE_LINUX with tty0 and without ttyS0
+- name: Build updated GRUB_CMDLINE_LINUX with tty0, without ttyS0 and quiet
   set_fact:
     updated_cmdline: >-
       {{
         (
-          (grub_cmdline.split() | difference(['console=ttyS0', 'console=ttyS0,115200']) | union(['console=tty0']))
+          grub_cmdline.split()
+          | difference(['console=ttyS0', 'console=ttyS0,115200', 'quiet'])
+          | union(['console=tty0'])
           | unique
         ) | join(' ')
       }}

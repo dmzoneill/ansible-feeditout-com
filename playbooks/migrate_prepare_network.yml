@@ -1,0 +1,136 @@
+---
+- name: Configure static IP using NetworkManager (deferred activation)
+  hosts: new
+  become: true
+  gather_facts: true
+  vars_files:
+    - ../host_vars/new.yml
+
+  vars:
+    dns_servers: ["1.1.1.1", "8.8.8.8"]
+    connection_name: static-ansible
+
+  tasks:
+
+    - name: Gather package facts
+      package_facts:
+        manager: auto
+
+    - name: Ensure NetworkManager is installed
+      apt:
+        name: network-manager
+        state: present
+        update_cache: true
+
+    - name: Discover IP, gateway, and interface from ansible_default_ipv4
+      set_fact:
+        static_ip: "{{ ansible_default_ipv4.address }}"
+        static_prefix: "{{ ansible_default_ipv4.prefix }}"
+        static_gateway: "{{ ansible_default_ipv4.gateway }}"
+        interface_name: "{{ ansible_default_ipv4.interface }}"
+
+    - name: Fail if any required network info is missing
+      fail:
+        msg: "Missing required network info: IP={{ static_ip }}, gateway={{ static_gateway }}, iface={{ interface_name }}"
+      when: static_ip is undefined or static_gateway is undefined or interface_name is undefined
+
+    - name: Remove legacy /etc/network directory
+      file:
+        path: /etc/network
+        state: absent
+
+    - name: Ensure NetworkManager is enabled on next boot (not started now)
+      systemd:
+        name: NetworkManager
+        enabled: true
+        state: stopped
+      ignore_errors: true
+
+    - name: Ensure system-connections directory exists
+      file:
+        path: /etc/NetworkManager/system-connections
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Generate UUID for connection
+      set_fact:
+        connection_uuid: "{{ lookup('pipe', 'uuidgen') }}"
+
+    - name: Create static IP connection file for NetworkManager
+      copy:
+        dest: "/etc/NetworkManager/system-connections/{{ connection_name }}.nmconnection"
+        content: |
+          [connection]
+          id={{ connection_name }}
+          uuid={{ connection_uuid }}
+          type=ethernet
+          interface-name={{ interface_name }}
+          autoconnect=true
+
+          [ipv4]
+          method=manual
+          addresses={{ static_ip }}/{{ static_prefix }}
+          gateway={{ static_gateway }}
+          dns={{ dns_servers | join(';') }}
+          dns-search=
+          routes1=0.0.0.0/0 {{ static_gateway }} 0 {{ interface_name }}
+          route1-options=on-link
+          never-default=false
+          ignore-auto-routes=true
+
+          [ipv6]
+          method=ignore
+
+          [proxy]
+
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Reload NetworkManager to recognize new connection
+      command: nmcli connection reload
+      ignore_errors: true
+
+    - name: Delete default "Wired connection 1" if it exists
+      command: nmcli connection delete "Wired connection 1"
+      register: delete_result
+      failed_when: false
+      changed_when: "'successfully deleted' in delete_result.stdout"
+
+    - name: Disable cloud-init without uninstalling
+      copy:
+        dest: /etc/cloud/cloud-init.disabled
+        content: ""
+        owner: root
+        group: root
+        mode: '0644'
+      ignore_errors: true
+
+    - name: Uninstall cloud-init completely
+      apt:
+        name: cloud-init
+        state: absent
+      when: "'cloud-init' in ansible_facts.packages"
+
+    - name: Remove cloud-init data directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/cloud
+        - /var/lib/cloud
+      ignore_errors: true
+
+    - name: Mask systemd-networkd to prevent it starting on reboot
+      systemd:
+        name: systemd-networkd
+        masked: true
+        enabled: false
+
+    - name: Disable ifupdown on reboot (via systemctl disable only)
+      systemd:
+        name: networking
+        enabled: false
+        masked: true

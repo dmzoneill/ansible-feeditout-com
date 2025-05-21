@@ -20,6 +20,9 @@ ping:
 	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) new -m ping $(VAULT_OPTS)
 	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) new_prep -m ping $(VAULT_OPTS)
 
+static-networking:
+	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_prepare_network.yml $(VAULT_OPTS)
+
 new-ssh-key:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_ssh_key.yml $(VAULT_OPTS)
 
@@ -57,6 +60,7 @@ full-migration:
 	@echo "Starting full setup process..."
 	- $(MAKE) ping
 	$(MAKE) new-ssh-key
+	$(MAKE) static-networking
 	$(MAKE) ansible-secret
 	$(MAKE) ensure-dave
 	$(MAKE) copy-dave

@@ -54,6 +54,12 @@
       register: sshd_check
       failed_when: sshd_check.rc != 0
 
+    - name: Set root password from new host_vars
+      user:
+        name: root
+        password: "{{ root_ssh_password | password_hash('sha512') }}"
+        update_password: always
+
     - name: Restart SSH service (only if config is valid)
       systemd:
         name: ssh
