@@ -27,9 +27,3 @@
   loop_control:
     loop_var: path
   ignore_errors: true
-
-- name: Re-enable kernel module loading
-  sysctl:
-    name: kernel.modules_disabled
-    value: 0
-    state: present
