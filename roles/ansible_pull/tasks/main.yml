@@ -1,10 +1,4 @@
 ---
-- name: Debug target host info
-  debug:
-    msg: "This host is configured for ansible-pull setup."
-  when: is_ansible_pull_host | default(false)
-  tags: always
-
 - name: Ensure Ansible is installed
   package:
     name: ansible
