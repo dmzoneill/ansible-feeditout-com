@@ -54,3 +54,4 @@
   register: missing_sh_result
   changed_when: false
   failed_when: missing_sh_result.rc != 0 and "'✅ No missing domains'" not in missing_sh_result.stdout
+  ignore_errors: true

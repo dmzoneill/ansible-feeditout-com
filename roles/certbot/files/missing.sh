@@ -5,7 +5,6 @@ APACHE_SITES_DIR="/etc/apache2/sites-enabled"
 CERTBOT_LIVE_DIR="/etc/letsencrypt/live"
 
 echo "🔄 Checking for missing domains at $(date)"
-echo
 
 # Extract all domains from Apache configs
 apache_domains=$(grep -rhoP 'Server(Name|Alias)\s+\K\S+' "$APACHE_SITES_DIR" | sort -u)
@@ -25,7 +24,6 @@ if [ -z "$missing_domains" ]; then
     exit 0
 else
     echo "$missing_domains"
-    echo
 fi
 
 # Group missing domains by base domain (e.g. fio.ie)
