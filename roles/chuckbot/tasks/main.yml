@@ -34,6 +34,7 @@
     repo: git@github.com:dmzoneill/Chuckbot.git
     dest: /opt/Chuckbot
     update: yes
+    force: yes  # override local changes
   when: chuckbot_git.stat.exists and git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
 
 - name: Run npm ci in /opt/Chuckbot
