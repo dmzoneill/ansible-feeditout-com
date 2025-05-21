@@ -2,8 +2,8 @@
   file:
     path: /opt/Chuckbot
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: "dave"
+    group: "dave"
     mode: '0755'
 
 - name: Check if /opt/Chuckbot is a Git repo
