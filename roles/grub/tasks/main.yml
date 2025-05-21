@@ -16,14 +16,14 @@
   set_fact:
     grub_cmdline: "{{ grub_cmdline_raw.stdout | default('') }}"
 
-- name: Build updated GRUB_CMDLINE_LINUX with tty0, without ttyS0 and quiet
+- name: Build updated GRUB_CMDLINE_LINUX with tty0 and ttyS0, without quiet
   set_fact:
     updated_cmdline: >-
       {{
         (
           grub_cmdline.split()
           | difference(['console=ttyS0', 'console=ttyS0,115200', 'quiet'])
-          | union(['console=tty0'])
+          | union(['console=tty0', 'console=ttyS0,115200'])
           | unique
         ) | join(' ')
       }}
@@ -38,4 +38,10 @@
 
 - name: Run update-grub to apply changes
   command: update-grub
+  when: grub_line.changed
+
+- name: Reboot system if grub was updated
+  reboot:
+    msg: "Rebooting to apply GRUB_CMDLINE_LINUX changes"
+    pre_reboot_delay: 5
   when: grub_line.changed

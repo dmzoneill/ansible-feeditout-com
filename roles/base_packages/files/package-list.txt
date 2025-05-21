@@ -32,6 +32,7 @@ build-essential
 bzip2
 camlp4
 certbot
+chromium
 clamav
 clamav-base
 clamav-daemon
