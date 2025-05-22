@@ -20,9 +20,9 @@ for path in $SRC_PATHS; do
     --log-level INFO \
     --log-file="$LOGFILE" \
     --delete-during \
-    --transfers=4 \
+    --transfers=8 \
     --checkers=8 \
-    --bwlimit 10M
+    --bwlimit 50M
 done
 
 # Copy MySQL dump separately
