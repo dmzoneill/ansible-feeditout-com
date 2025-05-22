@@ -106,11 +106,6 @@
 
 # Conditional stop, build, restart if repo was updated
 - name: Stop chuckbot service (as dave)
-  become: true
-  become_user: dave
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
   command: systemctl stop chuckbot.service
   when: git_pull_result is defined and git_pull_result.changed
 
@@ -124,43 +119,21 @@
     HOME: "/home/dave"
   when: git_pull_result is defined and git_pull_result.changed
 
-- name: Restart chuckbot service if repo was updated (as dave)
-  become: true
-  become_user: dave
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
+- name: Restart chuckbot service if repo was updated
   command: systemctl restart chuckbot.service
   when: git_pull_result is defined and git_pull_result.changed
 
-- name: Copy chuckbot.service to systemd user dir (as dave)
-  become: true
-  become_user: dave
+- name: Copy chuckbot.service to systemd dir
   copy:
     src: /opt/Chuckbot/systemd/chuckbot.service
     dest: "/etc/systemd/system/chuckbot.service"
     mode: '0644'
 
-- name: Reload user systemd daemon (as dave)
-  become: true
-  become_user: dave
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
+- name: Reload user systemd daemon
   command: systemctl daemon-reexec
 
-- name: Enable chuckbot service (as dave)
-  become: true
-  become_user: dave
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
+- name: Enable chuckbot service
   command: systemctl enable chuckbot.service
 
-- name: Restart chuckbot service (as dave)
-  become: true
-  become_user: dave
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
+- name: Restart chuckbot service
   command: systemctl restart chuckbot.service
