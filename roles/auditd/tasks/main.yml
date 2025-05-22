@@ -31,16 +31,6 @@
     enabled: true
     state: started
 
-- name: Ensure audit rules are present
-  copy:
-    src: "{{ role_path }}/files/rules.d/"
-    dest: /etc/audit/rules.d/
-    owner: root
-    group: root
-    mode: '0640'
-    directory_mode: '0755'
-  notify: reload auditd rules
-
 - name: Ensure sysstat is installed and enabled
   apt:
     name: sysstat
