@@ -2,7 +2,7 @@
 - name: Ensure apt-listbugs is installed
   apt:
     name: apt-listbugs
-    state: abset
+    state: absent
 
 - name: Install unattended-upgrades
   apt:
