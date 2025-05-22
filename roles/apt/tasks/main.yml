@@ -3,6 +3,7 @@
   apt:
     name: apt-listbugs
     state: absent
+  ignore_errors: true
 
 - name: Install unattended-upgrades
   apt:
