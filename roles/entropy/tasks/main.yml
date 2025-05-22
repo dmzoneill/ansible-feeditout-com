@@ -5,8 +5,30 @@
     state: present
     update_cache: yes
 
-- name: Ensure entropy daemon is enabled and running
+- name: Ensure entropy daemon is started
   ansible.builtin.service:
-    name: "{{ entropy_daemon }}"
-    enabled: true
+    name: "{{ entropy_service_name | default(entropy_daemon) }}"
     state: started
+
+- name: Enable rng-tools manually on Debian
+  when: entropy_daemon == "rng-tools"
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/rng-tools.service
+    content: |
+      [Unit]
+      Description=RNG entropy gatherer daemon
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/sbin/rngd -f
+      Type=simple
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Reload systemd and enable rng-tools
+
+- name: Enable service normally (e.g., for haveged)
+  when: entropy_daemon != "rng-tools"
+  ansible.builtin.service:
+    name: "{{ entropy_service_name | default(entropy_daemon) }}"
+    enabled: true
