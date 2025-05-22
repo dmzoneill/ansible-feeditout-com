@@ -1,0 +1,40 @@
+---
+- name: Discover active swap entries
+  become: true
+  command: swapon --noheadings --raw --output=NAME
+  register: active_swap
+  changed_when: false
+
+- name: Set fact for discovered swap paths
+  set_fact:
+    swap_paths: "{{ active_swap.stdout_lines | default([]) }}"
+
+- name: Disable all active swap entries
+  become: true
+  command: swapoff {{ item }}
+  with_items: "{{ swap_paths }}"
+  ignore_errors: true
+
+- name: Remove swap entries from /etc/fstab
+  become: true
+  replace:
+    path: /etc/fstab
+    regexp: '^{{ item | regex_escape }}\s+none\s+swap\s+.*$'
+    replace: ''
+  with_items: "{{ swap_paths }}"
+  notify: reload systemd daemon
+
+- name: Remove empty lines from /etc/fstab
+  become: true
+  lineinfile:
+    path: /etc/fstab
+    state: absent
+    regexp: '^$'
+
+- name: Remove swap files (only if they are files)
+  become: true
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items: "{{ swap_paths }}"
+  when: item.startswith('/')
