@@ -1,0 +1,30 @@
+#!/bin/bash
+set -euo pipefail
+
+SRC_PATHS="/etc /opt /root /home /usr/local /srv /var/log /boot /var/lib/mysql"
+BACKUP_ROOT="/tmp/mysql-backup"
+MYSQL_DUMP_FILE="$BACKUP_ROOT/backup.sql"
+DEST="google-backup:server-backup-$(hostname)"
+DATE=$(date +"%Y-%m-%d_%H-%M")
+LOGFILE="/var/log/rclone-backup.log"
+MYSQL_PASS="{{ mysql_root }}"
+
+# Dump MySQL
+mkdir -p "$BACKUP_ROOT"
+mysqldump --all-databases -u root -p"$MYSQL_PASS" > "$MYSQL_DUMP_FILE"
+
+# Backup everything including the dump
+rclone sync $SRC_PATHS "$DEST/$DATE/system" \
+    --log-file="$LOGFILE" \
+    --log-level INFO \
+    --delete-during \
+    --transfers=4 \
+    --checkers=8 \
+    --bwlimit 10M
+
+rclone copy "$BACKUP_ROOT" "$DEST/$DATE/mysqldump" \
+    --log-file="$LOGFILE" \
+    --log-level INFO
+
+# Cleanup
+rm -rf "$BACKUP_ROOT"

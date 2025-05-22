@@ -1,0 +1,6 @@
+[Unit]
+Description=Rclone backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/rclone-backup.sh

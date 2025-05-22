@@ -1,0 +1,49 @@
+---
+- name: Install rclone
+  apt:
+    name: rclone
+    state: present
+    update_cache: true
+
+- name: Ensure rclone config directory exists
+  file:
+    path: /root/.config/rclone
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Deploy rclone config
+  copy:
+    src: rclone.conf
+    dest: /root/.config/rclone/rclone.conf
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Deploy backup script
+  template:
+    src: backup.sh.j2
+    dest: /usr/local/bin/rclone-backup.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy systemd service
+  copy:
+    src: rclone-backup.service
+    dest: /etc/systemd/system/rclone-backup.service
+    mode: '0644'
+
+- name: Deploy systemd timer
+  copy:
+    src: rclone-backup.timer
+    dest: /etc/systemd/system/rclone-backup.timer
+    mode: '0644'
+
+- name: Reload systemd and enable timer
+  systemd:
+    daemon_reload: true
+    name: rclone-backup.timer
+    enabled: true
+    state: started
