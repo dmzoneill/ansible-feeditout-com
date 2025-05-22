@@ -27,3 +27,24 @@ done
 
 rm -f "$USED_KEYS"
 echo "✅ Done. Total deleted: $DELETED_COUNT"
+
+
+KEYS_DIR="/etc/letsencrypt/keys"
+DELETED_COUNT=0
+BATCH_SIZE=500
+
+echo "🔍 Finding orphaned Certbot keys (link count == 1)..."
+find "$KEYS_DIR" -type f -exec stat -c "%h %n" {} \; | while read -r links path; do
+    if [[ "$links" -eq 1 ]]; then
+        echo "🗑️  Deleting orphaned key: $path"
+        rm -f "$path"
+        ((DELETED_COUNT++))
+    fi
+
+    if (( DELETED_COUNT % BATCH_SIZE == 0 )) && (( DELETED_COUNT > 0 )); then
+        echo "⏸️  Deleted $DELETED_COUNT so far... pausing briefly."
+        sleep 2
+    fi
+done
+
+echo "✅ Finished. Total orphaned keys deleted: $DELETED_COUNT"
