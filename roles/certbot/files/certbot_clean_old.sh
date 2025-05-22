@@ -16,11 +16,10 @@ find "$LIVE_DIR" -type l -name 'privkey.pem' -exec readlink -f {} \; | sort -u >
 echo "🧹 Starting batch cleanup of unused keys..."
 find "$KEYS_DIR" -type f -name '*_key-certbot.pem' > "$ALL_KEYS"
 
-exec 3< "$ALL_KEYS"  # open file descriptor 3 for reading
+# ✅ Correct: open file descriptor 3 for reading
+exec 3< "$ALL_KEYS"
 
-while true; do
-    IFS= read -r -u 3 key || break
-
+while IFS= read -r -u 3 key; do
     if ! grep -qF "$key" "$USED_KEYS"; then
         echo "🗑️  Deleting unused key: $key"
         rm -f "$key"
@@ -33,7 +32,7 @@ while true; do
     fi
 done
 
-exec 3<&-  # close file descriptor
+exec 3<&-  # ✅ Close file descriptor
 rm -rf "$TMP_DIR"
 
 echo "✅ Finished. Total unused keys deleted: $DELETED_COUNT"
