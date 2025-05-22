@@ -12,13 +12,9 @@
     replace: 'rm -f /etc/apt/apt.conf.d/10apt-listbugs # patched by Ansible'
   when: apt_listbugs_postrm.stat.exists
 
-# Forcefully remove the broken package
 - name: Force-remove apt-listbugs even if dpkg errors
   shell: dpkg --remove --force-all apt-listbugs || true
-  args:
-    warn: false
 
-# Clean up leftover config files
 - name: Remove apt-listbugs config file 10apt-listbugs
   file:
     path: /etc/apt/apt.conf.d/10apt-listbugs
