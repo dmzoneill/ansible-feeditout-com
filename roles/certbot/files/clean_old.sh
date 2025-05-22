@@ -4,43 +4,26 @@ set -euo pipefail
 
 KEYS_DIR="/etc/letsencrypt/keys"
 LIVE_DIR="/etc/letsencrypt/live"
-TMP_FILE="$(mktemp)"
+USED_KEYS=$(mktemp)
+DELETED_COUNT=0
+BATCH_SIZE=500
 
-echo "🛡️  Auditing unused Certbot private keys..."
-echo
+echo "📋 Finding active private keys in use..."
+find "$LIVE_DIR" -type l -name 'privkey.pem' -exec readlink -f {} \; | sort -u > "$USED_KEYS"
 
-# Step 1: Collect all keys in use (via symlinks in live/)
-echo "🔍 Collecting active keys in use..."
-find "$LIVE_DIR" -type l -name 'privkey.pem' -exec readlink -f {} \; | sort -u > "$TMP_FILE"
+echo "🧹 Starting batch cleanup..."
+find "$KEYS_DIR" -type f -name '*_key-certbot.pem' | while read -r key; do
+    if ! grep -qF "$key" "$USED_KEYS"; then
+        echo "🗑️  Deleting unused key: $key"
+        rm -f "$key"
+        ((DELETED_COUNT++))
+    fi
 
-# Step 2: List all keys
-echo "📦 All keys in: $KEYS_DIR"
-ALL_KEYS=$(find "$KEYS_DIR" -type f -name '*_key-certbot.pem' | sort)
-
-# Step 3: Compare and print unused keys
-echo
-echo "🧹 Unused keys:"
-echo
-
-UNUSED_KEYS=()
-for key in $ALL_KEYS; do
-    if ! grep -qF "$key" "$TMP_FILE"; then
-        echo " - $key"
-        UNUSED_KEYS+=("$key")
+    if (( DELETED_COUNT % BATCH_SIZE == 0 )) && (( DELETED_COUNT > 0 )); then
+        echo "⏸️  Deleted $DELETED_COUNT keys so far... pausing briefly to avoid overload."
+        sleep 2
     fi
 done
 
-if [[ ${#UNUSED_KEYS[@]} -eq 0 ]]; then
-    echo "✅ No unused keys found."
-    rm -f "$TMP_FILE"
-    exit 0
-fi
-
-
-for key in "${UNUSED_KEYS[@]}"; do
-    echo "🗑️  Deleting: $key"
-    rm -f "$key"
-done
-echo "✅ Cleanup complete."
-
-rm -f "$TMP_FILE"
+rm -f "$USED_KEYS"
+echo "✅ Done. Total deleted: $DELETED_COUNT"
