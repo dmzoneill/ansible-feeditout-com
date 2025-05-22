@@ -103,6 +103,17 @@
     - git_dirty.stdout == ""
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
 
+- name: Copy chuckbot.service to systemd dir
+  copy:
+    src: /opt/Chuckbot/systemd/chuckbot.service
+    dest: /etc/systemd/system/chuckbot.service
+    mode: '0644'
+  register: service_file
+
+- name: Reload systemd if service file changed
+  command: systemctl daemon-reexec
+  when: service_file.changed
+
 - name: Try stopping chuckbot service
   command: systemctl stop chuckbot.service
   register: stop_result
@@ -126,17 +137,6 @@
   environment:
     HOME: "/home/dave"
   when: git_pull_result is defined and git_pull_result.changed
-
-- name: Copy chuckbot.service to systemd dir
-  copy:
-    src: /opt/Chuckbot/systemd/chuckbot.service
-    dest: /etc/systemd/system/chuckbot.service
-    mode: '0644'
-  register: service_file
-
-- name: Reload systemd if service file changed
-  command: systemctl daemon-reexec
-  when: service_file.changed
 
 - name: Enable chuckbot service
   command: systemctl enable chuckbot.service
