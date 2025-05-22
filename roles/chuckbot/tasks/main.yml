@@ -93,6 +93,15 @@
     - git_dirty.stdout != ""
     - git_ahead.stdout is not search('ahead')
 
+- name: Get current commit hash before pull (as dave)
+  become: true
+  become_user: dave
+  command: git rev-parse HEAD
+  args:
+    chdir: /opt/Chuckbot
+  register: git_hash_before
+  changed_when: false
+
 - name: Pull latest from origin with rebase (as dave)
   become: true
   become_user: dave
@@ -103,6 +112,21 @@
   when:
     - git_dirty.stdout == ""
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
+
+- name: Get current commit hash after pull (as dave)
+  become: true
+  become_user: dave
+  command: git rev-parse HEAD
+  args:
+    chdir: /opt/Chuckbot
+  register: git_hash_after
+  changed_when: false
+  when: git_pull_result is defined
+
+- name: Set fact if git hash changed
+  set_fact:
+    chuckbot_git_updated: true
+  when: git_hash_before.stdout != git_hash_after.stdout
 
 - name: Copy chuckbot.service to systemd dir
   copy:
@@ -115,7 +139,7 @@
   set_fact:
     chuckbot_needs_restart: true
   when: >
-    (git_pull_result is defined and git_pull_result.changed) or
+    (chuckbot_git_updated | default(false)) or
     (service_file is defined and service_file.changed)
 
 - name: Run npm ci if repo was updated (as dave)
@@ -126,7 +150,7 @@
     chdir: /opt/Chuckbot
   environment:
     HOME: "/home/dave"
-  when: git_pull_result is defined and git_pull_result.changed
+  when: chuckbot_git_updated | default(false)
   ignore_errors: true
 
 - name: Reload systemd if service file changed
