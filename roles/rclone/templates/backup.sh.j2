@@ -40,5 +40,9 @@ rclone lsf "$DEST" --dirs-only | sort | head -n -7 | while read -r olddir; do
     --log-file="$LOGFILE"
 done
 
+# Clean old CSRs (older than 7 days)
+echo "Cleaning old CSR files from /etc/letsencrypt/csr/" | tee -a "$LOGFILE"
+find /etc/letsencrypt/csr/ -type f -name '*.csr' -mtime +7 -print -delete >> "$LOGFILE"
+
 # Cleanup
 rm -rf "$BACKUP_ROOT"
