@@ -61,6 +61,8 @@
   become: true
   become_user: dave
   shell: |
+    git config user.name "Chuckbot"
+    git config user.email "chuckbot@localhost"
     git add -A
     git commit --amend --no-edit
   args:
@@ -73,6 +75,8 @@
   become: true
   become_user: dave
   shell: |
+    git config user.name "Chuckbot"
+    git config user.email "chuckbot@localhost"
     git add -A
     git commit -m "Local dirty state commit"
   args:
@@ -121,7 +125,7 @@
   command: systemctl --user restart chuckbot.service
   when: git_pull_result is defined and git_pull_result.changed
 
-# Initial service config setup
+# Initial service setup
 - name: Ensure ~/.config/systemd/user directory exists (as dave)
   become: true
   become_user: dave
