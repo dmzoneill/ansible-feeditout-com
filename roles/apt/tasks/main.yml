@@ -1,11 +1,24 @@
 ---
-- name: Ensure apt-listbugs is uninstalled
-  apt:
-    name: apt-listbugs
-    state: absent
-    purge: yes
-  ignore_errors: true
+# Patch apt-listbugs postrm to avoid mv error
+- name: Check if apt-listbugs postrm script exists
+  stat:
+    path: /var/lib/dpkg/info/apt-listbugs.postrm
+  register: apt_listbugs_postrm
 
+- name: Patch apt-listbugs postrm script to avoid mv error
+  replace:
+    path: /var/lib/dpkg/info/apt-listbugs.postrm
+    regexp: 'mv /etc/apt/apt.conf.d/10apt-listbugs'
+    replace: 'rm -f /etc/apt/apt.conf.d/10apt-listbugs # patched by Ansible'
+  when: apt_listbugs_postrm.stat.exists
+
+# Forcefully remove the broken package
+- name: Force-remove apt-listbugs even if dpkg errors
+  shell: dpkg --remove --force-all apt-listbugs || true
+  args:
+    warn: false
+
+# Clean up leftover config files
 - name: Remove apt-listbugs config file 10apt-listbugs
   file:
     path: /etc/apt/apt.conf.d/10apt-listbugs
@@ -21,6 +34,7 @@
     path: /etc/apt/preferences.d/apt-listbugs
     state: absent
 
+# Ensure system maintenance tools are installed
 - name: Install unattended-upgrades
   apt:
     name: unattended-upgrades
@@ -31,6 +45,7 @@
     name: debsums
     state: present
 
+# Configure automatic upgrades
 - name: Enable unattended upgrades
   copy:
     dest: /etc/apt/apt.conf.d/20auto-upgrades
@@ -38,6 +53,7 @@
       APT::Periodic::Update-Package-Lists "1";
       APT::Periodic::Unattended-Upgrade "1";
 
+# Clean system
 - name: Autoremove unused packages
   apt:
     autoremove: yes
