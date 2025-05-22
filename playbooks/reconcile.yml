@@ -43,5 +43,6 @@
         - apache2
         - certbot
         - services
+        - chuckbot
       when: role_to_run is not defined or role_to_run == item
       ignore_errors: true
