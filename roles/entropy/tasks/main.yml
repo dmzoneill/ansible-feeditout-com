@@ -1,0 +1,12 @@
+---
+- name: Install entropy daemon (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: "{{ entropy_daemon }}"
+    state: present
+    update_cache: yes
+
+- name: Ensure entropy daemon is enabled and running
+  ansible.builtin.service:
+    name: "{{ entropy_daemon }}"
+    enabled: true
+    state: started

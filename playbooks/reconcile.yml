@@ -13,7 +13,7 @@
         - keyboard
         - dns
         - ntp
-        - entropy_daemon
+        - entropy
         - ansible_pull
         - swap
         - clean
