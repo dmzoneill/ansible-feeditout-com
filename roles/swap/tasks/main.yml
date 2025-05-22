@@ -1,7 +1,7 @@
 ---
-- name: Discover active swap entries
+- name: Discover active swap entries (portable fallback)
   become: true
-  command: swapon --noheadings --raw --output=NAME
+  command: awk 'NR>1 {print $1}' /proc/swaps
   register: active_swap
   changed_when: false
 
