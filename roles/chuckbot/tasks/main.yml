@@ -57,6 +57,12 @@
   changed_when: false
   failed_when: false
 
+- name: Debug git dirty and ahead status
+  debug:
+    msg: |
+      Dirty: {{ git_dirty.stdout != "" }}
+      Ahead: {{ 'ahead' in git_ahead.stdout }}
+
 - name: Amend last commit if dirty and ahead (as dave)
   become: true
   become_user: dave
@@ -64,7 +70,7 @@
     git config user.name "Chuckbot"
     git config user.email "chuckbot@localhost"
     git add -A
-    git commit --amend --no-edit
+    git commit --amend --no-edit || echo "Nothing to amend"
   args:
     chdir: /opt/Chuckbot
   when:
