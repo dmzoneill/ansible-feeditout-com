@@ -5,7 +5,7 @@ SRC_PATHS="/etc /opt /root /home /usr/local /srv /var/log /boot /var/lib/mysql"
 BACKUP_ROOT="/tmp/mysql-backup"
 MYSQL_DUMP_FILE="$BACKUP_ROOT/backup.sql"
 DEST="google-backup:server-backup-$(hostname)"
-DATE=$(date +"%Y-%m-%d_%H-%M")
+DATE=$(date +"%Y-%m-%d")
 LOGFILE="/var/log/rclone-backup.log"
 MYSQL_PASS="{{ mysql_root }}"
 
