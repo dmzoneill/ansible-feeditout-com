@@ -11,17 +11,16 @@ DELETED_COUNT=0
 BATCH_SIZE=500
 
 echo "📋 Finding active private keys in use..."
-
-# Collect all active keys (real files linked from live/)
 find "$LIVE_DIR" -type l -name 'privkey.pem' -exec readlink -f {} \; | sort -u > "$USED_KEYS"
 
 echo "🧹 Starting batch cleanup of unused keys..."
-
-# List all keys
 find "$KEYS_DIR" -type f -name '*_key-certbot.pem' > "$ALL_KEYS"
 
-# Read from file directly to avoid subshell issue
-while IFS= read -r key; do
+exec 3< "$ALL_KEYS"  # open file descriptor 3 for reading
+
+while true; do
+    IFS= read -r -u 3 key || break
+
     if ! grep -qF "$key" "$USED_KEYS"; then
         echo "🗑️  Deleting unused key: $key"
         rm -f "$key"
@@ -32,9 +31,9 @@ while IFS= read -r key; do
         echo "⏸️  Deleted $DELETED_COUNT keys so far... pausing briefly."
         sleep 2
     fi
-done < "$ALL_KEYS"
+done
 
-# Cleanup temp files
+exec 3<&-  # close file descriptor
 rm -rf "$TMP_DIR"
 
 echo "✅ Finished. Total unused keys deleted: $DELETED_COUNT"
