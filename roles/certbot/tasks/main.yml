@@ -38,23 +38,6 @@
     owner: dave
     group: dave
 
-# Copy .conf files with normal permissions
-- name: Copy 001-ashtangayoga.ie-ssl.conf.no-proxy
-  copy:
-    src: 001-ashtangayoga.ie-ssl.conf.no-proxy
-    dest: /home/dave/bin/001-ashtangayoga.ie-ssl.conf.no-proxy
-    mode: '0644'
-    owner: dave
-    group: dave
-
-- name: Copy 001-ashtangayoga.ie-ssl.conf.proxy
-  copy:
-    src: 001-ashtangayoga.ie-ssl.conf.proxy
-    dest: /home/dave/bin/001-ashtangayoga.ie-ssl.conf.proxy
-    mode: '0644'
-    owner: dave
-    group: dave
-
 - name: Run missing.sh to check and issue missing certs
   command: /home/dave/bin/missing.sh
   become: true
