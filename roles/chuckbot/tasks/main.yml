@@ -37,16 +37,6 @@
     force: yes
   when: not chuckbot_git.stat.exists or git_remote.stdout != "git@github.com:dmzoneill/Chuckbot.git"
 
-- name: Always pull latest from origin with rebase (as dave)
-  become: true
-  become_user: dave
-  command: git pull --rebase
-  args:
-    chdir: /opt/Chuckbot
-  when:
-    - chuckbot_git.stat.exists
-    - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
-
 - name: Check for dirty working directory (as dave)
   become: true
   become_user: dave
@@ -55,6 +45,7 @@
     chdir: /opt/Chuckbot
   register: git_dirty
   changed_when: false
+  failed_when: false
 
 - name: Check if local branch is ahead of remote (as dave)
   become: true
@@ -64,8 +55,9 @@
     chdir: /opt/Chuckbot
   register: git_ahead
   changed_when: false
+  failed_when: false
 
-- name: Amend last commit if dirty and ahead of remote (as dave)
+- name: Amend last commit if dirty and ahead (as dave)
   become: true
   become_user: dave
   shell: |
@@ -89,7 +81,28 @@
     - git_dirty.stdout != ""
     - git_ahead.stdout is not search('ahead')
 
-- name: Run npm ci in /opt/Chuckbot (as dave)
+- name: Pull latest from origin with rebase (as dave)
+  become: true
+  become_user: dave
+  command: git pull --rebase
+  args:
+    chdir: /opt/Chuckbot
+  register: git_pull_result
+  when:
+    - git_dirty.stdout == ""
+    - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
+
+# Only if pull changed code
+- name: Stop chuckbot service (as dave)
+  become: true
+  become_user: dave
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
+  command: systemctl --user stop chuckbot.service
+  when: git_pull_result.stdout != ""
+
+- name: Run npm ci if repo was updated (as dave)
   become: true
   become_user: dave
   command: npm ci
@@ -97,9 +110,18 @@
     chdir: /opt/Chuckbot
   environment:
     HOME: "/home/dave"
-  register: npm_result
-  changed_when: "'added' in npm_result.stdout or 'updated' in npm_result.stdout"
+  when: git_pull_result.stdout != ""
 
+- name: Restart chuckbot service (as dave)
+  become: true
+  become_user: dave
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
+  command: systemctl --user restart chuckbot.service
+  when: git_pull_result.stdout != ""
+
+# Initial setup (first run or config refresh)
 - name: Ensure ~/.config/systemd/user directory exists (as dave)
   become: true
   become_user: dave
@@ -120,22 +142,22 @@
   become: true
   become_user: dave
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}/bus"
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
   command: systemctl --user daemon-reexec
 
 - name: Enable chuckbot service (as dave)
   become: true
   become_user: dave
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}/bus"
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
   command: systemctl --user enable chuckbot.service
 
 - name: Restart chuckbot service (as dave)
   become: true
   become_user: dave
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}"
-    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('ansible.builtin.pipe', 'id -u dave') }}/bus"
+    XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
+    DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
   command: systemctl --user restart chuckbot.service
