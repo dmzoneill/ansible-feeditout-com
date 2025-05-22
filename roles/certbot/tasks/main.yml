@@ -30,14 +30,6 @@
     owner: dave
     group: dave
 
-- name: Copy certbot_clean_old.sh
-  copy:
-    src: missing.sh
-    dest: /home/dave/bin/certbot_clean_old.sh
-    mode: '0755'
-    owner: dave
-    group: dave
-
 - name: Run missing.sh to check and issue missing certs
   command: /home/dave/bin/missing.sh
   become: true
@@ -45,6 +37,14 @@
   changed_when: false
   failed_when: missing_sh_result.rc != 0 and "'✅ No missing domains'" not in missing_sh_result.stdout
   ignore_errors: true
+
+- name: Copy certbot_clean_old.sh
+  copy:
+    src: certbot_clean_old.sh
+    dest: /home/dave/bin/certbot_clean_old.sh
+    mode: '0755'
+    owner: dave
+    group: dave
 
 - name: Run clean_old.sh to check and issue missing certs
   command: /home/dave/bin/certbot_clean_old.sh
