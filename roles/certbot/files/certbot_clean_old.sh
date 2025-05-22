@@ -1,23 +1,38 @@
 #!/bin/bash
 
-
-KEYS_DIR="/etc/letsencrypt/keys"
+BASE_DIR="/etc/letsencrypt"
 DELETED_COUNT=0
 BATCH_SIZE=500
 
-echo "🔍 Scanning for orphaned Certbot keys (link count == 1)..."
+cleanup_orphans() {
+    local DIR=$1
+    local LABEL=$2
+    local PATTERN=$3
 
-find "$KEYS_DIR" -type f -name '*_key-certbot.pem' -printf '%n %p\n' | while read -r linkcount filepath; do
-    if [[ "$linkcount" -eq 1 ]]; then
-        echo "🗑️  Deleting orphaned key: $filepath"
-        rm -f "$filepath"
-        ((DELETED_COUNT++))
-
-        if (( DELETED_COUNT % BATCH_SIZE == 0 )); then
-            echo "⏸️  Deleted $DELETED_COUNT keys so far... pausing briefly."
-            sleep 2
-        fi
+    if [[ ! -d "$DIR" ]]; then
+        echo "⚠️  Skipping $LABEL cleanup: Directory $DIR does not exist."
+        return
     fi
-done
+
+    echo "🔍 Scanning for orphaned $LABELs in $DIR matching '$PATTERN'..."
+
+    find "$DIR" -type f -name "$PATTERN" | while read -r filepath; do
+        # Get hardlink count
+        linkcount=$(stat -c %h "$filepath" 2>/dev/null)
+        if [[ "$linkcount" -eq 1 ]]; then
+            echo "🗑️  Deleting orphaned $LABEL: $filepath"
+            rm -f "$filepath"
+            ((DELETED_COUNT++))
+            if (( DELETED_COUNT % BATCH_SIZE == 0 )); then
+                echo "⏸️  Deleted $DELETED_COUNT files so far... pausing briefly."
+                sleep 2
+            fi
+        fi
+    done
+}
+
+cleanup_orphans "$BASE_DIR/keys"  "key"         "*_key-certbot.pem"
+cleanup_orphans "$BASE_DIR/csr"   "CSR"         "*_csr-certbot.pem"
+cleanup_orphans "$BASE_DIR/certs" "certificate" "*.pem"
 
 echo "✅ Done. Total deleted: $DELETED_COUNT"
