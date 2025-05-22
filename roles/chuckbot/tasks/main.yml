@@ -75,10 +75,12 @@
   become: true
   become_user: dave
   shell: |
-    git config user.name "Chuckbot"
-    git config user.email "chuckbot@localhost"
+    export GIT_COMMITTER_NAME="Chuckbot"
+    export GIT_COMMITTER_EMAIL="chuckbot@localhost"
+    git config --local user.name "Chuckbot"
+    git config --local user.email "chuckbot@localhost"
     git add -A
-    git commit -m "Local dirty state commit"
+    GIT_EDITOR=true git commit -m "Local dirty state commit" || echo "Nothing to commit"
   args:
     chdir: /opt/Chuckbot
   when:
