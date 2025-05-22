@@ -103,18 +103,14 @@
     - git_dirty.stdout == ""
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
 
-- name: Try stopping chuckbot service (as dave)
-  become: true
-  become_user: dave
+- name: Try stopping chuckbot service
   command: systemctl stop chuckbot.service
   register: stop_result
   failed_when: false
   changed_when: stop_result.rc == 0
   when: git_pull_result is defined and git_pull_result.changed
 
-- name: Kill node process if systemctl stop failed (as dave)
-  become: true
-  become_user: dave
+- name: Kill node process if systemctl stop failed
   shell: |
     pkill -f chuckbot.js || true
   when: 
