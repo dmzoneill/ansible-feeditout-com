@@ -92,7 +92,7 @@
     - git_dirty.stdout == ""
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
 
-# Only if pull changed code
+# Conditional stop, build, restart if repo was updated
 - name: Stop chuckbot service (as dave)
   become: true
   become_user: dave
@@ -100,7 +100,7 @@
     XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
     DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
   command: systemctl --user stop chuckbot.service
-  when: git_pull_result.stdout != ""
+  when: git_pull_result is defined and git_pull_result.changed
 
 - name: Run npm ci if repo was updated (as dave)
   become: true
@@ -110,18 +110,18 @@
     chdir: /opt/Chuckbot
   environment:
     HOME: "/home/dave"
-  when: git_pull_result.stdout != ""
+  when: git_pull_result is defined and git_pull_result.changed
 
-- name: Restart chuckbot service (as dave)
+- name: Restart chuckbot service if repo was updated (as dave)
   become: true
   become_user: dave
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
     DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
   command: systemctl --user restart chuckbot.service
-  when: git_pull_result.stdout != ""
+  when: git_pull_result is defined and git_pull_result.changed
 
-# Initial setup (first run or config refresh)
+# Initial service config setup
 - name: Ensure ~/.config/systemd/user directory exists (as dave)
   become: true
   become_user: dave
