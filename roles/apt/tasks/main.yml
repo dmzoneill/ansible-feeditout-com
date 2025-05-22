@@ -4,6 +4,22 @@
     name: apt-listbugs
     state: present
 
+- name: Temporarily move apt-listbugs to disable it
+  command: mv /usr/bin/apt-listbugs /usr/bin/apt-listbugs.disabled
+  args:
+    creates: /usr/bin/apt-listbugs.disabled
+
+- name: Install apt-show-versions (with apt-listbugs disabled)
+  apt:
+    name: apt-show-versions
+    state: present
+    update_cache: yes
+
+- name: Restore apt-listbugs
+  command: mv /usr/bin/apt-listbugs.disabled /usr/bin/apt-listbugs
+  args:
+    removes: /usr/bin/apt-listbugs.disabled
+
 - name: Install unattended-upgrades
   apt:
     name: unattended-upgrades
