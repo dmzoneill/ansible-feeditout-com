@@ -44,5 +44,6 @@
         - certbot
         - services
         - chuckbot
+        - rclone
       when: role_to_run is not defined or role_to_run == item
       ignore_errors: true
