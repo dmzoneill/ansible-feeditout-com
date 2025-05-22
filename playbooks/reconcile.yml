@@ -28,7 +28,7 @@
         - opendmarc
         - postsrsd
         - spamassassin
-        - unattended_upgrades
+        - apt
         - iptables
         - kernel
         - auditd
@@ -36,6 +36,7 @@
         - wayland
         - grub
         - sshd
+        - pam
         - network_manager
         - mysql
         - memcached

@@ -1,5 +1,4 @@
----
-- name: Install auditd
+- name: Install auditd and supporting plugins
   apt:
     name:
       - auditd
@@ -7,26 +6,55 @@
     state: present
     update_cache: true
 
-- name: Ensure /etc/audit exists
+- name: Ensure /etc/audit directory exists
   file:
     path: /etc/audit
     state: directory
+    owner: root
+    group: root
     mode: '0755'
 
-- name: Copy auditd configuration to /etc/audit
+- name: Deploy auditd configuration
   copy:
     src: "{{ role_path }}/files/"
     dest: /etc/audit/
     owner: root
     group: root
-    mode: preserve
+    mode: '0640'
     directory_mode: '0755'
   notify: restart auditd
-  ignore_errors: true
+  ignore_errors: false  # allow failure if needed, but default should be strict
 
-- name: Enable and start auditd service
-  service:
+- name: Enable and start auditd
+  systemd:
     name: auditd
     enabled: true
     state: started
-  ignore_errors: true
+
+- name: Ensure audit rules are present
+  copy:
+    src: "{{ role_path }}/files/rules.d/"
+    dest: /etc/audit/rules.d/
+    owner: root
+    group: root
+    mode: '0640'
+    directory_mode: '0755'
+  notify: reload auditd rules
+
+- name: Ensure sysstat is installed and enabled
+  apt:
+    name: sysstat
+    state: present
+
+- name: Enable data collection in sysstat config
+  lineinfile:
+    path: /etc/default/sysstat
+    regexp: '^ENABLED='
+    line: 'ENABLED="true"'
+  notify: restart sysstat
+
+- name: Restart sysstat
+  systemd:
+    name: sysstat
+    enabled: true
+    state: restarted

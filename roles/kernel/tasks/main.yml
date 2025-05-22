@@ -27,3 +27,23 @@
   loop_control:
     loop_var: path
   ignore_errors: true
+
+- name: Disable usb-storage kernel module
+  copy:
+    dest: /etc/modprobe.d/usb-storage.conf
+    content: |
+      install usb-storage /bin/true
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install USBGuard
+  apt:
+    name: usbguard
+    state: present
+
+- name: Enable and start USBGuard
+  systemd:
+    name: usbguard
+    enabled: true
+    state: started

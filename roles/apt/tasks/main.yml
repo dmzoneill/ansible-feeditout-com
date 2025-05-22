@@ -1,0 +1,43 @@
+---
+- name: Ensure apt-listbugs is installed
+  apt:
+    name: apt-listbugs
+    state: present
+
+- name: Install unattended-upgrades
+  apt:
+    name: unattended-upgrades
+    state: present
+
+- name: Ensure debsums is installed
+  apt:
+    name: debsums
+    state: present
+
+- name: Ensure apt-show-versions is installed
+  apt:
+    name: apt-show-versions
+    state: present
+
+- name: Enable unattended upgrades
+  copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+- name: Purge unpurged (rc) packages
+  shell: |
+    dpkg -l | awk '$1 == "rc" { print $2 }' | xargs --no-run-if-empty apt-get purge -y
+  args:
+    warn: false
+  register: purge_result
+  changed_when: purge_result.stdout != ""
+
+- name: Autoremove unused packages
+  apt:
+    autoremove: yes
+
+- name: Clean APT cache
+  apt:
+    autoclean: yes

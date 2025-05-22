@@ -1,5 +1,7 @@
----
 - name: restart auditd
-  service:
+  systemd:
     name: auditd
     state: restarted
+
+- name: reload auditd rules
+  command: augenrules --load

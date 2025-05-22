@@ -1,0 +1,5 @@
+---
+- name: Ensure libpam-tmpdir is installed
+  apt:
+    name: libpam-tmpdir
+    state: present
