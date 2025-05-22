@@ -1,4 +1,3 @@
----
 - name: Ensure /opt/Chuckbot exists (root)
   become: true
   file:
@@ -104,10 +103,23 @@
     - git_dirty.stdout == ""
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
 
-# Conditional stop, build, restart if repo was updated
-- name: Stop chuckbot service (as dave)
-  command: systemctl stop chuckbot.service
+- name: Try stopping chuckbot service (as dave)
+  become: true
+  become_user: dave
+  command: systemctl --user stop chuckbot.service
+  register: stop_result
+  failed_when: false
+  changed_when: stop_result.rc == 0
   when: git_pull_result is defined and git_pull_result.changed
+
+- name: Kill node process if systemctl stop failed (as dave)
+  become: true
+  become_user: dave
+  shell: |
+    pkill -f chuckbot.js || true
+  when: 
+    - git_pull_result is defined and git_pull_result.changed
+    - stop_result.rc != 0
 
 - name: Run npm ci if repo was updated (as dave)
   become: true
@@ -119,21 +131,22 @@
     HOME: "/home/dave"
   when: git_pull_result is defined and git_pull_result.changed
 
-- name: Restart chuckbot service if repo was updated
-  command: systemctl restart chuckbot.service
-  when: git_pull_result is defined and git_pull_result.changed
-
 - name: Copy chuckbot.service to systemd dir
   copy:
     src: /opt/Chuckbot/systemd/chuckbot.service
-    dest: "/etc/systemd/system/chuckbot.service"
+    dest: /etc/systemd/system/chuckbot.service
     mode: '0644'
+  register: service_file
 
-- name: Reload user systemd daemon
+- name: Reload systemd if service file changed
   command: systemctl daemon-reexec
+  when: service_file.changed
 
 - name: Enable chuckbot service
   command: systemctl enable chuckbot.service
+  when: service_file.changed
 
-- name: Restart chuckbot service
+- name: Restart chuckbot service only if code or service file changed
   command: systemctl restart chuckbot.service
+  when: 
+    - git_pull_result is defined and git_pull_result.changed or service_file.changed
