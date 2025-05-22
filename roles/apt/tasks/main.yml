@@ -1,19 +1,4 @@
 ---
-# Patch apt-listbugs postrm to avoid mv error
-- name: Check if apt-listbugs postrm script exists
-  stat:
-    path: /var/lib/dpkg/info/apt-listbugs.postrm
-  register: apt_listbugs_postrm
-
-- name: Patch apt-listbugs postrm script to avoid mv error
-  lineinfile:
-    path: /var/lib/dpkg/info/apt-listbugs.postrm
-    regexp: '^mv /etc/apt/apt.conf.d/10apt-listbugs'
-    line: 'rm -f /etc/apt/apt.conf.d/10apt-listbugs # patched by Ansible'
-    state: present
-    backrefs: yes
-  when: apt_listbugs_postrm.stat.exists
-
 # Remove apt-listbugs cleanly via apt
 - name: Remove apt-listbugs using apt
   apt:
