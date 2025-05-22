@@ -31,5 +31,14 @@ rclone copy "$BACKUP_ROOT" "$DEST/$DATE/mysqldump" \
   --log-level INFO \
   --log-file="$LOGFILE"
 
+# Retention: keep only the most recent 7 backups
+echo "Applying retention policy (keep 7 latest backups)" | tee -a "$LOGFILE"
+rclone lsf "$DEST" --dirs-only | sort | head -n -7 | while read -r olddir; do
+  echo "Deleting old backup folder: $DEST/$olddir" | tee -a "$LOGFILE"
+  rclone purge "$DEST/$olddir" \
+    --log-level INFO \
+    --log-file="$LOGFILE"
+done
+
 # Cleanup
 rm -rf "$BACKUP_ROOT"
