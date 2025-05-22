@@ -111,7 +111,7 @@
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
     DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
-  command: systemctl --user stop chuckbot.service
+  command: systemctl stop chuckbot.service
   when: git_pull_result is defined and git_pull_result.changed
 
 - name: Run npm ci if repo was updated (as dave)
@@ -130,24 +130,15 @@
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
     DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
-  command: systemctl --user restart chuckbot.service
+  command: systemctl restart chuckbot.service
   when: git_pull_result is defined and git_pull_result.changed
-
-# Initial service setup
-- name: Ensure ~/.config/systemd/user directory exists (as dave)
-  become: true
-  become_user: dave
-  file:
-    path: "/home/dave/.config/systemd/user"
-    state: directory
-    mode: '0755'
 
 - name: Copy chuckbot.service to systemd user dir (as dave)
   become: true
   become_user: dave
   copy:
     src: /opt/Chuckbot/systemd/chuckbot.service
-    dest: "/home/dave/.config/systemd/user/chuckbot.service"
+    dest: "/etc/systemd/system/chuckbot.service"
     mode: '0644'
 
 - name: Reload user systemd daemon (as dave)
@@ -156,7 +147,7 @@
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
     DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
-  command: systemctl --user daemon-reexec
+  command: systemctl daemon-reexec
 
 - name: Enable chuckbot service (as dave)
   become: true
@@ -164,7 +155,7 @@
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
     DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
-  command: systemctl --user enable chuckbot.service
+  command: systemctl enable chuckbot.service
 
 - name: Restart chuckbot service (as dave)
   become: true
@@ -172,4 +163,4 @@
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ lookup('pipe', 'id -u dave') }}"
     DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ lookup('pipe', 'id -u dave') }}/bus"
-  command: systemctl --user restart chuckbot.service
+  command: systemctl restart chuckbot.service
