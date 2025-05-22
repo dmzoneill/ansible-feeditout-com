@@ -1,9 +1,25 @@
 ---
-- name: Ensure apt-listbugs is installed
+- name: Ensure apt-listbugs is uninstalled
   apt:
     name: apt-listbugs
     state: absent
+    purge: yes
   ignore_errors: true
+
+- name: Remove apt-listbugs config file 10apt-listbugs
+  file:
+    path: /etc/apt/apt.conf.d/10apt-listbugs
+    state: absent
+
+- name: Remove apt-listbugs config file 99apt-listbugs
+  file:
+    path: /etc/apt/apt.conf.d/99apt-listbugs
+    state: absent
+
+- name: Remove apt-listbugs preferences file
+  file:
+    path: /etc/apt/preferences.d/apt-listbugs
+    state: absent
 
 - name: Install unattended-upgrades
   apt:
