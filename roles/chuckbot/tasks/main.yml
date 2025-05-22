@@ -47,6 +47,48 @@
     - chuckbot_git.stat.exists
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
 
+- name: Check for dirty working directory (as dave)
+  become: true
+  become_user: dave
+  command: git status --porcelain
+  args:
+    chdir: /opt/Chuckbot
+  register: git_dirty
+  changed_when: false
+
+- name: Check if local branch is ahead of remote (as dave)
+  become: true
+  become_user: dave
+  command: git status -sb
+  args:
+    chdir: /opt/Chuckbot
+  register: git_ahead
+  changed_when: false
+
+- name: Amend last commit if dirty and ahead of remote (as dave)
+  become: true
+  become_user: dave
+  shell: |
+    git add -A
+    git commit --amend --no-edit
+  args:
+    chdir: /opt/Chuckbot
+  when:
+    - git_dirty.stdout != ""
+    - git_ahead.stdout is search('ahead')
+
+- name: Create new commit if dirty and not ahead (as dave)
+  become: true
+  become_user: dave
+  shell: |
+    git add -A
+    git commit -m "Local dirty state commit"
+  args:
+    chdir: /opt/Chuckbot
+  when:
+    - git_dirty.stdout != ""
+    - git_ahead.stdout is not search('ahead')
+
 - name: Run npm ci in /opt/Chuckbot (as dave)
   become: true
   become_user: dave
