@@ -22,14 +22,6 @@
       APT::Periodic::Update-Package-Lists "1";
       APT::Periodic::Unattended-Upgrade "1";
 
-- name: Purge unpurged (rc) packages
-  shell: |
-    dpkg -l | awk '$1 == "rc" { print $2 }' | xargs --no-run-if-empty apt-get purge -y
-  args:
-    warn: false
-  register: purge_result
-  changed_when: purge_result.stdout != ""
-
 - name: Autoremove unused packages
   apt:
     autoremove: yes
