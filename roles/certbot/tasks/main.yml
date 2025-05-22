@@ -30,10 +30,10 @@
     owner: dave
     group: dave
 
-- name: Copy clean_old.sh
+- name: Copy certbot_clean_old.sh
   copy:
     src: missing.sh
-    dest: /home/dave/bin/clean_old.sh
+    dest: /home/dave/bin/certbot_clean_old.sh
     mode: '0755'
     owner: dave
     group: dave
@@ -47,6 +47,6 @@
   ignore_errors: true
 
 - name: Run clean_old.sh to check and issue missing certs
-  command: /home/dave/bin/clean_old.sh
+  command: /home/dave/bin/certbot_clean_old.sh
   become: true
   changed_when: false
