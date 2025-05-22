@@ -1,3 +1,4 @@
+---
 - name: Ensure /opt/Chuckbot exists (root)
   become: true
   file:
@@ -110,25 +111,12 @@
     mode: '0644'
   register: service_file
 
-- name: Reload systemd if service file changed
-  become: true
-  command: systemctl daemon-reexec
-  when: service_file.changed
-
-- name: Try stopping chuckbot service
-  become: true
-  command: systemctl stop chuckbot.service
-  register: stop_result
-  failed_when: false
-  changed_when: stop_result.rc == 0
-  when: git_pull_result is defined and git_pull_result.changed
-
-- name: Kill node process if systemctl stop failed
-  shell: |
-    pkill -f chuckbot.js || true
-  when: 
-    - git_pull_result is defined and git_pull_result.changed
-    - stop_result.rc != 0
+- name: Set fact if repo or service file changed
+  set_fact:
+    chuckbot_needs_restart: true
+  when: >
+    (git_pull_result is defined and git_pull_result.changed) or
+    (service_file is defined and service_file.changed)
 
 - name: Run npm ci if repo was updated (as dave)
   become: true
@@ -139,14 +127,34 @@
   environment:
     HOME: "/home/dave"
   when: git_pull_result is defined and git_pull_result.changed
+  ignore_errors: true
+
+- name: Reload systemd if service file changed
+  become: true
+  command: systemctl daemon-reexec
+  when: service_file.changed
 
 - name: Enable chuckbot service
   become: true
   command: systemctl enable chuckbot.service
   when: service_file.changed
 
+- name: Try stopping chuckbot service
+  become: true
+  command: systemctl stop chuckbot.service
+  register: stop_result
+  failed_when: false
+  changed_when: stop_result.rc == 0
+  when: chuckbot_needs_restart | default(false)
+
+- name: Kill node process if systemctl stop failed
+  shell: |
+    pkill -f chuckbot.js || true
+  when: 
+    - chuckbot_needs_restart | default(false)
+    - stop_result.rc != 0
+
 - name: Restart chuckbot service only if code or service file changed
   become: true
   command: systemctl restart chuckbot.service
-  when: 
-    - git_pull_result is defined and git_pull_result.changed or service_file.changed
+  when: chuckbot_needs_restart | default(false)
