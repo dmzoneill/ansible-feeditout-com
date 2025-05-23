@@ -29,6 +29,11 @@
 
 # --- Permissions Fix Section ---
 
+- name: Stop Postfix to prevent it from recreating incorrect permissions
+  service:
+    name: postfix
+    state: stopped
+
 - name: Ensure /var/spool/postfix/maildrop has correct ownership
   file:
     path: /var/spool/postfix/maildrop
@@ -50,11 +55,6 @@
     group: postdrop
     mode: '2755'
 
-- name: Run postfix check (ignore error if Postfix not fully initialized)
-  command: postfix check
-  ignore_errors: true
-  changed_when: false
-
 - name: Ensure /var/spool/postfix/private has correct permissions
   file:
     path: /var/spool/postfix/private
@@ -70,6 +70,23 @@
     recurse: yes
     owner: root
     group: root
+
+- name: Fix socket permissions inside /var/spool/postfix/private
+  shell: |
+    find /var/spool/postfix/private -type s -exec chown root:postfix {} +
+  args:
+    warn: false
+
+- name: Start Postfix after correcting permissions
+  service:
+    name: postfix
+    state: started
+    enabled: true
+
+- name: Run postfix check (ignore error if Postfix not fully initialized)
+  command: postfix check
+  ignore_errors: true
+  changed_when: false
 
 # --- Cert Hook Script ---
 
