@@ -21,6 +21,28 @@
     directory_mode: '0755'
   notify: Restart postfix
 
+- name: Create override directory for postfix.service
+  file:
+    path: /etc/systemd/system/postfix.service.d
+    state: directory
+    mode: '0755'
+
+- name: Override postfix.service to use real ExecStart
+  copy:
+    dest: /etc/systemd/system/postfix.service.d/override.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/usr/sbin/postfix start
+      ExecReload=
+      ExecReload=/usr/sbin/postfix reload
+      Type=forking
+      RemainAfterExit=no
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restart postfix
+
 - name: Ensure and start Postfix
   service:
     name: postfix

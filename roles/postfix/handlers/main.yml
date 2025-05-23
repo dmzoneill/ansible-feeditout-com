@@ -1,4 +1,7 @@
 ---
+- name: Reload systemd
+  command: systemctl daemon-reexec
+
 - name: Restart postfix
   service:
     name: postfix
