@@ -21,111 +21,6 @@
     directory_mode: '0755'
   notify: Restart postfix
 
-# --- Systemd Service Fix ---
-
-- name: Create override directory for postfix.service
-  file:
-    path: /etc/systemd/system/postfix.service.d
-    state: directory
-    mode: '0755'
-
-- name: Override postfix.service to use real ExecStart
-  copy:
-    dest: /etc/systemd/system/postfix.service.d/override.conf
-    content: |
-      [Service]
-      ExecStart=
-      ExecStart=/usr/sbin/postfix start
-      ExecReload=
-      ExecReload=/usr/sbin/postfix reload
-      Type=forking
-      RemainAfterExit=no
-    mode: '0644'
-  notify:
-    - Reload systemd
-    - Restart postfix
-
-# --- Stop Postfix before Permission Fixes ---
-
-- name: Stop Postfix to ensure consistent permission checking
-  service:
-    name: postfix
-    state: stopped
-
-# --- Fix Directory Ownerships and Permissions ---
-
-- name: Ensure /usr/sbin/postdrop has correct permissions and group
-  file:
-    path: /usr/sbin/postdrop
-    state: file
-    owner: root
-    group: postdrop
-    mode: '2755'
-
-- name: Ensure /var/spool/postfix exists with correct permissions
-  file:
-    path: /var/spool/postfix
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-
-- name: Ensure /var/spool/postfix/maildrop has correct permissions
-  file:
-    path: /var/spool/postfix/maildrop
-    owner: root
-    group: postdrop
-    mode: '0730'
-
-- name: Ensure /var/spool/postfix/private has correct permissions
-  file:
-    path: /var/spool/postfix/private
-    owner: postfix
-    group: postfix
-    mode: '0700'
-
-- name: Ensure /var/spool/postfix/defer has correct permissions
-  file:
-    path: /var/spool/postfix/defer
-    state: directory
-    owner: postfix
-    group: postfix
-    mode: '0700'
-
-- name: Find all subdirectories under /var/spool/postfix
-  find:
-    paths: /var/spool/postfix
-    file_type: directory
-  register: postfix_subdirs
-
-- name: Ensure subdirectory ownerships are correct
-  file:
-    path: "{{ postfix_dir.path }}"
-    owner: >-
-      {{ 'postfix' if '/postfix/defer' in postfix_dir.path or '/postfix/private' in postfix_dir.path else 'root' }}
-    group: >-
-      {{ 'postfix' if '/postfix/defer' in postfix_dir.path or '/postfix/private' in postfix_dir.path else 'root' }}
-  loop: "{{ postfix_subdirs.files }}"
-  loop_control:
-    loop_var: postfix_dir
-
-- name: Check for incorrect socket ownership in private dir
-  command: find /var/spool/postfix/private -type s ! -group postfix -print -quit
-  register: socket_check
-  changed_when: false
-
-- name: Fix socket permissions only if needed
-  command: find /var/spool/postfix/private -type s -exec chown root:postfix {} +
-  when: socket_check.stdout != ""
-
-# --- Start and Validate ---
-
-- name: Start Postfix only if stopped
-  service:
-    name: postfix
-    state: started
-    enabled: true
-
 - name: Run postfix check (ignore error if Postfix not fully initialized)
   command: postfix check
   ignore_errors: true
@@ -164,3 +59,34 @@
   loop_control:
     loop_var: map_file
   notify: Restart postfix
+
+# --- Systemd Management (idempotent) ---
+
+- name: Reexec systemd only if systemd binary has changed
+  command: systemctl daemon-reexec
+  changed_when: false
+  when: ansible_service_mgr == "systemd"
+
+- name: Reload systemd daemon config if needed
+  command: systemctl daemon-reload
+  changed_when: false
+  when: ansible_service_mgr == "systemd"
+
+- name: Ensure postfix@- is enabled
+  systemd:
+    name: postfix@-
+    enabled: true
+  when: ansible_service_mgr == "systemd"
+
+- name: Ensure postfix@- is started
+  systemd:
+    name: postfix@-
+    state: started
+  when: ansible_service_mgr == "systemd"
+
+- name: Restart postfix@- only if config changed
+  systemd:
+    name: postfix@-
+    state: restarted
+  when: ansible_service_mgr == "systemd"
+  listen: Restart postfix
