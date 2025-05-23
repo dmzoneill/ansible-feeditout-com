@@ -21,30 +21,27 @@
     directory_mode: '0755'
   notify: Restart postfix
 
-- name: Enable and start Postfix service
+- name: Ensure and start Postfix
   service:
     name: postfix
-    enabled: true
     state: started
+    enabled: true
 
 # --- Permissions Fix Section ---
 
-- name: Stop Postfix to prevent it from recreating incorrect permissions
+- name: Stop Postfix only if running
   service:
     name: postfix
     state: stopped
+  register: postfix_status
+  changed_when: postfix_status.status.ActiveState != "inactive"
 
-- name: Ensure /var/spool/postfix/maildrop has correct ownership
+- name: Ensure /var/spool/postfix/maildrop has correct owner, group, and permissions
   file:
     path: /var/spool/postfix/maildrop
     state: directory
     owner: root
     group: postdrop
-
-- name: Ensure /var/spool/postfix/maildrop has correct permissions
-  file:
-    path: /var/spool/postfix/maildrop
-    state: directory
     mode: '0730'
 
 - name: Ensure postdrop binary has correct permissions and group
@@ -71,17 +68,24 @@
     owner: root
     group: root
 
-- name: Fix socket permissions inside /var/spool/postfix/private
+- name: Check for incorrect socket ownership in /var/spool/postfix/private
+  shell: |
+    find /var/spool/postfix/private -type s ! -group postfix -print -quit
+  register: fix_sockets_needed
+  changed_when: false
+
+- name: Fix socket permissions only if needed
   shell: |
     find /var/spool/postfix/private -type s -exec chown root:postfix {} +
-  args:
-    executable: /bin/bash
+  when: fix_sockets_needed.stdout != ""
 
-- name: Start Postfix after correcting permissions
+- name: Start Postfix only if stopped
   service:
     name: postfix
     state: started
     enabled: true
+  register: postfix_start
+  changed_when: postfix_start.status.ActiveState != "active"
 
 - name: Run postfix check (ignore error if Postfix not fully initialized)
   command: postfix check
