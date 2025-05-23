@@ -23,7 +23,8 @@ for path in $SRC_PATHS; do
   name=$(echo "$path" | sed 's|/|_|g' | sed 's|^_||')
   tar_file="$BACKUP_ROOT/tars/${name}.tar.gz"
   echo "Creating archive $tar_file from $path" | tee -a "$LOGFILE"
-  tar -czpf "$tar_file" --one-file-system "$path"
+  tar --warning=no-file-changed -czpf "$tar_file" --one-file-system "$path" || \
+    echo "Warning: tar failed for $path" | tee -a "$LOGFILE"
 done
 
 # Upload all tarballs
@@ -46,11 +47,6 @@ rclone lsf "$DEST" --dirs-only | sort | head -n -7 | while read -r olddir; do
     --log-level INFO \
     --log-file="$LOGFILE"
 done
-
-# Cleanup old CSRs
-echo "Cleaning old CSR files from /etc/letsencrypt/csr/" | tee -a "$LOGFILE"
-find /etc/letsencrypt/csr/ -type f -name '*.csr' -mtime +7 -print -delete >> "$LOGFILE"
-
 # Final cleanup
 rm -rf "$BACKUP_ROOT"
 
