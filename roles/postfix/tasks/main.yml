@@ -27,13 +27,19 @@
     enabled: true
     state: started
 
-# Fix permissions before postfix check
-- name: Ensure /var/spool/postfix/maildrop has correct permissions
+# --- Permissions Fix Section ---
+
+- name: Ensure /var/spool/postfix/maildrop has correct ownership
   file:
     path: /var/spool/postfix/maildrop
     state: directory
     owner: root
     group: postdrop
+
+- name: Ensure /var/spool/postfix/maildrop has correct permissions
+  file:
+    path: /var/spool/postfix/maildrop
+    state: directory
     mode: '0730'
 
 - name: Ensure postdrop binary has correct permissions and group
@@ -44,13 +50,7 @@
     group: postdrop
     mode: '2755'
 
-- name: Ensure all Postfix spool permissions are enforced
-  command: >
-    chown root:postdrop /var/spool/postfix/maildrop &&
-    chmod 0730 /var/spool/postfix/maildrop
-  changed_when: false
-
-- name: Run postfix check (ignores error during bootstrap)
+- name: Run postfix check (ignore error if Postfix not fully initialized)
   command: postfix check
   ignore_errors: true
   changed_when: false
@@ -70,6 +70,8 @@
     recurse: yes
     owner: root
     group: root
+
+# --- Cert Hook Script ---
 
 - name: Ensure postfix-updatecerts script exists with correct content and is executable
   copy:
@@ -95,6 +97,8 @@
       done
       /usr/sbin/postmap -F hash:/etc/postfix/sni
       /bin/systemctl restart postfix
+
+# --- Map Builder ---
 
 - name: Define list of postfix map files
   set_fact:
