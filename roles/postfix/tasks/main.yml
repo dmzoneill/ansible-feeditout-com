@@ -69,14 +69,16 @@
   set_fact:
     postfix_maps:
       - { src: "aliases", tool: "postalias" }
+      - { src: "bcc_maps", tool: "postmap" }
       - { src: "sender_access", tool: "postmap" }
       - { src: "sender_checks", tool: "postmap" }
       - { src: "sasl_passwd", tool: "postmap" }
       - { src: "client_checks", tool: "postmap" }
       - { src: "header_checks", tool: "postmap" }
-      - { src: "bcc_maps", tool: "postmap" }
       - { src: "recipient_domains", tool: "postmap" }
       - { src: "vhosts", tool: "postmap" }
+      - { src: "sasl_passwd", tool: "postmap" }     
+      - { src: "virtualalias.ashtangayoga.ie", tool: "postmap" }
 
 - name: Rebuild postfix maps if source file exists
   command: "{{ map_file.tool }} hash:/etc/postfix/{{ map_file.src }}"
