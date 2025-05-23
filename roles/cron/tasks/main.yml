@@ -19,6 +19,12 @@
   register: cron_copy_check
   changed_when: false
 
+- debug:
+    msg: "Checking src path: roles/cron/files/{{ cron.src }} for user {{ cron.user }}"
+  loop: "{{ cron_user_files }}"
+  loop_control:
+    loop_var: cron
+
 - name: Determine if any crontab file would change
   set_fact:
     cron_needs_update: true
