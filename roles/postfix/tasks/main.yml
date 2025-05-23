@@ -59,34 +59,3 @@
   loop_control:
     loop_var: map_file
   notify: Restart postfix
-
-# --- Systemd Management (idempotent) ---
-
-- name: Reexec systemd only if systemd binary has changed
-  command: systemctl daemon-reexec
-  changed_when: false
-  when: ansible_service_mgr == "systemd"
-
-- name: Reload systemd daemon config if needed
-  command: systemctl daemon-reload
-  changed_when: false
-  when: ansible_service_mgr == "systemd"
-
-- name: Ensure postfix@- is enabled
-  systemd:
-    name: postfix@-
-    enabled: true
-  when: ansible_service_mgr == "systemd"
-
-- name: Ensure postfix@- is started
-  systemd:
-    name: postfix@-
-    state: started
-  when: ansible_service_mgr == "systemd"
-
-- name: Restart postfix@- only if config changed
-  systemd:
-    name: postfix@-
-    state: restarted
-  when: ansible_service_mgr == "systemd"
-  listen: Restart postfix
