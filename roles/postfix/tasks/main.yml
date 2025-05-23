@@ -27,11 +27,7 @@
     enabled: true
     state: started
 
-# Key fix begins here
-- name: Run postfix check to fix internal queue structure
-  command: postfix check
-  changed_when: false
-
+# Key fixes — correct order
 - name: Ensure /var/spool/postfix/maildrop has correct permissions
   file:
     path: /var/spool/postfix/maildrop
@@ -47,6 +43,10 @@
     owner: root
     group: postdrop
     mode: '2755'
+
+- name: Run postfix check to fix internal queue structure
+  command: postfix check
+  changed_when: false
 
 - name: Ensure /var/spool/postfix/private has correct permissions
   file:
