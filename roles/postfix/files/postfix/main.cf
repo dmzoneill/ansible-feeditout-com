@@ -1,4 +1,4 @@
-compatibility_level=2
+compatibility_level=3.6
 alias_database = hash:/etc/postfix/aliases 
 alias_maps = hash:/etc/postfix/aliases 
 append_dot_mydomain = no  
