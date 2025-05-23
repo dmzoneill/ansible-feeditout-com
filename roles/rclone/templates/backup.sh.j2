@@ -2,36 +2,43 @@
 set -euo pipefail
 
 SRC_PATHS="/etc /opt /root /home /usr/local /srv /var/log /boot /var/lib/mysql"
-BACKUP_ROOT="/tmp/mysql-backup"
-MYSQL_DUMP_FILE="$BACKUP_ROOT/backup.sql"
+BACKUP_ROOT="/tmp/system-backup"
+MYSQL_DUMP_FILE="$BACKUP_ROOT/mysqldump/backup.sql"
 DEST="google-backup:server-backup-$(hostname)"
 DATE=$(date +"%Y-%m-%d")
 LOGFILE="/var/log/rclone-backup.log"
 MYSQL_PASS="{{ mysql_root }}"
 
-# Dump MySQL
-mkdir -p "$BACKUP_ROOT"
+mkdir -p "$BACKUP_ROOT/zips"
+mkdir -p "$(dirname "$MYSQL_DUMP_FILE")"
+
+echo "Starting backup at $(date)" | tee -a "$LOGFILE"
+
+# MySQL Dump
+echo "Dumping MySQL databases..." | tee -a "$LOGFILE"
 mysqldump --all-databases -u root -p"$MYSQL_PASS" > "$MYSQL_DUMP_FILE"
 
-# Sync each source path individually
+# Zip and move each source directory
 for path in $SRC_PATHS; do
-  echo "Syncing $path to $DEST/$DATE/system${path}" | tee -a "$LOGFILE"
-  rclone sync "$path" "$DEST/$DATE/system${path}" \
-    --log-level INFO \
-    --log-file="$LOGFILE" \
-    --delete-during \
-    --transfers=8 \
-    --checkers=8 \
-    --bwlimit 500M
+  name=$(echo "$path" | sed 's|/|_|g' | sed 's|^_||')
+  zip_file="$BACKUP_ROOT/zips/${name}.zip"
+  echo "Zipping $path to $zip_file" | tee -a "$LOGFILE"
+  zip -r -q "$zip_file" "$path"
 done
 
-# Copy MySQL dump separately
-echo "Copying MySQL dump to $DEST/$DATE/mysqldump" | tee -a "$LOGFILE"
-rclone copy "$BACKUP_ROOT" "$DEST/$DATE/mysqldump" \
+# Upload all zip files
+echo "Uploading compressed files to $DEST/$DATE/system" | tee -a "$LOGFILE"
+rclone copy "$BACKUP_ROOT/zips" "$DEST/$DATE/system" \
   --log-level INFO \
   --log-file="$LOGFILE"
 
-# Retention: keep only the most recent 7 backups
+# Upload MySQL dump
+echo "Uploading MySQL dump to $DEST/$DATE/mysqldump" | tee -a "$LOGFILE"
+rclone copy "$(dirname "$MYSQL_DUMP_FILE")" "$DEST/$DATE/mysqldump" \
+  --log-level INFO \
+  --log-file="$LOGFILE"
+
+# Retention policy
 echo "Applying retention policy (keep 7 latest backups)" | tee -a "$LOGFILE"
 rclone lsf "$DEST" --dirs-only | sort | head -n -7 | while read -r olddir; do
   echo "Deleting old backup folder: $DEST/$olddir" | tee -a "$LOGFILE"
@@ -40,9 +47,11 @@ rclone lsf "$DEST" --dirs-only | sort | head -n -7 | while read -r olddir; do
     --log-file="$LOGFILE"
 done
 
-# Clean old CSRs (older than 7 days)
+# Cleanup old CSRs
 echo "Cleaning old CSR files from /etc/letsencrypt/csr/" | tee -a "$LOGFILE"
 find /etc/letsencrypt/csr/ -type f -name '*.csr' -mtime +7 -print -delete >> "$LOGFILE"
 
-# Cleanup
+# Final cleanup
 rm -rf "$BACKUP_ROOT"
+
+echo "Backup completed at $(date)" | tee -a "$LOGFILE"
