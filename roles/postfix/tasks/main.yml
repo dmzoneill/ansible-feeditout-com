@@ -27,13 +27,21 @@
     enabled: true
     state: started
 
-- name: Ensure /var/spool/postfix and subdirs have correct ownership
+- name: Ensure /var/spool/postfix/maildrop has correct permissions
   file:
-    path: /var/spool/postfix
+    path: /var/spool/postfix/maildrop
     state: directory
-    owner: postfix
-    group: postfix
-    recurse: yes
+    owner: root
+    group: postdrop
+    mode: '0730'
+
+- name: Ensure postdrop binary has correct permissions and group
+  file:
+    path: /usr/sbin/postdrop
+    state: file
+    owner: root
+    group: postdrop
+    mode: '2755'
 
 - name: Ensure /var/spool/postfix/private has correct permissions
   file:
