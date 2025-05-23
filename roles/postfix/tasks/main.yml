@@ -27,23 +27,62 @@
     enabled: true
     state: started
 
-# --- Permissions Fix Section ---
+# --- Permission Checks ---
 
-- name: Stop Postfix only if running
+- name: Stop Postfix to ensure consistent permission checking
   service:
     name: postfix
     state: stopped
-  when: ansible_service_mgr == 'systemd'
 
-- name: Ensure maildrop dir has correct permissions
+- name: Check maildrop permissions
+  stat:
+    path: /var/spool/postfix/maildrop
+  register: maildrop_stat
+
+- name: Fix maildrop if needed
   file:
     path: /var/spool/postfix/maildrop
-    state: directory
     owner: root
     group: postdrop
     mode: '0730'
+  when: >
+    maildrop_stat.stat.pw_name != 'root' or
+    maildrop_stat.stat.gr_name != 'postdrop' or
+    maildrop_stat.stat.mode != '0730'
 
-- name: Ensure postdrop binary has correct permissions and group
+- name: Check private permissions
+  stat:
+    path: /var/spool/postfix/private
+  register: private_stat
+
+- name: Fix private if needed
+  file:
+    path: /var/spool/postfix/private
+    owner: postfix
+    group: postfix
+    mode: '0700'
+  when: >
+    private_stat.stat.pw_name != 'postfix' or
+    private_stat.stat.gr_name != 'postfix' or
+    private_stat.stat.mode != '0700'
+
+- name: Check spool permissions
+  stat:
+    path: /var/spool/postfix
+  register: spool_stat
+
+- name: Fix spool if needed
+  file:
+    path: /var/spool/postfix
+    owner: root
+    group: root
+    mode: '0755'
+  when: >
+    spool_stat.stat.pw_name != 'root' or
+    spool_stat.stat.gr_name != 'root' or
+    spool_stat.stat.mode != '0755'
+
+- name: Ensure /usr/sbin/postdrop has correct permissions and group
   file:
     path: /usr/sbin/postdrop
     state: file
@@ -51,32 +90,22 @@
     group: postdrop
     mode: '2755'
 
-- name: Ensure /var/spool/postfix/private has correct permissions
+- name: Ensure /var/spool/postfix/defer has correct permissions
   file:
-    path: /var/spool/postfix/private
+    path: /var/spool/postfix/defer
     state: directory
     owner: postfix
     group: postfix
     mode: '0700'
 
-- name: Ensure postfix spool has correct ownership
-  file:
-    path: /var/spool/postfix
-    state: directory
-    recurse: yes
-    owner: root
-    group: root
-
 - name: Check for incorrect socket ownership in private dir
   command: find /var/spool/postfix/private -type s ! -group postfix -print -quit
-  register: socket_fix_needed
+  register: socket_check
   changed_when: false
-  check_mode: no
 
 - name: Fix socket permissions only if needed
   command: find /var/spool/postfix/private -type s -exec chown root:postfix {} +
-  when: socket_fix_needed.stdout != ""
-  changed_when: true
+  when: socket_check.stdout != ""
 
 - name: Start Postfix only if stopped
   service:
@@ -91,45 +120,28 @@
 
 # --- Cert Hook Script ---
 
-- name: Ensure postfix-updatecerts script exists with correct content and is executable
+- name: Install postfix-updatecerts script from static file
   copy:
+    src: postfix-updatecerts.sh
     dest: /usr/bin/postfix-updatecerts
     mode: '0755'
     owner: root
     group: root
-    content: |
-      #!/bin/bash
-      rm -rvf /etc/postfix/certs/*
-      cd /etc/letsencrypt/live
-      rm /etc/postfix/sni
-      touch /etc/postfix/sni
-      for X in $(ls | grep -v 'README\|0001'); do 
-          domain=$(echo $X | sed 's/www\.//')
-          echo $domain
-          if [ ! -d "/etc/postfix/certs/$domain" ]; then
-              mkdir -vp /etc/postfix/certs/$domain
-              cat $X/privkey.pem > /etc/postfix/certs/$domain/chain.pem
-              cat $X/fullchain.pem >> /etc/postfix/certs/$domain/chain.pem
-              echo "$domain /etc/postfix/certs/$domain/chain.pem" >> /etc/postfix/sni
-          fi
-      done
-      /usr/sbin/postmap -F hash:/etc/postfix/sni
-      /bin/systemctl restart postfix
 
 # --- Map Builder ---
 
 - name: Define list of postfix map files
   set_fact:
     postfix_maps:
-      - { src: "aliases",      tool: "postalias" }
+      - { src: "aliases", tool: "postalias" }
       - { src: "sender_access", tool: "postmap" }
       - { src: "sender_checks", tool: "postmap" }
-      - { src: "sasl_passwd",   tool: "postmap" }
+      - { src: "sasl_passwd", tool: "postmap" }
       - { src: "client_checks", tool: "postmap" }
       - { src: "header_checks", tool: "postmap" }
-      - { src: "bcc_maps",      tool: "postmap" }
+      - { src: "bcc_maps", tool: "postmap" }
       - { src: "recipient_domains", tool: "postmap" }
-      - { src: "vhosts",        tool: "postmap" }
+      - { src: "vhosts", tool: "postmap" }
 
 - name: Rebuild postfix maps if source file exists
   command: "{{ map_file.tool }} hash:/etc/postfix/{{ map_file.src }}"
