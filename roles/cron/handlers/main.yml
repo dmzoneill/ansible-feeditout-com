@@ -1,0 +1,6 @@
+---
+- name: Start and enable cron
+  systemd:
+    name: cron
+    state: started
+    enabled: true

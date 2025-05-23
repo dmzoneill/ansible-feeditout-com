@@ -5,34 +5,20 @@
     state: present
     update_cache: true
 
-- name: Check if crontab files need updating (dry-run)
-  copy:
-    src: "files/{{ cron.src }}"
-    dest: "/var/spool/cron/crontabs/{{ cron.user }}"
-    owner: "{{ cron.user }}"
-    group: crontab
-    mode: '0600'
+- name: Check if crontab files are missing
+  stat:
+    path: "/var/spool/cron/crontabs/{{ cron.user }}"
   loop: "{{ cron_user_files }}"
   loop_control:
     loop_var: cron
-  check_mode: true
-  register: cron_copy_check
-  changed_when: false
+  register: cron_stat
 
-- debug:
-    msg: "Checking src path: roles/cron/files/{{ cron.src }} for user {{ cron.user }}"
-  loop: "{{ cron_user_files }}"
-  loop_control:
-    loop_var: cron
-
-- name: Determine if any crontab file would change
+- name: Determine if any crontab file is missing
   set_fact:
     cron_needs_update: true
   when: >
-    cron_copy_check.results is defined and
-    cron_copy_check.results
-    | selectattr('changed', 'defined')
-    | selectattr('changed')
+    cron_stat.results
+    | selectattr('stat.exists', 'equalto', false)
     | list | length > 0
 
 - name: Stop cron before copying crontabs (only if needed)
