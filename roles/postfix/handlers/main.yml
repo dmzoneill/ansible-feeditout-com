@@ -4,5 +4,5 @@
 
 - name: Restart postfix
   service:
-    name: postfix
+    name: postfix@-
     state: restarted
