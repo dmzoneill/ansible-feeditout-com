@@ -27,6 +27,22 @@
     enabled: true
     state: started
 
+- name: Ensure /var/spool/postfix and subdirs have correct ownership
+  file:
+    path: /var/spool/postfix
+    state: directory
+    owner: postfix
+    group: postfix
+    recurse: yes
+
+- name: Ensure /var/spool/postfix/private has correct permissions
+  file:
+    path: /var/spool/postfix/private
+    state: directory
+    mode: '0700'
+    owner: postfix
+    group: postfix
+
 - name: Ensure postfix-updatecerts script exists with correct content and is executable
   copy:
     dest: /usr/bin/postfix-updatecerts
