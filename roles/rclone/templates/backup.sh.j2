@@ -6,11 +6,15 @@ SRC_PATHS="/etc /opt /root /home /usr/local /srv /var/log /boot /var/lib/mysql"
 STAGING="/tmp/backup-staging"
 BACKUP_ROOT="/tmp/system-backup"
 TAR_FILE="$BACKUP_ROOT/system.tar.gz"
-MYSQL_DUMP_FILE="$BACKUP_ROOT/mysqldump/backup.sql"
+MYSQL_DUMP_FILE="$BACKUP_ROOT/mysqldump/backup.sql.gz"
 DEST="google-backup:server-backup-$(hostname -s)"
 DATE=$(date +"%Y-%m-%d")
 LOGFILE="/var/log/rclone-backup.log"
 MYSQL_PASS="{{ mysql_root }}"
+EMAIL="dave@fio.ie"
+
+# Clear log file at the beginning
+: > "$LOGFILE"
 
 echo "Starting backup at $(date)" | tee -a "$LOGFILE"
 echo "Using backup destination: $DEST" | tee -a "$LOGFILE"
@@ -19,16 +23,21 @@ echo "Using backup destination: $DEST" | tee -a "$LOGFILE"
 mkdir -p "$BACKUP_ROOT/mysqldump"
 mkdir -p "$STAGING"
 
-# Dump MySQL databases
-echo "Dumping MySQL databases..." | tee -a "$LOGFILE"
-mysqldump --all-databases -u root -p"$MYSQL_PASS" > "$MYSQL_DUMP_FILE"
+# Dump and gzip MySQL databases
+echo "Dumping and compressing MySQL databases..." | tee -a "$LOGFILE"
+mysqldump --all-databases -u root -p"$MYSQL_PASS" | gzip -9 > "$MYSQL_DUMP_FILE"
 
 # Rsync source paths to staging directory
 echo "Copying files to staging area: $STAGING" | tee -a "$LOGFILE"
 for path in $SRC_PATHS; do
   name=$(echo "$path" | sed 's|/|_|g' | sed 's|^_||')
   echo "Rsyncing $path to $STAGING/$name" | tee -a "$LOGFILE"
-  rsync -aHAX --delete "$path/" "$STAGING/$name/"
+  rsync -aHAX --delete \
+    --exclude='*/.cache/' \
+    --exclude='*/node_modules/' \
+    --exclude='*/.npm/' \
+    --exclude='*/.git/' \
+    "$path/" "$STAGING/$name/"
 done
 
 # Create tarball from staging directory
@@ -37,27 +46,58 @@ tar -czpf "$TAR_FILE" -C "$STAGING" . || echo "Warning: tar encountered errors" 
 
 # Upload system tarball
 echo "Uploading system tarball to $DEST/$DATE/system" | tee -a "$LOGFILE"
-rclone copy "$TAR_FILE" "$DEST/$DATE/system" \
-  --log-level INFO \
-  --log-file="$LOGFILE"
+rclone copy "$TAR_FILE" "$DEST/$DATE/system" --log-level INFO --log-file="$LOGFILE"
 
 # Upload MySQL dump
 echo "Uploading MySQL dump to $DEST/$DATE/mysqldump" | tee -a "$LOGFILE"
-rclone copy "$(dirname "$MYSQL_DUMP_FILE")" "$DEST/$DATE/mysqldump" \
-  --log-level INFO \
-  --log-file="$LOGFILE"
+rclone copy "$(dirname "$MYSQL_DUMP_FILE")" "$DEST/$DATE/mysqldump" --log-level INFO --log-file="$LOGFILE"
 
-# Retention: keep only the most recent 7 backups
-echo "Applying retention policy (keep 7 latest backups)" | tee -a "$LOGFILE"
-rclone lsf "$DEST" --dirs-only | sort | head -n -7 | while read -r olddir; do
-  echo "Deleting old backup folder: $DEST/$olddir" | tee -a "$LOGFILE"
-  rclone purge "$DEST/$olddir" \
-    --log-level INFO \
-    --log-file="$LOGFILE"
+# Upload log file
+echo "Uploading log file to $DEST/$DATE/log" | tee -a "$LOGFILE"
+rclone copy "$LOGFILE" "$DEST/$DATE/log" --log-level INFO --log-file="$LOGFILE"
+
+# Tiered retention policy
+echo "Applying tiered retention policy (3 daily, 4 weekly, 3 monthly)" | tee -a "$LOGFILE"
+
+all_backups=$(rclone lsf "$DEST" --dirs-only | sed 's|/$||' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort)
+now=$(date +%s)
+declare -A week_map month_map
+keep=()
+
+for date in $all_backups; do
+  backup_ts=$(date -d "$date" +%s 2>/dev/null) || continue
+  days_old=$(( (now - backup_ts) / 86400 ))
+
+  if (( days_old <= 2 )); then
+    keep+=("$date")
+  elif (( days_old <= 30 )); then
+    week=$(date -d "$date" +%G-%V)
+    [[ -z "${week_map[$week]+x}" ]] && keep+=("$date") && week_map["$week"]=1
+  elif [[ "$date" =~ ^[0-9]{4}-[0-9]{2}-01$ ]]; then
+    month=$(date -d "$date" +%Y-%m)
+    [[ -z "${month_map[$month]+x}" ]] && keep+=("$date") && month_map["$month"]=1
+  fi
 done
 
-# Cleanup temporary files
+for date in $all_backups; do
+  if [[ ! " ${keep[*]} " =~ " $date " ]]; then
+    echo "Deleting old backup folder: $DEST/$date" | tee -a "$LOGFILE"
+    rclone purge "$DEST/$date" --log-level INFO --log-file="$LOGFILE"
+  fi
+done
+
+# Cleanup
 echo "Cleaning up temporary files" | tee -a "$LOGFILE"
 rm -rf "$BACKUP_ROOT" "$STAGING"
 
 echo "Backup completed at $(date)" | tee -a "$LOGFILE"
+
+# Send email notification
+SUBJECT="Backup completed: $(hostname -s) $DATE"
+if grep -q "tar encountered errors" "$LOGFILE"; then
+  SUBJECT="[WARNING] $SUBJECT"
+elif grep -q "Deleting old backup folder" "$LOGFILE"; then
+  SUBJECT="[INFO] $SUBJECT"
+fi
+
+mail -s "$SUBJECT" "$EMAIL" < "$LOGFILE"
