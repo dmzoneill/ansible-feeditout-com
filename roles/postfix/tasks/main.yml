@@ -27,6 +27,11 @@
     enabled: true
     state: started
 
+# Key fix begins here
+- name: Run postfix check to fix internal queue structure
+  command: postfix check
+  changed_when: false
+
 - name: Ensure /var/spool/postfix/maildrop has correct permissions
   file:
     path: /var/spool/postfix/maildrop
@@ -50,6 +55,14 @@
     mode: '0700'
     owner: postfix
     group: postfix
+
+- name: Ensure postfix spool has correct ownership
+  file:
+    path: /var/spool/postfix
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
 
 - name: Ensure postfix-updatecerts script exists with correct content and is executable
   copy:

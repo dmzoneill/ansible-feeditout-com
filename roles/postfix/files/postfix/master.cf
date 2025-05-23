@@ -137,6 +137,6 @@ mailman   unix  -       n       n       -       -       pipe
         -o smtpd_sender_restrictions= 
         -o smtpd_recipient_restrictions=permit_mynetworks,reject_unauth_destination 
         -o mynetworks=127.0.0.0/8
-spamassassin unix -     n       n       -       -       pipe
+spamassasin unix -     n       n       -       -       pipe
         user=debian-spamd argv=/usr/bin/spamc -f -e  
         /usr/sbin/sendmail -oi -f ${sender} ${recipient} 
