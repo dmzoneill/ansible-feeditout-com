@@ -75,7 +75,7 @@
   shell: |
     find /var/spool/postfix/private -type s -exec chown root:postfix {} +
   args:
-    warn: false
+    executable: /bin/bash
 
 - name: Start Postfix after correcting permissions
   service:
