@@ -26,6 +26,33 @@
   ignore_errors: true
   changed_when: false
 
+# --- Systemd Integration ---
+
+- name: Ensure systemd is reloaded if needed
+  command: systemctl daemon-reload
+  changed_when: false
+
+- name: Enable postfix@- instance if not already enabled
+  command: systemctl is-enabled postfix@-
+  register: postfix_instance_enabled
+  failed_when: false
+  changed_when: false
+
+- name: Enable postfix@- if not enabled
+  command: systemctl enable postfix@-
+  when: postfix_instance_enabled.rc != 0
+  notify: Reload systemd
+
+- name: Start postfix@- if not already running
+  command: systemctl is-active postfix@-
+  register: postfix_instance_active
+  failed_when: false
+  changed_when: false
+
+- name: Start postfix@- instance
+  command: systemctl start postfix@-
+  when: postfix_instance_active.rc != 0
+
 # --- Cert Hook Script ---
 
 - name: Install postfix-updatecerts script from static file
