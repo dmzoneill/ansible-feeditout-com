@@ -1,35 +1,39 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail  # do NOT use `-e` so we can handle rsync/tar gracefully
 
 SRC_PATHS="/etc /opt /root /home /usr/local /srv /var/log /boot /var/lib/mysql"
+STAGING="/tmp/backup-staging"
 BACKUP_ROOT="/tmp/system-backup"
+TAR_FILE="$BACKUP_ROOT/system.tar.gz"
 MYSQL_DUMP_FILE="$BACKUP_ROOT/mysqldump/backup.sql"
 DEST="google-backup:server-backup-$(hostname)"
 DATE=$(date +"%Y-%m-%d")
 LOGFILE="/var/log/rclone-backup.log"
 MYSQL_PASS="{{ mysql_root }}"
 
-mkdir -p "$BACKUP_ROOT/tars"
-mkdir -p "$(dirname "$MYSQL_DUMP_FILE")"
-
 echo "Starting backup at $(date)" | tee -a "$LOGFILE"
+mkdir -p "$BACKUP_ROOT/mysqldump"
+mkdir -p "$STAGING"
 
-# MySQL Dump
+# Dump MySQL
 echo "Dumping MySQL databases..." | tee -a "$LOGFILE"
 mysqldump --all-databases -u root -p"$MYSQL_PASS" > "$MYSQL_DUMP_FILE"
 
-# Tar each source directory
+# Rsync each path to the staging directory
+echo "Copying files to staging area: $STAGING" | tee -a "$LOGFILE"
 for path in $SRC_PATHS; do
   name=$(echo "$path" | sed 's|/|_|g' | sed 's|^_||')
-  tar_file="$BACKUP_ROOT/tars/${name}.tar.gz"
-  echo "Creating archive $tar_file from $path" | tee -a "$LOGFILE"
-  tar --warning=no-file-changed -czpf "$tar_file" --one-file-system "$path" || \
-    echo "Warning: tar failed for $path" | tee -a "$LOGFILE"
+  echo "Rsyncing $path to $STAGING/$name" | tee -a "$LOGFILE"
+  rsync -aHAX --delete "$path/" "$STAGING/$name/"
 done
 
-# Upload all tarballs
-echo "Uploading tarballs to $DEST/$DATE/system" | tee -a "$LOGFILE"
-rclone copy "$BACKUP_ROOT/tars" "$DEST/$DATE/system" \
+# Tar the entire staging directory
+echo "Creating tarball $TAR_FILE" | tee -a "$LOGFILE"
+tar -czpf "$TAR_FILE" -C "$STAGING" . || echo "Warning: tar encountered errors" | tee -a "$LOGFILE"
+
+# Upload tarball
+echo "Uploading system tarball to $DEST/$DATE/system" | tee -a "$LOGFILE"
+rclone copy "$TAR_FILE" "$DEST/$DATE/system" \
   --log-level INFO \
   --log-file="$LOGFILE"
 
@@ -39,7 +43,7 @@ rclone copy "$(dirname "$MYSQL_DUMP_FILE")" "$DEST/$DATE/mysqldump" \
   --log-level INFO \
   --log-file="$LOGFILE"
 
-# Retention policy
+# Retention policy: keep 7 latest
 echo "Applying retention policy (keep 7 latest backups)" | tee -a "$LOGFILE"
 rclone lsf "$DEST" --dirs-only | sort | head -n -7 | while read -r olddir; do
   echo "Deleting old backup folder: $DEST/$olddir" | tee -a "$LOGFILE"
@@ -47,7 +51,9 @@ rclone lsf "$DEST" --dirs-only | sort | head -n -7 | while read -r olddir; do
     --log-level INFO \
     --log-file="$LOGFILE"
 done
-# Final cleanup
-rm -rf "$BACKUP_ROOT"
+
+# Cleanup
+echo "Cleaning up temporary files" | tee -a "$LOGFILE"
+rm -rf "$BACKUP_ROOT" "$STAGING"
 
 echo "Backup completed at $(date)" | tee -a "$LOGFILE"
