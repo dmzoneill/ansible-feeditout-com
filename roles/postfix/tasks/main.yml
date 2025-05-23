@@ -21,6 +21,8 @@
     directory_mode: '0755'
   notify: Restart postfix
 
+# --- Systemd Service Fix ---
+
 - name: Create override directory for postfix.service
   file:
     path: /etc/systemd/system/postfix.service.d
@@ -43,66 +45,14 @@
     - Reload systemd
     - Restart postfix
 
-- name: Ensure and start Postfix
-  service:
-    name: postfix
-    enabled: true
-    state: started
-
-# --- Permission Checks ---
+# --- Stop Postfix before Permission Fixes ---
 
 - name: Stop Postfix to ensure consistent permission checking
   service:
     name: postfix
     state: stopped
 
-- name: Check maildrop permissions
-  stat:
-    path: /var/spool/postfix/maildrop
-  register: maildrop_stat
-
-- name: Fix maildrop if needed
-  file:
-    path: /var/spool/postfix/maildrop
-    owner: root
-    group: postdrop
-    mode: '0730'
-  when: >
-    maildrop_stat.stat.pw_name != 'root' or
-    maildrop_stat.stat.gr_name != 'postdrop' or
-    maildrop_stat.stat.mode != '0730'
-
-- name: Check private permissions
-  stat:
-    path: /var/spool/postfix/private
-  register: private_stat
-
-- name: Fix private if needed
-  file:
-    path: /var/spool/postfix/private
-    owner: postfix
-    group: postfix
-    mode: '0700'
-  when: >
-    private_stat.stat.pw_name != 'postfix' or
-    private_stat.stat.gr_name != 'postfix' or
-    private_stat.stat.mode != '0700'
-
-- name: Check spool permissions
-  stat:
-    path: /var/spool/postfix
-  register: spool_stat
-
-- name: Fix spool if needed
-  file:
-    path: /var/spool/postfix
-    owner: root
-    group: root
-    mode: '0755'
-  when: >
-    spool_stat.stat.pw_name != 'root' or
-    spool_stat.stat.gr_name != 'root' or
-    spool_stat.stat.mode != '0755'
+# --- Fix Directory Ownerships and Permissions ---
 
 - name: Ensure /usr/sbin/postdrop has correct permissions and group
   file:
@@ -112,6 +62,28 @@
     group: postdrop
     mode: '2755'
 
+- name: Ensure /var/spool/postfix exists with correct permissions
+  file:
+    path: /var/spool/postfix
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure /var/spool/postfix/maildrop has correct permissions
+  file:
+    path: /var/spool/postfix/maildrop
+    owner: root
+    group: postdrop
+    mode: '0730'
+
+- name: Ensure /var/spool/postfix/private has correct permissions
+  file:
+    path: /var/spool/postfix/private
+    owner: postfix
+    group: postfix
+    mode: '0700'
+
 - name: Ensure /var/spool/postfix/defer has correct permissions
   file:
     path: /var/spool/postfix/defer
@@ -119,6 +91,23 @@
     owner: postfix
     group: postfix
     mode: '0700'
+
+- name: Find all subdirectories under /var/spool/postfix
+  find:
+    paths: /var/spool/postfix
+    file_type: directory
+  register: postfix_subdirs
+
+- name: Ensure subdirectory ownerships are correct
+  file:
+    path: "{{ postfix_dir.path }}"
+    owner: >-
+      {{ 'postfix' if '/postfix/defer' in postfix_dir.path or '/postfix/private' in postfix_dir.path else 'root' }}
+    group: >-
+      {{ 'postfix' if '/postfix/defer' in postfix_dir.path or '/postfix/private' in postfix_dir.path else 'root' }}
+  loop: "{{ postfix_subdirs.files }}"
+  loop_control:
+    loop_var: postfix_dir
 
 - name: Check for incorrect socket ownership in private dir
   command: find /var/spool/postfix/private -type s ! -group postfix -print -quit
@@ -128,6 +117,8 @@
 - name: Fix socket permissions only if needed
   command: find /var/spool/postfix/private -type s -exec chown root:postfix {} +
   when: socket_check.stdout != ""
+
+# --- Start and Validate ---
 
 - name: Start Postfix only if stopped
   service:
@@ -172,5 +163,4 @@
   loop: "{{ postfix_maps }}"
   loop_control:
     loop_var: map_file
-  when: ansible_facts['distribution'] != 'Alpine'
   notify: Restart postfix
