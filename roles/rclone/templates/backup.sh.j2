@@ -9,7 +9,7 @@ DATE=$(date +"%Y-%m-%d")
 LOGFILE="/var/log/rclone-backup.log"
 MYSQL_PASS="{{ mysql_root }}"
 
-mkdir -p "$BACKUP_ROOT/zips"
+mkdir -p "$BACKUP_ROOT/tars"
 mkdir -p "$(dirname "$MYSQL_DUMP_FILE")"
 
 echo "Starting backup at $(date)" | tee -a "$LOGFILE"
@@ -18,17 +18,17 @@ echo "Starting backup at $(date)" | tee -a "$LOGFILE"
 echo "Dumping MySQL databases..." | tee -a "$LOGFILE"
 mysqldump --all-databases -u root -p"$MYSQL_PASS" > "$MYSQL_DUMP_FILE"
 
-# Zip and move each source directory
+# Tar each source directory
 for path in $SRC_PATHS; do
   name=$(echo "$path" | sed 's|/|_|g' | sed 's|^_||')
-  zip_file="$BACKUP_ROOT/zips/${name}.zip"
-  echo "Zipping $path to $zip_file" | tee -a "$LOGFILE"
-  zip -r -q "$zip_file" "$path"
+  tar_file="$BACKUP_ROOT/tars/${name}.tar.gz"
+  echo "Creating archive $tar_file from $path" | tee -a "$LOGFILE"
+  tar -czpf "$tar_file" --one-file-system "$path"
 done
 
-# Upload all zip files
-echo "Uploading compressed files to $DEST/$DATE/system" | tee -a "$LOGFILE"
-rclone copy "$BACKUP_ROOT/zips" "$DEST/$DATE/system" \
+# Upload all tarballs
+echo "Uploading tarballs to $DEST/$DATE/system" | tee -a "$LOGFILE"
+rclone copy "$BACKUP_ROOT/tars" "$DEST/$DATE/system" \
   --log-level INFO \
   --log-file="$LOGFILE"
 
