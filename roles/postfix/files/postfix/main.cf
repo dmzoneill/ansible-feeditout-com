@@ -50,7 +50,7 @@ recipient_canonical_maps = regexp:/etc/postfix/canonical, tcp:localhost:10002
 recipient_delimiter = +
 sender_canonical_classes = envelope_sender
 sender_canonical_maps = tcp:localhost:10001
-virtual_alias_maps = hash:/etc/postfix/virtualalias.ashtangayoga.ie
+virtual_alias_maps = hash:/etc/postfix/virtualalias
 virtual_alias_domains = ashtangayoga.ie, ecu-emr.com, feeditout.xyz, feeditout.site, fio.ie
 
 smtpd_delay_reject = yes

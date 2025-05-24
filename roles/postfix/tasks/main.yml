@@ -79,7 +79,7 @@
       - { src: "vhosts", tool: "postmap" }
       - { src: "sasl_passwd", tool: "postmap" }     
       - { src: "helo_access", tool: "postmap" }     
-      - { src: "virtualalias.ashtangayoga.ie", tool: "postmap" }
+      - { src: "virtualalias", tool: "postmap" }
       - { src: "canonical", tool: "postmap" }
       - { src: "recipient_access", tool: "postmap" }
 
