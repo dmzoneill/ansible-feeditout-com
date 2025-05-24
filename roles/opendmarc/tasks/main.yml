@@ -5,12 +5,6 @@
     state: present
     update_cache: true
 
-- name: Ensure /etc exists
-  file:
-    path: /etc
-    state: directory
-    mode: '0755'
-
 - name: Recursively copy OpenDMARC configuration to /etc
   copy:
     src: "{{ role_path }}/files/"
@@ -25,9 +19,9 @@
   file:
     path: /var/spool/postfix/private
     state: directory
-    owner: opendmarc
+    owner: postfix
     group: postfix
-    mode: '0750'
+    mode: '0777'
 
 - name: Enable and start OpenDMARC service
   service:
