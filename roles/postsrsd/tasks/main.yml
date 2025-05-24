@@ -15,8 +15,17 @@
     directory_mode: '0755'
   notify: Restart postsrsd
 
+- name: Update postsrsd condig
+  copy:
+    src: "{{ role_path }}/files/postsrsd"
+    dest: "/etc/default/postsrsd"
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Enable and start postsrsd service
   service:
     name: postsrsd
     enabled: true
     state: started
+
