@@ -76,9 +76,9 @@
         "IsActive": "true"
     },
     {
-        "Name": "@",
+        "Name": "_mta-sts",
         "Type": "TXT",
-        "Address": "_mta-sts.feeditout.com. IN TXT \"v=STSv1; id=20250524T000000\"",
+        "Address": "v=STSv1; id=20250524T000000",
         "TTL": "1799",
         "IsActive": "true"
     }

@@ -5,3 +5,4 @@ playbooks/backups/*
 etc/*
 backups/*
 backup/*
+dns/*bak*
