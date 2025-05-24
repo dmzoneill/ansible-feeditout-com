@@ -17,10 +17,9 @@ html_directory = /usr/share/doc/postfix/html
 smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
-local_recipient_maps =
-smtpd_relay_restrictions = permit_mynetworks, 
-                           permit_sasl_authenticated,
-                           reject_unauth_destination
+local_recipient_maps = unix:passwd.byname $alias_maps
+smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_non_fqdn_recipient, reject_unknown_recipient_domain, reject_unauth_destination, check_recipient_access hash:/etc/postfix/recipient_domains, reject
+
 mydomain = feeditout.com
 myhostname = feeditout.com
 myorigin = feeditout.com
@@ -39,11 +38,11 @@ non_smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 
 recipient_canonical_classes= envelope_recipient,header_recipient
 recipient_canonical_maps = tcp:localhost:10002
-recipient_delimiter = + reject_invalid_hostname, reject_non_fqdn_hostname,
+recipient_delimiter = +
 sender_canonical_classes = envelope_sender
 sender_canonical_maps = tcp:localhost:10001
 virtual_alias_maps = hash:/etc/postfix/virtualalias.ashtangayoga.ie
-virtual_alias_domains = ashtangayoga.ie, ecu-emr.com, feeditout.xyz, feeditout.site
+virtual_alias_domains = ashtangayoga.ie, ecu-emr.com, feeditout.xyz, feeditout.site, feeditout.com, fio.ie
 
 smtpd_delay_reject = yes
 smtpd_error_sleep_time = 1s
@@ -51,20 +50,22 @@ smtp_destination_concurrency_limit = 2
 smtp_destination_rate_delay = 1s
 smtpd_hard_error_limit = 20
 smtpd_helo_required = yes
-smtpd_helo_restrictions = permit_mynetworks,
+smtpd_helo_restrictions = permit_mynetworks, reject_invalid_helo_hostname, reject_non_fqdn_helo_hostname
 smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 #smtp_bind_address = 10.19.0.5
 
 smtpd_recipient_restrictions = permit_sasl_authenticated, check_recipient_access hash:/etc/postfix/recipient_domains, reject
-smtpd_sender_restrictions = reject_non_fqdn_sender,
-                            reject_unlisted_sender,
-                            permit_mynetworks,
-                            permit_sasl_authenticated,
-                            check_sender_access hash:/etc/postfix/sender_access,
-                            reject_unauth_destination,
-                            reject_invalid_hostname,
-                            reject_unknown_sender_domain,
-                            reject_unauth_pipelining
+smtpd_sender_restrictions =
+    reject_non_fqdn_sender,
+    reject_unlisted_sender,
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    check_sender_access hash:/etc/postfix/sender_access,
+    reject_unauth_destination,
+    reject_invalid_hostname,
+    reject_unknown_sender_domain,
+    reject_unauth_pipelining
+
 smtpd_sasl_auth_enable = yes
 smtpd_sasl_security_options = noanonymous
 smtpd_sasl_type = cyrus
@@ -85,7 +86,6 @@ smtpd_use_tls = yes
 smtp_extra_recipient_limit = 10
 smtp_tls_loglevel = 1
 smtp_tls_note_starttls_offer   = yes
-smtp_tls_security_level = may
 smtp_use_tls = yes
 tls_random_source =   dev:/dev/urandom
 sender_bcc_maps = hash:/etc/postfix/bcc_maps
