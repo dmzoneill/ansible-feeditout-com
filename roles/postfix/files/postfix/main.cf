@@ -18,7 +18,14 @@ smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
 local_recipient_maps = unix:passwd.byname $alias_maps
-smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_non_fqdn_recipient, reject_unknown_recipient_domain, reject_unauth_destination, check_recipient_access hash:/etc/postfix/recipient_domains, reject
+smtpd_recipient_restrictions = 
+    permit_mynetworks,
+    permit_sasl_authenticated,
+    reject_non_fqdn_recipient,
+    reject_unknown_recipient_domain,
+    reject_unauth_destination, 
+    check_recipient_access hash:/etc/postfix/recipient_domains,
+    reject
 
 mydomain = feeditout.com
 myhostname = feeditout.com
@@ -54,7 +61,6 @@ smtpd_helo_restrictions = permit_mynetworks, reject_invalid_helo_hostname, rejec
 smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 #smtp_bind_address = 10.19.0.5
 
-smtpd_recipient_restrictions = permit_sasl_authenticated, check_recipient_access hash:/etc/postfix/recipient_domains, reject
 smtpd_sender_restrictions =
     reject_non_fqdn_sender,
     reject_unlisted_sender,
@@ -92,8 +98,6 @@ sender_bcc_maps = hash:/etc/postfix/bcc_maps
 message_size_limit = 52428800
 maximal_queue_lifetime = 1d
 bounce_template_file = /etc/postfix/bounce/bounce.cf
-# transport_maps = regexp:/etc/postfix/transport.microsoft
-# outbound relay configurations
 smtp_sasl_auth_enable = yes
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
 smtp_sasl_security_options = noanonymous
