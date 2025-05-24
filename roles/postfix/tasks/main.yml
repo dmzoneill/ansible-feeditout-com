@@ -80,7 +80,7 @@
       - { src: "sasl_passwd", tool: "postmap" }     
       - { src: "helo_access", tool: "postmap" }     
       - { src: "virtualalias.ashtangayoga.ie", tool: "postmap" }
-      - { src: "transport.microsoft.db", tool: "postmap" }
+      - { src: "canonical", tool: "postmap" }
 
 - name: Rebuild postfix maps if source file exists
   command: "{{ map_file.tool }} hash:/etc/postfix/{{ map_file.src }}"
