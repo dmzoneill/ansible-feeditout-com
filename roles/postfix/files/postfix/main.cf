@@ -19,12 +19,13 @@ smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
 # local_recipient_maps = unix:passwd.byname $alias_maps
 local_recipient_maps =
-smtpd_recipient_restrictions = 
+ssmtpd_recipient_restrictions =
     permit_mynetworks,
     permit_sasl_authenticated,
+    check_recipient_access hash:/etc/postfix/recipient_access,
     reject_non_fqdn_recipient,
     reject_unknown_recipient_domain,
-    reject_unauth_destination, 
+    reject_unauth_destination,
     check_recipient_access hash:/etc/postfix/recipient_domains,
     reject
 
@@ -44,7 +45,7 @@ milter_default_action = accept
 milter_protocol = 2
 non_smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 
-recipient_canonical_classes= envelope_recipient,header_recipient
+recipient_canonical_classes = envelope_recipient,header_recipient
 recipient_canonical_maps = regexp:/etc/postfix/canonical, tcp:localhost:10002
 recipient_delimiter = +
 sender_canonical_classes = envelope_sender
