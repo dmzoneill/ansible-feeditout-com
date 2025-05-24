@@ -110,3 +110,5 @@ ifplugin Mail::SpamAssassin::Plugin::Shortcircuit
 # shortcircuit BAYES_00                ham
 
 endif # Mail::SpamAssassin::Plugin::Shortcircuit
+
+score RCVD_IN_ZEN_BLOCKED_OPENDNS 0

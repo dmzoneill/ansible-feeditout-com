@@ -24,10 +24,9 @@
 
 #example.com default._domainkey.example.com
 
-*@feeditout.com default._dkim.feeditout.com
-*@feeditout.site default._dkim.feeditout.site
-*@feeditout.xyz default._dkim.feeditout.xyz
-*@fio.ie default._dkim.fio.ie
-*@ashtangayoga.ie default._dkim.ashtangayoga.ie
-*@ecu-emr.com default._dkim.ecu-emr.com
-
+*@feeditout.com default._domainkey.feeditout.com
+*@feeditout.xyz default._domainkey.feeditout.xyz
+*@feeditout.site default._domainkey.feeditout.site
+*@fio.ie default._domainkey.fio.ie
+*@ashtangayoga.ie default._domainkey.ashtangayoga.ie
+*@ecu-emr.com default._domainkey.ecu-emr.com
