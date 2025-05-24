@@ -1,1 +1,1 @@
-postmaster@feeditout.com. postmaster@feeditout.com
+/@([a-z0-9.-]+)\.\s*$/    @$1

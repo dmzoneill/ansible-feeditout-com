@@ -45,7 +45,7 @@ milter_protocol = 2
 non_smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 
 recipient_canonical_classes= envelope_recipient,header_recipient
-recipient_canonical_maps = hash:/etc/postfix/canonical, tcp:localhost:10002
+recipient_canonical_maps = regexp:/etc/postfix/canonical, tcp:localhost:10002
 recipient_delimiter = +
 sender_canonical_classes = envelope_sender
 sender_canonical_maps = tcp:localhost:10001
