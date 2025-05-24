@@ -7,20 +7,6 @@
         "IsActive": "true"
     },
     {
-        "Name": "imap",
-        "Type": "CNAME",
-        "Address": "feeditout.xyz.",
-        "TTL": "1799",
-        "IsActive": "true"
-    },
-    {
-        "Name": "pop3",
-        "Type": "CNAME",
-        "Address": "feeditout.xyz.",
-        "TTL": "1799",
-        "IsActive": "true"
-    },
-    {
         "Name": "www",
         "Type": "CNAME",
         "Address": "feeditout.xyz.",
@@ -64,13 +50,6 @@
         "IsActive": "true"
     },
     {
-        "Name": "_adsp._domainkey",
-        "Type": "TXT",
-        "Address": "dkim=all",
-        "TTL": "1799",
-        "IsActive": "true"
-    },
-    {
         "Name": "_dmarc",
         "Type": "TXT",
         "Address": "v=DMARC1; p=quarantine; rua=mailto:postmaster@feeditout.com",
@@ -85,9 +64,16 @@
         "IsActive": "true"
     },
     {
-        "Name": "@",
+        "Name": "_mta-sts",
         "Type": "TXT",
-        "Address": "_mta-sts.feeditout.com. IN TXT \"v=STSv1; id=20250524T000000\"",
+        "Address": "v=STSv1; id=20250524T000000",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "_smtp._tls",
+        "Type": "TXT",
+        "Address": "v=TLSRPTv1; rua=mailto:postmaster@feeditout.com",
         "TTL": "1799",
         "IsActive": "true"
     }

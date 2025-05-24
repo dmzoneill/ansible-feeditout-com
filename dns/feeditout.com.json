@@ -13,13 +13,6 @@
         "IsActive": "true"
     },
     {
-        "Name": "mta-sts",
-        "Type": "CNAME",
-        "Address": "feeditout.com.",
-        "TTL": "1799",
-        "IsActive": "true"
-    },
-    {
         "Name": "@",
         "Type": "MX",
         "MXPref": "10",
@@ -55,13 +48,6 @@
         "IsActive": "true"
     },
     {
-        "Name": "_adsp._domainkey",
-        "Type": "TXT",
-        "Address": "dkim=all",
-        "TTL": "1799",
-        "IsActive": "true"
-    },
-    {
         "Name": "_dmarc",
         "Type": "TXT",
         "Address": "v=DMARC1; p=quarantine; rua=mailto:postmaster@feeditout.com",
@@ -79,6 +65,13 @@
         "Name": "_mta-sts",
         "Type": "TXT",
         "Address": "v=STSv1; id=20250524T000000",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "_smtp._tls",
+        "Type": "TXT",
+        "Address": "v=TLSRPTv1; rua=mailto:postmaster@feeditout.com",
         "TTL": "1799",
         "IsActive": "true"
     }
