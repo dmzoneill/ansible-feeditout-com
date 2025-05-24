@@ -49,7 +49,7 @@ recipient_delimiter = +
 sender_canonical_classes = envelope_sender
 sender_canonical_maps = tcp:localhost:10001
 virtual_alias_maps = hash:/etc/postfix/virtualalias.ashtangayoga.ie
-virtual_alias_domains = ashtangayoga.ie, ecu-emr.com, feeditout.xyz, feeditout.site, feeditout.com, fio.ie
+virtual_alias_domains = ashtangayoga.ie, ecu-emr.com, feeditout.xyz, feeditout.site, fio.ie
 
 smtpd_delay_reject = yes
 smtpd_error_sleep_time = 1s
@@ -57,12 +57,12 @@ smtp_destination_concurrency_limit = 2
 smtp_destination_rate_delay = 1s
 smtpd_hard_error_limit = 20
 smtpd_helo_required = yes
-smtpd_helo_restrictions = 
+smtpd_helo_restrictions =
     permit_mynetworks,
     permit_sasl_authenticated,
     check_helo_access hash:/etc/postfix/helo_access,
-    reject_invalid_helo_hostname,
-    reject_non_fqdn_helo_hostname
+    reject_invalid_helo_hostname
+
 smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 #smtp_bind_address = 10.19.0.5
 
