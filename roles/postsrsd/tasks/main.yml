@@ -15,7 +15,7 @@
     directory_mode: '0755'
   notify: Restart postsrsd
 
-- name: Update postsrsd condig
+- name: Update postsrsd config
   copy:
     src: "{{ role_path }}/files/postsrsd"
     dest: "/etc/default/postsrsd"
