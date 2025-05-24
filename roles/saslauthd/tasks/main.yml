@@ -7,6 +7,14 @@
     state: present
     update_cache: yes
 
+- name: Ensure saslauth user exists
+  user:
+    name: saslauth
+    group: sasl
+    system: yes
+    shell: /usr/sbin/nologin
+    create_home: no
+
 - name: Ensure saslauthd runtime directory exists
   file:
     path: /var/spool/postfix/var/run/saslauthd
