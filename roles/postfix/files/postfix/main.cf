@@ -59,8 +59,7 @@ smtpd_hard_error_limit = 20
 smtpd_helo_required = yes
 smtpd_helo_restrictions =
     permit_mynetworks,
-    permit_sasl_authenticated,
-    reject_invalid_helo_hostname
+    permit_sasl_authenticated
 
 smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 #smtp_bind_address = 10.19.0.5
