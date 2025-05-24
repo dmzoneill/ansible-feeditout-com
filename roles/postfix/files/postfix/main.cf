@@ -60,22 +60,14 @@ smtpd_helo_required = yes
 smtpd_helo_restrictions =
     permit_mynetworks,
     permit_sasl_authenticated,
-    check_helo_access hash:/etc/postfix/helo_access,
     reject_invalid_helo_hostname
 
 smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 #smtp_bind_address = 10.19.0.5
 
 smtpd_sender_restrictions =
-    reject_non_fqdn_sender,
-    reject_unlisted_sender,
     permit_mynetworks,
-    permit_sasl_authenticated,
-    check_sender_access hash:/etc/postfix/sender_access,
-    reject_unauth_destination,
-    reject_invalid_hostname,
-    reject_unknown_sender_domain,
-    reject_unauth_pipelining
+    permit_sasl_authenticated
 
 smtpd_sasl_auth_enable = yes
 smtpd_sasl_security_options = noanonymous
