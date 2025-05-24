@@ -94,7 +94,6 @@ smtp_use_tls = yes
 tls_random_source =   dev:/dev/urandom
 sender_bcc_maps = hash:/etc/postfix/bcc_maps
 message_size_limit = 52428800
-maximal_queue_lifetime = 1d
 bounce_template_file = /etc/postfix/bounce/bounce.cf
 smtp_sasl_auth_enable = yes
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
