@@ -1,0 +1,96 @@
+[
+    {
+        "Name": "@",
+        "Type": "A",
+        "Address": "185.219.84.242",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "imap",
+        "Type": "CNAME",
+        "Address": "yogamantra.life.",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "pop3",
+        "Type": "CNAME",
+        "Address": "yogamantra.life.",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "www",
+        "Type": "CNAME",
+        "Address": "yogamantra.life.",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "@",
+        "Type": "MX",
+        "Address": "yogamantra.life.",
+        "MXPref": "10",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "@",
+        "Type": "MX",
+        "Address": "fio.ie.",
+        "MXPref": "20",
+        "IsActive": "true"
+    },
+    {
+        "Name": "@",
+        "Type": "TXT",
+        "Address": "v=spf1 a mx ip4:185.219.84.242/32 include:_spf.google.com ~all",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "@",
+        "Type": "TXT",
+        "Address": "google-site-verification=e7H7iN4zBUxNddQJ2X5FjF_9V7BZFq5oibapfajgoE4",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "@",
+        "Type": "TXT",
+        "Address": "google-site-verification=-7oLo9WvtDB19dep20oGoCSNHX6s3YnE07HYwjijuVo",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "_adsp._domainkey",
+        "Type": "TXT",
+        "Address": "dkim=all",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "_dmarc",
+        "Type": "TXT",
+        "Address": "v=DMARC1; p=quarantine; rua=mailto:postmaster@feeditout.com",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "default._domainkey",
+        "Type": "TXT",
+        "Address": "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD7NBRXmD4mZxxpUpRY8kbbaCaeP9kSGM5+Od6cnCNTJSaFG8eU/b1oxPJgKIrYw63B+wshmCF3u2BCnzqbgAwbZFrWo6P+dMM7T1z2Tv9u/VbNVeU+y5H7SCpwxVj+mTqUJ2amwE9l9EY3SHDzHciaxOhSQDq/KHZinjX24T4MFwIDAQAB;",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "@",
+        "Type": "TXT",
+        "Address": "_mta-sts.feeditout.com. IN TXT \"v=STSv1; id=20250524T000000\"",
+        "TTL": "1799",
+        "IsActive": "true"
+    }
+]
+
+
