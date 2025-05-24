@@ -60,5 +60,3 @@ CHROOT=/var/lib/postsrsd
 # -t<n>  set connection timeout to <n> seconds (default: 1800)
 #
 #SRS_EXTRA_OPTIONS=-A
-
-IGNORE_LOCAL = 1
