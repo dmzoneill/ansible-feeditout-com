@@ -78,6 +78,7 @@
       - { src: "recipient_domains", tool: "postmap" }
       - { src: "vhosts", tool: "postmap" }
       - { src: "sasl_passwd", tool: "postmap" }     
+      - { src: "helo", tool: "postmap" }     
       - { src: "virtualalias.ashtangayoga.ie", tool: "postmap" }
       - { src: "transport.microsoft.db", tool: "postmap" }
 
