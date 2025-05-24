@@ -3,9 +3,9 @@
 # then uncomment the following line and replace example.com with your domain
 # name, then restart OpenDKIM. Additional keys may be added on separate lines.
 
-default._dkim.feeditout.com feeditout.com:default:/etc/dkimkeys/keys/default.private
-default._dkim.feeditout.xyz feeditout.xyz:default:/etc/dkimkeys/keys/default.private
-default._dkim.feeditout.site feeditout.site:default:/etc/dkimkeys/keys/default.private
-default._dkim.fio.ie fio.ie:default:/etc/dkimkeys/keys/default.private
-default._dkim.ashtangayoga.ie ashtangayoga.ie:default:/etc/dkimkeys/keys/default.private
-default._dkim.ecu-emr.com ecu-emr.com:default:/etc/dkimkeys/keys/default.private
+default._domainkey.feeditout.com     feeditout.com:default:/etc/dkimkeys/keys/default.private
+default._domainkey.feeditout.xyz     feeditout.xyz:default:/etc/dkimkeys/keys/default.private
+default._domainkey.feeditout.site    feeditout.site:default:/etc/dkimkeys/keys/default.private
+default._domainkey.fio.ie            fio.ie:default:/etc/dkimkeys/keys/default.private
+default._domainkey.ashtangayoga.ie   ashtangayoga.ie:default:/etc/dkimkeys/keys/default.private
+default._domainkey.ecu-emr.com       ecu-emr.com:default:/etc/dkimkeys/keys/default.private
