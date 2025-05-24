@@ -1,0 +1,4 @@
+---
+saslauthd_mechanism: pam
+saslauthd_threads: 5
+saslauthd_options: "-c -m /var/spool/postfix/var/run/saslauthd"

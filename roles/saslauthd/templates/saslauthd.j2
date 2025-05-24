@@ -1,0 +1,8 @@
+# Managed by Ansible
+
+START=yes
+DESC="SASL Authentication Daemon"
+NAME="saslauthd"
+MECHANISMS={{ saslauthd_mechanism }}
+THREADS={{ saslauthd_threads }}
+OPTIONS="{{ saslauthd_options }}"

@@ -1,0 +1,36 @@
+---
+- name: Install sasl packages
+  apt:
+    name:
+      - sasl2-bin
+      - libsasl2-modules
+    state: present
+    update_cache: yes
+
+- name: Ensure saslauthd runtime directory exists
+  file:
+    path: /var/spool/postfix/var/run/saslauthd
+    state: directory
+    owner: saslauth
+    group: sasl
+    mode: '0755'
+    recurse: yes
+
+- name: Add postfix to sasl group
+  user:
+    name: postfix
+    groups: sasl
+    append: yes
+
+- name: Configure saslauthd defaults
+  template:
+    src: saslauthd.j2
+    dest: /etc/default/saslauthd
+    mode: '0644'
+  notify: Restart saslauthd
+
+- name: Enable and start saslauthd
+  systemd:
+    name: saslauthd
+    enabled: yes
+    state: started
