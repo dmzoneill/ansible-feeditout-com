@@ -77,7 +77,6 @@ smtpd_sasl_auth_enable = yes
 smtpd_tls_auth_only = yes
 broken_sasl_auth_clients = yes
 smtpd_soft_error_limit = 10
-smtpd_tls_auth_only = no
 smtp_tls_CApath = /etc/ssl/certs
 smtpd_tls_CApath = /etc/ssl/certs
 #smtpd_tls_CAfile = /etc/letsencrypt/live/feeditout.com/fullchain.pem
