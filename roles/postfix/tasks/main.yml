@@ -83,6 +83,22 @@
       - { src: "canonical", tool: "postmap" }
       - { src: "recipient_access", tool: "postmap" }
 
+- name: Sync passwd into postfix chroot
+  copy:
+    src: /etc/passwd
+    dest: /var/spool/postfix/etc/passwd
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Sync group into postfix chroot
+  copy:
+    src: /etc/group
+    dest: /var/spool/postfix/etc/group
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Rebuild postfix maps if source file exists
   command: "{{ map_file.tool }} hash:/etc/postfix/{{ map_file.src }}"
   args:
