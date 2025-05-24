@@ -70,9 +70,12 @@ smtpd_sender_restrictions =
     permit_mynetworks,
     permit_sasl_authenticated
 
-smtpd_sasl_auth_enable = yes
 smtpd_sasl_security_options = noanonymous
 smtpd_sasl_type = cyrus
+smtpd_sasl_path = /var/run/saslauthd/mux
+smtpd_sasl_auth_enable = yes
+smtpd_tls_auth_only = yes
+broken_sasl_auth_clients = yes
 smtpd_soft_error_limit = 10
 smtpd_tls_auth_only = no
 smtp_tls_CApath = /etc/ssl/certs

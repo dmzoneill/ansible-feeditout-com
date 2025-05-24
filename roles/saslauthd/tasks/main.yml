@@ -46,6 +46,17 @@
     fstype: none
   notify: Restart saslauthd
 
+- name: Add postfix to sasl group
+  user:
+    name: postfix
+    groups: sasl
+    append: yes
+
+- name: Set correct permissions on saslauthd directory
+  file:
+    path: /var/spool/postfix/var/run/saslauthd
+    mode: '0755'
+
 - name: Enable and start saslauthd
   systemd:
     name: saslauthd
