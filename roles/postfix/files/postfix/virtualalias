@@ -1,11 +1,91 @@
-postmaster@feeditout.com.                       postmaster@feeditout.com
-info@ashtangayoga.ie                            cu.eunice@gmail.com
-eunice@ashtangayoga.ie                          cu.eunice@gmail.com
-dave@ashtangayoga.ie                            dave
-doireann@ashtangayoga.ie                        lovedaisychains@gmail.com
-danni@ashtangayoga.ie                           ganeshayogacork@gmail.com
-bridget@ashtangayoga.ie                         bridgetaoconnor@gmail.com
-denisa@ashtangayoga.ie                          denisource@gmail.com
-visitor@ashtangayoga.ie                         devnull
-teachers@ashtangayoga.ie                        lovedaisychains@gmail.com, cu.eunice@gmail.com, ganeshayogacork@gmail.com, bridgetaoconnor@gmail.com, denisource@gmail.com
-user.notifications.disabled@ashtangayoga.ie	    devnull
+
+# Explicit mapping for postmaster with/without trailing dot
+postmaster@feeditout.com       dave, dmz.oneill@gmail.com
+postmaster@feeditout.com.      dave, dmz.oneill@gmail.com
+
+# Ayc
+info@ashtangayoga.ie           cu.eunice@gmail.com
+eunice@ashtangayoga.ie         cu.eunice@gmail.com
+
+# Catch-all mappings for all users on all domains
+# Format: user@domain -> resolved target
+
+d@feeditout.com                dave, dmz.oneill@gmail.com
+d@feeditout.site               dave, dmz.oneill@gmail.com
+d@feeditout.xyz                dave, dmz.oneill@gmail.com
+d@ashtangayoga.ie              dave, dmz.oneill@gmail.com
+d@yogamantra.com               dave, dmz.oneill@gmail.com
+d@ecu-emr.com                  dave, dmz.oneill@gmail.com
+d@fio.ie                       dave, dmz.oneill@gmail.com
+
+b1@feeditout.com               dave, dmz.oneill@gmail.com
+b1@feeditout.site              dave, dmz.oneill@gmail.com
+b1@feeditout.xyz               dave, dmz.oneill@gmail.com
+b1@ashtangayoga.ie             dave, dmz.oneill@gmail.com
+b1@yogamantra.com              dave, dmz.oneill@gmail.com
+b1@ecu-emr.com                 dave, dmz.oneill@gmail.com
+b1@fio.ie                      dave, dmz.oneill@gmail.com
+
+b2@feeditout.com               dave, dmz.oneill@gmail.com
+b2@feeditout.site              dave, dmz.oneill@gmail.com
+b2@feeditout.xyz               dave, dmz.oneill@gmail.com
+b2@ashtangayoga.ie             dave, dmz.oneill@gmail.com
+b2@yogamantra.com              dave, dmz.oneill@gmail.com
+b2@ecu-emr.com                 dave, dmz.oneill@gmail.com
+b2@fio.ie                      dave, dmz.oneill@gmail.com
+
+b3@feeditout.com               dave, dmz.oneill@gmail.com
+b3@feeditout.site              dave, dmz.oneill@gmail.com
+b3@feeditout.xyz               dave, dmz.oneill@gmail.com
+b3@ashtangayoga.ie             dave, dmz.oneill@gmail.com
+b3@yogamantra.com              dave, dmz.oneill@gmail.com
+b3@ecu-emr.com                 dave, dmz.oneill@gmail.com
+b3@fio.ie                      dave, dmz.oneill@gmail.com
+
+b4@feeditout.com               dave, dmz.oneill@gmail.com
+b4@feeditout.site              dave, dmz.oneill@gmail.com
+b4@feeditout.xyz               dave, dmz.oneill@gmail.com
+b4@ashtangayoga.ie             dave, dmz.oneill@gmail.com
+b4@yogamantra.com              dave, dmz.oneill@gmail.com
+b4@ecu-emr.com                 dave, dmz.oneill@gmail.com
+b4@fio.ie                      dave, dmz.oneill@gmail.com
+
+b5@feeditout.com               dave, dmz.oneill@gmail.com
+b5@feeditout.site              dave, dmz.oneill@gmail.com
+b5@feeditout.xyz               dave, dmz.oneill@gmail.com
+b5@ashtangayoga.ie             dave, dmz.oneill@gmail.com
+b5@yogamantra.com              dave, dmz.oneill@gmail.com
+b5@ecu-emr.com                 dave, dmz.oneill@gmail.com
+b5@fio.ie                      dave, dmz.oneill@gmail.com
+
+dave@feeditout.com             dave, dmz.oneill@gmail.com
+dave@feeditout.site            dave, dmz.oneill@gmail.com
+dave@feeditout.xyz             dave, dmz.oneill@gmail.com
+dave@ashtangayoga.ie           dave, dmz.oneill@gmail.com
+dave@yogamantra.com            dave, dmz.oneill@gmail.com
+dave@ecu-emr.com               dave, dmz.oneill@gmail.com
+dave@fio.ie                    dave, dmz.oneill@gmail.com
+
+proxykillah@feeditout.com      dave, dmz.oneill@gmail.com
+proxykillah@feeditout.site     dave, dmz.oneill@gmail.com
+proxykillah@feeditout.xyz      dave, dmz.oneill@gmail.com
+proxykillah@ashtangayoga.ie    dave, dmz.oneill@gmail.com
+proxykillah@yogamantra.com     dave, dmz.oneill@gmail.com
+proxykillah@ecu-emr.com        dave, dmz.oneill@gmail.com
+proxykillah@fio.ie             dave, dmz.oneill@gmail.com
+
+tim@feeditout.com              dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+tim@feeditout.site             dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+tim@feeditout.xyz              dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+tim@ashtangayoga.ie            dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+tim@yogamantra.com             dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+tim@ecu-emr.com                dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+tim@fio.ie                     dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+
+feeditout@feeditout.com        dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+feeditout@feeditout.site       dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+feeditout@feeditout.xyz        dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+feeditout@ashtangayoga.ie      dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+feeditout@yogamantra.com       dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+feeditout@ecu-emr.com          dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+feeditout@fio.ie               dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
