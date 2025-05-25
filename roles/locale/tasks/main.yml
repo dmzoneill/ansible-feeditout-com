@@ -28,13 +28,19 @@
 
 - name: Generate locale
   ansible.builtin.command: locale-gen "{{ locale_lang }}"
-  args:
-    creates: "/usr/lib/locale/{{ locale_lang }}"
+  changed_when: "'done' in locale_gen_output.stdout"
   register: locale_gen_output
-  changed_when: "'generated' in locale_gen_output.stdout"
 
-- name: Update system-wide locale settings
+- name: Update system-wide locale settings (update-locale)
   ansible.builtin.command: >
     update-locale LANG={{ locale_lang }}
     LC_ALL={{ locale_lc_all }}
   changed_when: false
+
+- name: Ensure LANGUAGE is set directly in /etc/default/locale
+  ansible.builtin.lineinfile:
+    path: /etc/default/locale
+    regexp: '^LANGUAGE='
+    line: 'LANGUAGE="{{ locale_language }}"'
+    create: yes
+
