@@ -24,6 +24,7 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 # 
 # m h  dom mon dow   command
+MAILTO="dave@fio.ie"
 0 11 * * * cd /home/dave/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/ && /usr/bin/php /home/dave/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/site-emailer.php expiration
 0 * * * * cd /home/dave/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/ && /usr/bin/php /home/dave/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/site-emailer.php reminder
 0 0 * * * cd /home/dave/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/ && /usr/bin/php /home/dave/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/moondays.php
