@@ -74,7 +74,7 @@ milter_protocol = 2
 smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 non_smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 
-# SASL Auth (if you're accepting mail from authenticated clients)
+# SASL Auth
 smtpd_sasl_auth_enable = yes
 smtpd_sasl_type = cyrus
 smtpd_sasl_path = /var/run/saslauthd/mux
