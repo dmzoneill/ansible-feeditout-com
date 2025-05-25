@@ -19,6 +19,8 @@
         - clean
         - hostname
         - cron
+        - logrotate
+        - passwd
         - fail2ban
         - clamav
         - rsyslog

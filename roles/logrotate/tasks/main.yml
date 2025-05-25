@@ -1,0 +1,16 @@
+---
+- name: Ensure logrotate is installed
+  ansible.builtin.package:
+    name: logrotate
+    state: present
+
+- name: Ensure custom logrotate configs are present
+  ansible.builtin.template:
+    src: logrotate.d.j2
+    dest: "/etc/logrotate.d/{{ config.name }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ logrotate_configs }}"
+  loop_control:
+    loop_var: config
