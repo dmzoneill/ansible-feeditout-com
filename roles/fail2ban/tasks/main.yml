@@ -22,8 +22,9 @@
     - "{{ role_path }}/files/*"
   loop_control:
     loop_var: f2b_file
+  notify: Restart fail2ban
 
-- name: Ensure Apache2 is started and enabled
+- name: Ensure jail2ban is started and enabled
   service:
     name: fail2ban
     state: started
