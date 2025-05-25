@@ -4,8 +4,8 @@ destemail = dmz.oneill@gmail.com
 sender = dave@feeditout.com
 mta = postfix
 
-# Use the standard action (ban only)
-action = %(action_)s  # Simplified to just banning (default action)
+# Use a valid action (ban only, default action)
+action = iptables-multiport[name=fail2ban, port="ssh,smtp,ssmtp,465,submission"]
 
 # Log backend fallback
 backend = auto
@@ -23,14 +23,14 @@ filter  = sshd
 port    = ssh
 logpath = /var/log/auth.log
 backend = systemd
-action  = %(action_)s  # Simple ban action (default)
+action  = iptables-multiport[name=sshd, port="ssh"]  # Action for SSH
 
 [postfix]
 enabled = true
 filter  = postfix
 port    = smtp,ssmtp,submission
 logpath = /var/log/mail.log
-action  = %(action_)s  # Simple ban action (default)
+action  = iptables-multiport[name=postfix, port="smtp,ssmtp,submission"]  # Action for Postfix
 
 [postfix-sasl]
 enabled = true
@@ -46,7 +46,7 @@ filter  = postfix
 port    = smtp
 logpath = /var/log/mail.log
 maxretry = 1
-action = %(action_)s  # Simple ban action (default)
+action = iptables-multiport[name=sasl, port="smtp"]  # Action for SASL
 
 [postfix-failedauth]
 enabled = false
