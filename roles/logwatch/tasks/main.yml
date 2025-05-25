@@ -1,0 +1,14 @@
+---
+- name: Install Logwatch
+  apt:
+    name: logwatch
+    state: present
+    update_cache: yes
+
+- name: Copy Logwatch configuration
+  template:
+    src: logwatch.conf.j2
+    dest: /etc/logwatch/conf/logwatch.conf
+    owner: root
+    group: root
+    mode: '0644'
