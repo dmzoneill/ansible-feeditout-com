@@ -112,6 +112,7 @@
   when:
     - git_dirty.stdout == ""
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
+  
 
 - name: Get current commit hash after pull (as dave)
   become: true

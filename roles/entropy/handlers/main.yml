@@ -1,6 +1,6 @@
-- name: Reload systemd and enable rng-tools
-  ansible.builtin.shell: |
-    systemctl daemon-reexec
-    systemctl daemon-reload
-    systemctl enable rng-tools
-  when: entropy_daemon == "rng-tools"
+- name: Reload systemd and enable rng-tools-debian
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: rng-tools-debian
+    enabled: true
+    state: restarted

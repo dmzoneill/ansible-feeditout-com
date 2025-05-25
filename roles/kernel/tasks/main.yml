@@ -20,7 +20,10 @@
     loop_var: param
 
 - name: Remove kernel.modules_disabled from config files
-  shell: "sed -i '/^kernel\\.modules_disabled/d' {{ path }}"
+  lineinfile:
+    path: "{{ path }}"
+    regexp: '^kernel\.modules_disabled'
+    state: absent
   with_fileglob:
     - /etc/sysctl.conf
     - /etc/sysctl.d/*.conf

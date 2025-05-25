@@ -5,30 +5,47 @@
     state: present
     update_cache: yes
 
-- name: Ensure entropy daemon is started
-  ansible.builtin.service:
-    name: "{{ entropy_service_name | default(entropy_daemon) }}"
-    state: started
+- name: Remove legacy rng-tools package if present
+  ansible.builtin.apt:
+    name: rng-tools
+    state: absent
 
-- name: Enable rng-tools manually on Debian
-  when: entropy_daemon == "rng-tools"
+- name: Disable legacy rng-tools service if it exists
+  ansible.builtin.systemd:
+    name: rng-tools
+    state: stopped
+    enabled: false
+  ignore_errors: true
+
+- name: Create config file for rng-tools-debian
+  when: entropy_daemon == "rng-tools-debian"
   ansible.builtin.copy:
-    dest: /etc/systemd/system/rng-tools.service
+    dest: /etc/default/rng-tools-debian
+    content: |
+      HRNGDEVICE=/dev/urandom
+    mode: '0644'
+
+- name: Provide systemd override for rng-tools-debian to use config
+  when: entropy_daemon == "rng-tools-debian"
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/rng-tools-debian.service
     content: |
       [Unit]
-      Description=RNG entropy gatherer daemon
+      Description=RNG entropy gatherer daemon (Debian variant)
       After=network.target
 
       [Service]
-      ExecStart=/usr/sbin/rngd -f
+      EnvironmentFile=/etc/default/rng-tools-debian
+      ExecStart=/usr/sbin/rngd -f --rng-device=${HRNGDEVICE}
       Type=simple
 
       [Install]
       WantedBy=multi-user.target
-  notify: Reload systemd and enable rng-tools
+  notify: Reload systemd and enable rng-tools-debian
 
 - name: Enable service normally (e.g., for haveged)
-  when: entropy_daemon != "rng-tools"
+  when: entropy_daemon != "rng-tools-debian"
   ansible.builtin.service:
     name: "{{ entropy_service_name | default(entropy_daemon) }}"
     enabled: true
+    state: started
