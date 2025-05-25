@@ -1,6 +1,0 @@
-- name: Reload systemd and enable rng-tools-debian
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: rng-tools-debian
-    enabled: true
-    state: restarted

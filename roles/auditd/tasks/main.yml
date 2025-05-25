@@ -14,16 +14,16 @@
     group: root
     mode: '0755'
 
-- name: Deploy auditd configuration
+- name: Deploy auditd configuration files individually
   copy:
-    src: "{{ role_path }}/files/"
-    dest: /etc/audit/
+    src: "{{ item }}"
+    dest: "/etc/audit/{{ item | basename }}"
     owner: root
     group: root
     mode: '0640'
-    directory_mode: '0755'
+  with_fileglob:
+    - "{{ role_path }}/files/*.conf"
   notify: restart auditd
-  ignore_errors: false
 
 - name: Enable and start auditd
   systemd:
@@ -31,7 +31,7 @@
     enabled: true
     state: started
 
-- name: Ensure sysstat is installed and enabled
+- name: Ensure sysstat is installed
   apt:
     name: sysstat
     state: present
@@ -41,13 +41,16 @@
     path: /etc/default/sysstat
     regexp: '^ENABLED='
     line: 'ENABLED="true"'
-  notify: restart sysstat
+  notify: restart sysstat timers
 
-- name: Restart sysstat
+- name: Enable and start sysstat timers
   systemd:
-    name: sysstat
+    name: "{{ item }}"
     enabled: true
-    state: restarted
+    state: started
+  loop:
+    - sysstat-collect.timer
+    - sysstat-summary.timer
 
 - name: Deploy auditd email alert script
   template:
