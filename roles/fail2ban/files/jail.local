@@ -1,53 +1,43 @@
 [DEFAULT]
-# Email notifications
 destemail = dmz.oneill@gmail.com
 sender = dave@feeditout.com
 mta = postfix
-
-# Use a valid action (ban only, default action)
 action = iptables-multiport[name=fail2ban, port="ssh,smtp,ssmtp,465,submission"]
-
-# Log backend fallback
 backend = auto
-
-# Ban settings (can override per jail if needed)
 bantime = 10m
 findtime = 10m
 maxretry = 5
 
-# Jails
-
 [sshd]
 enabled = true
-filter  = sshd
-port    = ssh
+filter = sshd
+port = ssh
 logpath = /var/log/auth.log
 backend = systemd
-action  = iptables-multiport[name=sshd, port="ssh"]  # Action for SSH
+action = iptables-multiport[name=sshd, port="ssh"]
 
 [postfix]
 enabled = true
-filter  = postfix
-port    = smtp,ssmtp,submission
+filter = postfix
+port = smtp,ssmtp,submission
 logpath = /var/log/mail.log
-action  = iptables-multiport[name=postfix, port="smtp,ssmtp,submission"]  # Action for Postfix
+action = iptables-multiport[name=postfix, port="smtp,ssmtp,submission"]
 
 [postfix-sasl]
 enabled = true
-filter  = postfix
+filter = postfix
 logpath = /var/log/mail.log
 maxretry = 5
 bantime = 24h
-action = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]  # Keeping the multiport action
+action = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]
 
 [sasl]
 enabled = true
-filter  = postfix
-port    = smtp
+filter = postfix
+port = smtp
 logpath = /var/log/mail.log
 maxretry = 1
-action = iptables-multiport[name=sasl, port="smtp"]  # Action for SASL
+action = iptables-multiport[name=sasl, port="smtp"]
 
 [postfix-failedauth]
 enabled = false
-# No filter needed since it's disabled
