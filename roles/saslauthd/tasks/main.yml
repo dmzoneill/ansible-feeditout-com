@@ -62,3 +62,12 @@
     name: saslauthd
     enabled: yes
     state: started
+
+- name: Ensure saslauthd socket is bind-mounted into postfix chroot
+  mount:
+    src: /var/run/saslauthd
+    path: /var/spool/postfix/var/run/saslauthd
+    opts: bind
+    state: mounted
+    fstype: none
+  notify: Restart saslauthd
