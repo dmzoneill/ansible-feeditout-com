@@ -4,8 +4,8 @@ destemail = dmz.oneill@gmail.com
 sender = dave@feeditout.com
 mta = postfix
 
-# Use the standard action (ban + whois + send logs)
-action = %(action_mwl)s
+# Use the standard action (ban only)
+action = %(action_)s  # Replace action_mwl with action_
 
 # Log backend fallback
 backend = auto
@@ -23,14 +23,14 @@ filter  = sshd
 port    = ssh
 logpath = /var/log/auth.log
 backend = systemd
-action  = %(action_mwl)s
+action  = %(action_)s  # Replace action_mwl with action_
 
 [postfix]
 enabled = true
 filter  = postfix
 port    = smtp,ssmtp,submission
 logpath = /var/log/mail.log
-action  = %(action_mwl)s
+action  = %(action_)s  # Replace action_mwl with action_
 
 [postfix-sasl]
 enabled = true
@@ -46,7 +46,7 @@ filter  = postfix
 port    = smtp
 logpath = /var/log/mail.log
 maxretry = 1
-action = %(action_mwl)s
+action = %(action_)s  # Replace action_mwl with action_
 
 [postfix-failedauth]
 enabled = false
