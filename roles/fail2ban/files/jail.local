@@ -2,7 +2,7 @@
 destemail = dmz.oneill@gmail.com
 sender = dave@feeditout.com
 mta = postfix
-action = %(action_mwl)s  # includes whois info, logs
+action = %(action_mw)s
 
 [sasl]
 enabled  = true
