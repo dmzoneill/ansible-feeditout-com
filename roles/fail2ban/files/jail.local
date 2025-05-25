@@ -25,14 +25,14 @@ filter  = sshd
 port    = ssh
 logpath = /var/log/auth.log
 backend = systemd
-action  = action_mwl
+action  = %(action_)s
 
 [postfix]
 enabled = true
 filter  = postfix
 port    = smtp,ssmtp,submission
 logpath = /var/log/mail.log
-action  = action_mwl
+action  = %(action_)s
 
 [postfix-failedauth]
 enabled = false
