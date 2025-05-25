@@ -8,9 +8,6 @@ mydestination = localhost
 inet_interfaces = all
 inet_protocols = ipv4
 
-# user mapping
-local_recipient_maps = unix:passwd.byname
-
 # Virtual aliases
 virtual_alias_maps = hash:/etc/postfix/virtualalias
 virtual_alias_domains =
@@ -22,7 +19,8 @@ virtual_alias_domains =
     fio.ie,
     yogamantra.com
 
-local_recipient_maps =
+# user mapping
+local_recipient_maps = unix:passwd.byname
 
 # Relay & networks
 relayhost =
