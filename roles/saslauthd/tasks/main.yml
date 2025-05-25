@@ -7,6 +7,29 @@
     state: present
     update_cache: yes
 
+- name: Enable and start saslauthd
+  systemd:
+    name: saslauthd
+    enabled: yes
+    state: started
+
+- name: Ensure /var/run/saslauthd exists
+  file:
+    path: /var/run/saslauthd
+    state: directory
+    owner: saslauth
+    group: sasl
+    mode: '0755'
+
+- name: Ensure saslauthd socket is bind-mounted into postfix chroot
+  mount:
+    src: /var/run/saslauthd
+    path: /var/spool/postfix/var/run/saslauthd
+    opts: bind
+    state: mounted
+    fstype: none
+  notify: Restart saslauthd
+
 - name: Ensure saslauth user exists
   user:
     name: saslauth
