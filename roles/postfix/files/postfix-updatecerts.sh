@@ -13,5 +13,6 @@ for X in $(ls | grep -v 'README\|0001'); do
         echo "$domain /etc/postfix/certs/$domain/chain.pem" >> /etc/postfix/sni
     fi
 done
+echo "" >> /etc/postfix/sni
 /usr/sbin/postmap -F hash:/etc/postfix/sni
 /bin/systemctl restart postfix

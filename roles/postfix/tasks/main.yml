@@ -111,6 +111,12 @@
   when: postfix_files_changed | default(false)
   register: map_build_result
 
+# --- update certs if anyting has changed ---
+
+- name: Update sni and certs
+  command: /usr/bin/postfix-updatecerts
+  when: postfix_files_changed | default(false)
+
 # --- Restart Postfix Only If Files Changed ---
 
 - name: Restart Postfix if files changed
