@@ -109,10 +109,10 @@
   args:
     chdir: /opt/Chuckbot
   register: git_pull_result
+  changed_when: "'up to date' not in git_pull_result.stdout"
   when:
     - git_dirty.stdout == ""
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
-  
 
 - name: Get current commit hash after pull (as dave)
   become: true
