@@ -23,3 +23,6 @@ enabled = true
 port    = ssh
 logpath = /var/log/auth.log
 backend = systemd
+
+[postfix-failedauth]
+enabled = false
