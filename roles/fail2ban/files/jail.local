@@ -2,7 +2,6 @@
 destemail = dmz.oneill@gmail.com
 sender = dave@feeditout.com
 mta = postfix
-action = %(action_mw)s
 
 [sasl]
 enabled  = true
@@ -24,8 +23,3 @@ enabled = true
 port    = ssh
 logpath = /var/log/auth.log
 backend = systemd
-
-[postfix]
-enabled = true
-port    = smtp,ssmtp,submission
-logpath = /var/log/mail.log
