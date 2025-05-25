@@ -4,20 +4,27 @@
   register: current_hostname
   changed_when: false
 
-- name: Set the hostname using hostnamectl only if needed
-  command: hostnamectl set-hostname "{{ fqdn }}"
-  when: current_hostname.stdout != fqdn
+- name: Set the short hostname using hostnamectl only if needed
+  command: hostnamectl set-hostname "{{ hostname }}"
+  when: current_hostname.stdout != hostname
 
-- name: Update /etc/hostname if needed
+- name: Read current /etc/hostname content
+  slurp:
+    src: /etc/hostname
+  register: hostname_file
+  changed_when: false
+
+- name: Update /etc/hostname only if needed
   copy:
     dest: /etc/hostname
     content: "{{ hostname }}\n"
     owner: root
     group: root
     mode: '0644'
+  when: hostname_file['content'] | b64decode | trim != hostname
   notify: Restart systemd-hostnamed
 
-- name: Ensure /etc/hosts entry for FQDN exists
+- name: Ensure /etc/hosts entry for FQDN and shortname exists
   lineinfile:
     path: /etc/hosts
     regexp: "^{{ loopback_ip }}\\s+"
