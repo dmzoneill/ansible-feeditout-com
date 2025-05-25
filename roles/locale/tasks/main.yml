@@ -15,36 +15,18 @@
     state: link
     force: true
 
-- name: Ensure /etc/default/locale has LANG and LC_ALL
+- name: Ensure /etc/default/locale is configured (LANG + LANGUAGE)
   ansible.builtin.copy:
     dest: /etc/default/locale
     content: |
       LANG="{{ locale_lang }}"
-      LC_ALL="{{ locale_lc_all }}"
+      LANGUAGE="{{ locale_language }}"
     owner: root
     group: root
     mode: '0644'
-  register: locale_file
   notify: Reconfigure tzdata
-
-- name: Remove LANGUAGE from /etc/default/locale (temporarily)
-  ansible.builtin.lineinfile:
-    path: /etc/default/locale
-    regexp: '^LANGUAGE='
-    state: absent
 
 - name: Generate locale
   ansible.builtin.command: locale-gen "{{ locale_lang }}"
   register: locale_gen_output
   changed_when: "'done' in locale_gen_output.stdout"
-
-- name: Update system-wide locale settings (update-locale)
-  ansible.builtin.command: >
-    update-locale LANG={{ locale_lang }} LC_ALL={{ locale_lc_all }}
-  changed_when: false
-
-- name: Add LANGUAGE back to /etc/default/locale
-  ansible.builtin.lineinfile:
-    path: /etc/default/locale
-    line: 'LANGUAGE="{{ locale_language }}"'
-    create: yes
