@@ -76,7 +76,6 @@
       - { src: "client_checks", tool: "postmap" }
       - { src: "header_checks", tool: "postmap" }
       - { src: "recipient_domains", tool: "postmap" }
-      - { src: "vhosts", tool: "postmap" }
       - { src: "helo_access", tool: "postmap" }
       - { src: "virtualalias", tool: "postmap" }
       - { src: "canonical", tool: "postmap" }

@@ -1,4 +1,3 @@
-
 # Explicit mapping for postmaster with/without trailing dot
 postmaster@feeditout.com       dave, dmz.oneill@gmail.com
 postmaster@feeditout.com.      dave, dmz.oneill@gmail.com
@@ -14,9 +13,9 @@ feeditout@feeditout.com        dave, tim, feeditout@gmail.com, dmz.oneill@gmail.
 feeditout@fio.ie               dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
 
 # Catch all
-@feeditout.site    dave, dmz.oneill@gmail.com
-@feeditout.xyz     dave, dmz.oneill@gmail.com
-@ashtangayoga.ie   dave, dmz.oneill@gmail.com
-@yogamantra.com    dave, dmz.oneill@gmail.com
-@ecu-emr.com       dave, dmz.oneill@gmail.com
-@fio.ie            dave, dmz.oneill@gmail.com
+@feeditout.site                dave, dmz.oneill@gmail.com
+@feeditout.xyz                 dave, dmz.oneill@gmail.com
+@ashtangayoga.ie               dave, dmz.oneill@gmail.com
+@yogamantra.com                dave, dmz.oneill@gmail.com
+@ecu-emr.com                   dave, dmz.oneill@gmail.com
+@fio.ie                        dave, dmz.oneill@gmail.com
