@@ -90,18 +90,9 @@
 - name: Define list of postfix map files
   set_fact:
     postfix_maps:
-      - { src: "aliases", tool: "postalias" }
-      - { src: "bcc_maps", tool: "postmap" }
-      - { src: "sender_access", tool: "postmap" }
-      - { src: "sender_checks", tool: "postmap" }
       - { src: "sasl_passwd", tool: "postmap" }
-      - { src: "client_checks", tool: "postmap" }
       - { src: "header_checks", tool: "postmap" }
-      - { src: "recipient_domains", tool: "postmap" }
-      - { src: "helo_access", tool: "postmap" }
       - { src: "virtualalias", tool: "postmap" }
-      - { src: "canonical", tool: "postmap" }
-      - { src: "recipient_access", tool: "postmap" }
 
 - name: Rebuild postfix maps only if config files changed
   command: "{{ map_entry.tool }} hash:/etc/postfix/{{ map_entry.src }}"
