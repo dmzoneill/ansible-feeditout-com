@@ -19,7 +19,11 @@
     group: root
     mode: preserve
     directory_mode: '0755'
-  notify: Restart postfix
+  register: postfix_file_copy_result
+
+- name: Set fact if postfix config changed
+  set_fact:
+    postfix_files_changed: "{{ postfix_file_copy_result is changed }}"
 
 - name: Run postfix check (ignore error if Postfix not fully initialized)
   command: postfix check
@@ -41,7 +45,6 @@
 - name: Enable postfix@- if not enabled
   command: systemctl enable postfix@-
   when: postfix_instance_enabled.rc != 0
-  notify: Reload systemd
 
 - name: Start postfix@- if not already running
   command: systemctl is-active postfix@-
@@ -63,24 +66,6 @@
     owner: root
     group: root
 
-# --- Postfix Map Definitions ---
-
-- name: Define list of postfix map files
-  set_fact:
-    postfix_maps:
-      - { src: "aliases", tool: "postalias" }
-      - { src: "bcc_maps", tool: "postmap" }
-      - { src: "sender_access", tool: "postmap" }
-      - { src: "sender_checks", tool: "postmap" }
-      - { src: "sasl_passwd", tool: "postmap" }
-      - { src: "client_checks", tool: "postmap" }
-      - { src: "header_checks", tool: "postmap" }
-      - { src: "recipient_domains", tool: "postmap" }
-      - { src: "helo_access", tool: "postmap" }
-      - { src: "virtualalias", tool: "postmap" }
-      - { src: "canonical", tool: "postmap" }
-      - { src: "recipient_access", tool: "postmap" }
-
 # --- Chroot File Sync ---
 
 - name: Define list of files to sync into postfix chroot
@@ -100,14 +85,36 @@
   loop_control:
     loop_var: chroot_file
 
-# --- Map Builder ---
+# --- Map Rebuild Logic ---
 
-- name: Rebuild all postfix maps unconditionally
+- name: Define list of postfix map files
+  set_fact:
+    postfix_maps:
+      - { src: "aliases", tool: "postalias" }
+      - { src: "bcc_maps", tool: "postmap" }
+      - { src: "sender_access", tool: "postmap" }
+      - { src: "sender_checks", tool: "postmap" }
+      - { src: "sasl_passwd", tool: "postmap" }
+      - { src: "client_checks", tool: "postmap" }
+      - { src: "header_checks", tool: "postmap" }
+      - { src: "recipient_domains", tool: "postmap" }
+      - { src: "helo_access", tool: "postmap" }
+      - { src: "virtualalias", tool: "postmap" }
+      - { src: "canonical", tool: "postmap" }
+      - { src: "recipient_access", tool: "postmap" }
+
+- name: Rebuild postfix maps only if config files changed
   command: "{{ map_entry.tool }} hash:/etc/postfix/{{ map_entry.src }}"
   loop: "{{ postfix_maps }}"
   loop_control:
     loop_var: map_entry
-  register: map_results
-  changed_when: "'created' in map_results.stdout or 'rebuilding' in map_results.stdout or map_results.rc == 0"
-  failed_when: map_results.rc != 0
-  notify: Restart postfix
+  when: postfix_files_changed | default(false)
+  register: map_build_result
+
+# --- Restart Postfix Only If Files Changed ---
+
+- name: Restart Postfix if files changed
+  service:
+    name: postfix
+    state: restarted
+  when: postfix_files_changed | default(false)
