@@ -26,5 +26,12 @@ logpath = /var/log/auth.log
 backend = systemd
 action  = %(action_mwl)s
 
+[postfix]
+enabled = true
+filter  = postfix
+port    = smtp,ssmtp,submission
+logpath = /var/log/mail.log
+action  = %(action_mwl)s
+
 [postfix-failedauth]
 enabled = false
