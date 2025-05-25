@@ -50,3 +50,4 @@ action = iptables-multiport[name=sasl, port="smtp"]  # Action for SASL
 
 [postfix-failedauth]
 enabled = false
+# No filter needed since it's disabled
