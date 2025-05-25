@@ -1,0 +1,40 @@
+---
+- name: Set /etc/timezone
+  ansible.builtin.copy:
+    dest: /etc/timezone
+    content: "{{ locale_timezone }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reconfigure tzdata
+
+- name: Ensure /etc/localtime symlink is correct
+  ansible.builtin.file:
+    src: "{{ locale_zonefile }}"
+    dest: /etc/localtime
+    state: link
+    force: true
+
+- name: Ensure /etc/default/locale is configured
+  ansible.builtin.copy:
+    dest: /etc/default/locale
+    content: |
+      LANG="{{ locale_lang }}"
+      LANGUAGE="{{ locale_language }}"
+      LC_ALL="{{ locale_lc_all }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Generate locale
+  ansible.builtin.command: locale-gen "{{ locale_lang }}"
+  args:
+    creates: "/usr/lib/locale/{{ locale_lang }}"
+  register: locale_gen_output
+  changed_when: "'generated' in locale_gen_output.stdout"
+
+- name: Update system-wide locale settings
+  ansible.builtin.command: >
+    update-locale LANG={{ locale_lang }}
+    LC_ALL={{ locale_lc_all }}
+  changed_when: false

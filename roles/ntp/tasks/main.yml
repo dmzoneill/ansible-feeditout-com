@@ -1,25 +1,29 @@
 ---
 - name: Install NTP package
-  apt:
+  ansible.builtin.apt:
     name: "{{ ntp_package }}"
     state: present
     update_cache: yes
 
+- name: Determine correct NTP service name
+  ansible.builtin.set_fact:
+    ntp_service_name: "{{ 'chrony' if ntp_package == 'chrony' else 'ntp' }}"
+
 - name: Enable and start NTP service
-  systemd:
-    name: "{{ ntp_service }}"
+  ansible.builtin.systemd:
+    name: "{{ ntp_service_name }}"
     state: started
     enabled: yes
 
 - name: Set timezone to {{ ntp_timezone }}
-  timezone:
+  ansible.builtin.timezone:
     name: "{{ ntp_timezone }}"
 
 - name: Force sync time with NTP servers (no change event)
-  command: chronyc -a makestep
+  ansible.builtin.command: chronyc -a makestep
   when: ntp_package == 'chrony'
   changed_when: false
 
 - name: Update hardware clock from system time (no change event)
-  command: hwclock --systohc
+  ansible.builtin.command: hwclock --systohc
   changed_when: false
