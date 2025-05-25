@@ -1,26 +1,26 @@
 # Explicit mapping for postmaster with/without trailing dot
-postmaster@feeditout.com       dave@feeditout.com, dmz.oneill@gmail.com
-postmaster@feeditout.com.      dave@feeditout.com, dmz.oneill@gmail.com
+postmaster@feeditout.com       dave, dmz.oneill@gmail.com
+postmaster@feeditout.com.      dave, dmz.oneill@gmail.com
 
 # Ayc
 info@ashtangayoga.ie           cu.eunice@gmail.com, dmz.oneill@gmail.com
 eunice@ashtangayoga.ie         cu.eunice@gmail.com, dmz.oneill@gmail.com
 
 # tim
-tim@feeditout.com              dave@feeditout.com, tim@feeditout.com, feeditout@gmail.com, dmz.oneill@gmail.com
-tim@fio.ie                     dave@feeditout.com, tim@feeditout.com, feeditout@gmail.com, dmz.oneill@gmail.com
-feeditout@feeditout.com        dave@feeditout.com, tim@feeditout.com, feeditout@gmail.com, dmz.oneill@gmail.com
-feeditout@fio.ie               dave@feeditout.com, tim@feeditout.com, feeditout@gmail.com, dmz.oneill@gmail.com
+tim@feeditout.com              dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+tim@fio.ie                     dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+feeditout@feeditout.com        dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+feeditout@fio.ie               dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
 
 
 # dave alias
-dave@feeditout.com             dave@feeditout.com, dmz.oneill@gmail.com
+dave@feeditout.com             dave, dmz.oneill@gmail.com
 
 # Catch all
-@feeditout.site                dave@feeditout.com, dmz.oneill@gmail.com
-@feeditout.xyz                 dave@feeditout.com, dmz.oneill@gmail.com
-@feeditout.com                 dave@feeditout.com, dmz.oneill@gmail.com
-@ashtangayoga.ie               dave@feeditout.com, dmz.oneill@gmail.com
-@yogamantra.com                dave@feeditout.com, dmz.oneill@gmail.com
-@ecu-emr.com                   dave@feeditout.com, dmz.oneill@gmail.com
-@fio.ie                        dave@feeditout.com, dmz.oneill@gmail.com
+@feeditout.site                dave, dmz.oneill@gmail.com
+@feeditout.xyz                 dave, dmz.oneill@gmail.com
+@feeditout.com                 dave, dmz.oneill@gmail.com
+@ashtangayoga.ie               dave, dmz.oneill@gmail.com
+@yogamantra.com                dave, dmz.oneill@gmail.com
+@ecu-emr.com                   dave, dmz.oneill@gmail.com
+@fio.ie                        dave, dmz.oneill@gmail.com

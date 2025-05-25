@@ -3,7 +3,7 @@ compatibility_level = 3.6
 myhostname = feeditout.com
 mydomain = feeditout.com
 myorigin = feeditout.com
-mydestination = localhost
+mydestination = localhost, feeditout.com
 
 inet_interfaces = all
 inet_protocols = ipv4
