@@ -26,7 +26,12 @@
     mode: '0644'
   notify: Reconfigure tzdata
 
+- name: Check if {{ locale_lang }} is already generated
+  ansible.builtin.shell: locale -a | grep -Fxq "{{ locale_lang }}"
+  register: locale_check
+  failed_when: false
+  changed_when: false
+
 - name: Generate locale if not already present
   ansible.builtin.command: locale-gen "{{ locale_lang }}"
-  args:
-    creates: "/usr/lib/locale/{{ locale_lang }}"
+  when: locale_check.rc != 0
