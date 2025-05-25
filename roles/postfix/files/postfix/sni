@@ -1,6 +1,0 @@
-ashtangayoga.ie /etc/postfix/certs/ashtangayoga.ie/chain.pem
-ecu-emr.com /etc/postfix/certs/ecu-emr.com/chain.pem
-feeditout.com /etc/postfix/certs/feeditout.com/chain.pem
-feeditout.site /etc/postfix/certs/feeditout.site/chain.pem
-feeditout.xyz /etc/postfix/certs/feeditout.xyz/chain.pem
-fio.ie /etc/postfix/certs/fio.ie/chain.pem
