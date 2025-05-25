@@ -1,0 +1,4 @@
+#!/bin/bash
+
+REPORT=$(chkrootkit 2>&1)
+echo "$REPORT" | mail -s "Chkrootkit Report $(hostname)" {{ chkrootkit_alert_email }}

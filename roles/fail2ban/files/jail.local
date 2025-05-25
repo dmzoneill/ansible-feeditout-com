@@ -1,3 +1,9 @@
+[DEFAULT]
+destemail = dmz.oneill@gmail.com
+sender = dave@feeditout.com
+mta = postfix
+action = %(action_mwl)s  # includes whois info, logs
+
 [sasl]
 enabled  = true
 port     = smtp
@@ -6,10 +12,12 @@ logpath  = /var/log/mail.log
 maxretry = 1
 
 [postfix-sasl]
-
 enabled  = true
 filter   = postfix-sasl
 action   = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]
 logpath  = /var/log/mail.log
 maxretry = 5
 bantime  = 24h
+
+[sshd]
+enabled = true

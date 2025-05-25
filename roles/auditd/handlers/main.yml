@@ -5,3 +5,8 @@
 
 - name: reload auditd rules
   command: augenrules --load
+
+- name: restart sysstat
+  service:
+    name: sysstat
+    state: restarted

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Audit log email alert script
+EMAIL="{{ auditd_alert_email }}"
+HOSTNAME=$(hostname)
+LOG=/var/log/audit/audit.log
+
+# Extract failed audit entries
+ALERTS=$(grep -i "failure" $LOG | tail -n 20)
+
+if [[ ! -z "$ALERTS" ]]; then
+    echo "$ALERTS" | mail -s "Auditd Alert on $HOSTNAME" "$EMAIL"
+fi

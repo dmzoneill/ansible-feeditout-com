@@ -1,0 +1,15 @@
+---
+- name: Ensure '{{ sudo_user }}' exists
+  ansible.builtin.user:
+    name: "{{ sudo_user }}"
+    shell: /bin/bash
+    state: present
+
+- name: Create sudoers file for '{{ sudo_user }}'
+  ansible.builtin.template:
+    src: sudo.j2
+    dest: "/etc/sudoers.d/{{ sudo_user }}"
+    owner: root
+    group: root
+    mode: '0440'
+    validate: 'visudo -cf %s'

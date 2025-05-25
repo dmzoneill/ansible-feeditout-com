@@ -1,0 +1,14 @@
+---
+- name: Install chkrootkit
+  apt:
+    name: chkrootkit
+    state: present
+    update_cache: true
+
+- name: Deploy chkrootkit daily cron job for email alert
+  template:
+    src: chkrootkit.sh.j2
+    dest: /etc/cron.daily/chkrootkit
+    owner: root
+    group: root
+    mode: '0755'

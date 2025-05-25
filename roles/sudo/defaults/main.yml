@@ -1,0 +1,2 @@
+sudo_user: dave
+sudo_commands: "ALL"

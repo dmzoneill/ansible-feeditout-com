@@ -13,6 +13,7 @@
         - keyboard
         - dns
         - ntp
+        - sudo
         - entropy
         - logwatch
         - ansible_pull
@@ -24,6 +25,7 @@
         - passwd
         - fail2ban
         - clamav
+        - chkrootkit
         - rsyslog
         - motd
         - node_exporter

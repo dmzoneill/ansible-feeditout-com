@@ -23,7 +23,7 @@
     mode: '0640'
     directory_mode: '0755'
   notify: restart auditd
-  ignore_errors: false  # allow failure if needed, but default should be strict
+  ignore_errors: false
 
 - name: Enable and start auditd
   systemd:
@@ -48,3 +48,11 @@
     name: sysstat
     enabled: true
     state: restarted
+
+- name: Deploy auditd email alert script
+  template:
+    src: auditd-alert.sh.j2
+    dest: /etc/cron.daily/auditd-alert
+    owner: root
+    group: root
+    mode: '0755'
