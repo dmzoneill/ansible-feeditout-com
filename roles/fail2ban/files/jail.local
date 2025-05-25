@@ -18,6 +18,3 @@ action   = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap
 logpath  = /var/log/mail.log
 maxretry = 5
 bantime  = 24h
-
-[sshd]
-enabled = true
