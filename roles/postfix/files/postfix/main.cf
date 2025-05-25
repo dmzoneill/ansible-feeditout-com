@@ -10,6 +10,15 @@ inet_protocols = ipv4
 
 # Virtual aliases
 virtual_alias_maps = hash:/etc/postfix/virtualalias
+virtual_alias_domains =
+    ashtangayoga.ie,
+    ecu-emr.com,
+    feeditout.com,
+    feeditout.site,
+    feeditout.xyz,
+    fio.ie,
+    yogamantra.com
+
 local_recipient_maps =
 
 # Relay & networks
