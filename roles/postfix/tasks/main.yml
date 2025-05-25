@@ -29,7 +29,7 @@
 # --- Systemd Integration ---
 
 - name: Ensure systemd is reloaded if needed
-  command: systemctl daemon-reload
+  command: systemctl daemon-reexec
   changed_when: false
 
 - name: Enable postfix@- instance if not already enabled
@@ -63,7 +63,7 @@
     owner: root
     group: root
 
-# --- Map Builder ---
+# --- Postfix Map Definitions ---
 
 - name: Define list of postfix map files
   set_fact:
@@ -77,33 +77,38 @@
       - { src: "header_checks", tool: "postmap" }
       - { src: "recipient_domains", tool: "postmap" }
       - { src: "vhosts", tool: "postmap" }
-      - { src: "sasl_passwd", tool: "postmap" }     
-      - { src: "helo_access", tool: "postmap" }     
+      - { src: "helo_access", tool: "postmap" }
       - { src: "virtualalias", tool: "postmap" }
       - { src: "canonical", tool: "postmap" }
       - { src: "recipient_access", tool: "postmap" }
 
-- name: Sync passwd into postfix chroot
+# --- Chroot File Sync ---
+
+- name: Define list of files to sync into postfix chroot
+  set_fact:
+    postfix_chroot_files:
+      - { src: "/etc/passwd", dest: "/var/spool/postfix/etc/passwd", mode: "0644" }
+      - { src: "/etc/group", dest: "/var/spool/postfix/etc/group", mode: "0644" }
+
+- name: Sync critical files into postfix chroot
   copy:
-    src: /etc/passwd
-    dest: /var/spool/postfix/etc/passwd
+    src: "{{ chroot_file.src }}"
+    dest: "{{ chroot_file.dest }}"
     owner: root
     group: root
-    mode: '0644'
+    mode: "{{ chroot_file.mode }}"
+  loop: "{{ postfix_chroot_files }}"
+  loop_control:
+    loop_var: chroot_file
 
-- name: Sync group into postfix chroot
-  copy:
-    src: /etc/group
-    dest: /var/spool/postfix/etc/group
-    owner: root
-    group: root
-    mode: '0644'
+# --- Map Builder ---
 
-- name: Rebuild postfix maps if source file exists
-  command: "{{ map_file.tool }} hash:/etc/postfix/{{ map_file.src }}"
-  args:
-    creates: "/etc/postfix/{{ map_file.src }}.db"
+- name: Rebuild all postfix maps unconditionally
+  command: "{{ map_entry.tool }} hash:/etc/postfix/{{ map_entry.src }}"
   loop: "{{ postfix_maps }}"
   loop_control:
-    loop_var: map_file
+    loop_var: map_entry
+  register: map_results
+  changed_when: "'created' in map_results.stdout or 'rebuilding' in map_results.stdout or map_results.rc == 0"
+  failed_when: map_results.rc != 0
   notify: Restart postfix
