@@ -20,9 +20,11 @@ bantime  = 24h
 
 [sshd]
 enabled = true
+filter  = sshd
 port    = ssh
 logpath = /var/log/auth.log
 backend = systemd
+action  = %(action_mwl)s
 
 [postfix-failedauth]
 enabled = false
