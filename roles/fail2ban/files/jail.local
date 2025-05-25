@@ -1,23 +1,21 @@
 [DEFAULT]
+# Email notifications
 destemail = dmz.oneill@gmail.com
 sender = dave@feeditout.com
 mta = postfix
-# Use built-in actions directly — no need to redefine them
 
-[sasl]
-enabled  = true
-port     = smtp
-filter   = postfix-sasl
-logpath  = /var/log/mail.log
-maxretry = 1
+# Use the standard action (ban + whois + send logs)
+action = %(action_mwl)s
 
-[postfix-sasl]
-enabled  = true
-filter   = postfix-sasl
-action   = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]
-logpath  = /var/log/mail.log
+# Log backend fallback
+backend = auto
+
+# Ban settings (can override per jail if needed)
+bantime = 10m
+findtime = 10m
 maxretry = 5
-bantime  = 24h
+
+# Jails
 
 [sshd]
 enabled = true
@@ -25,14 +23,30 @@ filter  = sshd
 port    = ssh
 logpath = /var/log/auth.log
 backend = systemd
-action  = action_mwl
+action  = %(action_mwl)s
 
 [postfix]
 enabled = true
 filter  = postfix
 port    = smtp,ssmtp,submission
 logpath = /var/log/mail.log
-action  = action_mwl
+action  = %(action_mwl)s
+
+[postfix-sasl]
+enabled = true
+filter  = postfix
+logpath = /var/log/mail.log
+maxretry = 5
+bantime = 24h
+action = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]
+
+[sasl]
+enabled = true
+filter  = postfix
+port    = smtp
+logpath = /var/log/mail.log
+maxretry = 1
+action = %(action_mwl)s
 
 [postfix-failedauth]
 enabled = false
