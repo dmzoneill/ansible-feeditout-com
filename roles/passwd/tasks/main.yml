@@ -1,0 +1,21 @@
+---
+- name: Ensure users are present
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    shell: "{{ user.shell | default('/bin/bash') }}"
+    state: present
+    create_home: true
+  loop: "{{ users }}"
+  loop_control:
+    loop_var: user
+
+- name: Ensure Maildir exists in home directory
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/Maildir"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0700"
+  loop: "{{ users }}"
+  loop_control:
+    loop_var: user

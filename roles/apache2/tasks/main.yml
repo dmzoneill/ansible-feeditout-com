@@ -124,6 +124,14 @@
     force: true
   notify: restart apache2
 
+- name: Enable mod_headers
+  file:
+    src: "/etc/apache2/mods-available/headers.load"
+    dest: "/etc/apache2/mods-enabled/headers.load"
+    state: link
+    force: true
+  notify: restart apache2
+
 - name: Extract SSL cert paths from enabled site configs
   shell: "grep -rhoE '^\\s*SSLCertificateFile\\s+\\S+' /etc/apache2/sites-enabled/ | awk '{print $2}' | sort -u"
   register: ssl_cert_paths
