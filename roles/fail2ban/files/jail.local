@@ -5,7 +5,7 @@ sender = dave@feeditout.com
 mta = postfix
 
 # Use the standard action (ban only)
-action = %(action_)s  # Replace action_mwl with action_
+action = %(action_)s  # Simplified to just banning (default action)
 
 # Log backend fallback
 backend = auto
@@ -23,14 +23,14 @@ filter  = sshd
 port    = ssh
 logpath = /var/log/auth.log
 backend = systemd
-action  = %(action_)s  # Replace action_mwl with action_
+action  = %(action_)s  # Simple ban action (default)
 
 [postfix]
 enabled = true
 filter  = postfix
 port    = smtp,ssmtp,submission
 logpath = /var/log/mail.log
-action  = %(action_)s  # Replace action_mwl with action_
+action  = %(action_)s  # Simple ban action (default)
 
 [postfix-sasl]
 enabled = true
@@ -38,7 +38,7 @@ filter  = postfix
 logpath = /var/log/mail.log
 maxretry = 5
 bantime = 24h
-action = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]
+action = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]  # Keeping the multiport action
 
 [sasl]
 enabled = true
@@ -46,7 +46,7 @@ filter  = postfix
 port    = smtp
 logpath = /var/log/mail.log
 maxretry = 1
-action = %(action_)s  # Replace action_mwl with action_
+action = %(action_)s  # Simple ban action (default)
 
 [postfix-failedauth]
 enabled = false
