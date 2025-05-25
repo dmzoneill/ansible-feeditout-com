@@ -10,6 +10,7 @@
       include_role:
         name: "{{ item }}"
       loop:
+        - root_password
         - keyboard
         - dns
         - ntp
