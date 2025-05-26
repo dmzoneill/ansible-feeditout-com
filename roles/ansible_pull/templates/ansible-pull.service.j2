@@ -13,7 +13,7 @@ ExecStart=/usr/bin/ansible-pull -vv \
   -d {{ ansible_pull_workdir }} \
   --vault-password-file=/etc/ansible/.vault_pass.txt \
   playbooks/reconcile.yml
-ExecStartPost=/usr/bin/mail -s "Ansible-pull report from $(hostname)" dmz.oneill@gmail.com < /var/log/ansible-pull.log
+ExecStartPost=/bin/bash -c "/usr/bin/mail -s 'Ansible-pull report from $(hostname)' dmz.oneill@gmail.com < /var/log/ansible-pull.log"
 StandardOutput=append:/var/log/ansible-pull.log
 StandardError=inherit
 
