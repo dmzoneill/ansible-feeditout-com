@@ -4,7 +4,7 @@ myhostname = feeditout.com
 mydomain = feeditout.com
 myorigin = feeditout.com
 mydestination = localhost, feeditout.com
-debug_peer_level = 1
+debug_peer_level = 2
 inet_interfaces = all
 inet_protocols = ipv4
 
