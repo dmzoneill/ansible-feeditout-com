@@ -14,27 +14,27 @@ ExecStart=/usr/bin/ansible-pull -vv \
   --vault-password-file=/etc/ansible/.vault_pass.txt \
   --limit localhost \
   playbooks/reconcile.yml
-ExecStartPost=/bin/bash -c '
-(
-  boundary="ZZ_/afg6432dfgkl.94531q"
-  echo "To: dmz.oneill@gmail.com"
-  echo "Subject: Ansible-pull report from $(hostname)"
-  echo "MIME-Version: 1.0"
-  echo "Content-Type: multipart/mixed; boundary=\"$boundary\""
-  echo
-  echo "--$boundary"
-  echo "Content-Type: text/plain; charset=\"UTF-8\""
-  echo "Content-Transfer-Encoding: 7bit"
-  echo
-  echo "Ansible-pull has finished. See attached log."
-  echo
-  echo "--$boundary"
-  echo "Content-Type: text/plain; name=\"ansible-pull.log\""
-  echo "Content-Transfer-Encoding: base64"
-  echo "Content-Disposition: attachment; filename=\"ansible-pull.log\""
-  base64 /var/log/ansible-pull.log
-  echo "--$boundary--"
-) | /usr/sbin/sendmail -t'
+ExecStartPost=/bin/bash -c "/bin/bash -c '\
+boundary=\"ZZ_/afg6432dfgkl.94531q\"; \
+{ \
+  echo \"To: dmz.oneill@gmail.com\"; \
+  echo \"Subject: Ansible-pull report from $(hostname)\"; \
+  echo \"MIME-Version: 1.0\"; \
+  echo \"Content-Type: multipart/mixed; boundary=\\\"$boundary\\\"\"; \
+  echo; \
+  echo \"--$boundary\"; \
+  echo \"Content-Type: text/plain; charset=\\\"UTF-8\\\"\"; \
+  echo; \
+  echo \"Ansible-pull has finished. See attached log.\"; \
+  echo; \
+  echo \"--$boundary\"; \
+  echo \"Content-Type: text/plain; name=\\\"ansible-pull.log\\\"\"; \
+  echo \"Content-Transfer-Encoding: base64\"; \
+  echo \"Content-Disposition: attachment; filename=\\\"ansible-pull.log\\\"\"; \
+  base64 /var/log/ansible-pull.log; \
+  echo \"--$boundary--\"; \
+} | /usr/sbin/sendmail -t'"
+
 StandardOutput=append:/var/log/ansible-pull.log
 StandardError=inherit
 
