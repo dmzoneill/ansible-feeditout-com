@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=oneshot
 WorkingDirectory={{ ansible_pull_workdir }}
-Environment="ANSIBLE_CALLBACK_WHITELIST=profile_tasks"
+Environment="ANSIBLE_CALLBACKS_ENABLED=profile_tasks"
 Environment="ANSIBLE_CONFIG={{ ansible_pull_workdir }}/ansible.cfg"
 ExecStart=/usr/bin/ansible-pull -vv \
   -i {{ ansible_pull_workdir }}/inventories/hosts_local.ini \

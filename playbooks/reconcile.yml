@@ -1,3 +1,4 @@
+---
 - name: Reconcile migrated server
   hosts: migrated
   become: true
