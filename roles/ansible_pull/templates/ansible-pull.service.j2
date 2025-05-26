@@ -16,6 +16,8 @@ ExecStart=/usr/bin/ansible-pull -vv \
   playbooks/reconcile.yml
 ExecStartPost=/bin/bash -c "/bin/bash -c '\
 boundary=\"ZZ_/afg6432dfgkl.94531q\"; \
+gzip_file=\"/tmp/ansible-pull.log.gz\"; \
+gzip -c /var/log/ansible-pull.log > \"$gzip_file\" && \
 { \
   echo \"To: dmz.oneill@gmail.com\"; \
   echo \"Subject: Ansible-pull report from $(hostname)\"; \
@@ -25,15 +27,15 @@ boundary=\"ZZ_/afg6432dfgkl.94531q\"; \
   echo \"--$boundary\"; \
   echo \"Content-Type: text/plain; charset=\\\"UTF-8\\\"\"; \
   echo; \
-  echo \"Ansible-pull has finished. See attached log.\"; \
+  echo \"Ansible-pull has finished. See attached compressed log.\"; \
   echo; \
   echo \"--$boundary\"; \
-  echo \"Content-Type: text/plain; name=\\\"ansible-pull.log\\\"\"; \
+  echo \"Content-Type: application/gzip; name=\\\"ansible-pull.log.gz\\\"\"; \
   echo \"Content-Transfer-Encoding: base64\"; \
-  echo \"Content-Disposition: attachment; filename=\\\"ansible-pull.log\\\"\"; \
-  base64 /var/log/ansible-pull.log; \
+  echo \"Content-Disposition: attachment; filename=\\\"ansible-pull.log.gz\\\"\"; \
+  base64 \"$gzip_file\"; \
   echo \"--$boundary--\"; \
-} | /usr/sbin/sendmail -t'"
+} | /usr/sbin/sendmail -t && truncate -s 0 /var/log/ansible-pull.log && rm -f \"$gzip_file\"'"
 
 StandardOutput=append:/var/log/ansible-pull.log
 StandardError=inherit
