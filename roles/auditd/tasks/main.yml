@@ -1,3 +1,4 @@
+---
 - name: Install auditd and supporting plugins
   apt:
     name:

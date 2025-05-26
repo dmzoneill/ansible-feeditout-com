@@ -3,12 +3,12 @@
   apt:
     name: network-manager
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Enable and start NetworkManager
   systemd:
     name: NetworkManager
-    enabled: yes
+    enabled: true
     state: started
 
 - name: Ensure [main] section exists in NetworkManager.conf
@@ -31,6 +31,6 @@
 - name: Enable autoconnect for all NetworkManager connections
   shell: |
     nmcli -t -f NAME con show | while read line; do
-      nmcli con modify "$line" connection.autoconnect yes
+      nmcli con modify "$line" connection.autoconnect true
     done
   changed_when: false

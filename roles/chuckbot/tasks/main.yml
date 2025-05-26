@@ -33,8 +33,8 @@
     repo: git@github.com:dmzoneill/Chuckbot.git
     dest: /opt/Chuckbot
     version: main
-    update: yes
-    force: yes
+    update: true
+    force: true
   when: not chuckbot_git.stat.exists or git_remote.stdout != "git@github.com:dmzoneill/Chuckbot.git"
 
 - name: Check for dirty working directory (as dave)
@@ -175,7 +175,7 @@
 - name: Kill node process if systemctl stop failed
   shell: |
     pkill -f chuckbot.js || true
-  when: 
+  when:
     - chuckbot_needs_restart | default(false)
     - stop_result.rc != 0
 

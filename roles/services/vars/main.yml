@@ -1,4 +1,4 @@
-# Define services to explicitly disable
+---
 disable_services:
   - cyrus-imapd.service
   - geoclue.service

@@ -7,7 +7,7 @@
 - name: Disable and stop systemd-resolved
   systemd:
     name: systemd-resolved
-    enabled: no
+    enabled: false
     state: stopped
   when: disable_systemd_resolved and resolved_service_file.stat.exists
 

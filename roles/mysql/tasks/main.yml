@@ -31,7 +31,7 @@
     dest: /etc/mysql/debian-start
     owner: root
     group: root
-    force: no
+    force: false
   register: copied_debian_start
 
 - name: Restart and enable MariaDB service only if config changed

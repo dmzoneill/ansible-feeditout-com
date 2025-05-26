@@ -80,7 +80,7 @@
 - name: Enable Redis on boot
   systemd:
     name: redis-server
-    enabled: yes
+    enabled: true
     state: started
 
 - name: Configure Webdis
@@ -116,6 +116,6 @@
 - name: Enable Webdis on boot
   systemd:
     name: webdis
-    enabled: yes
+    enabled: true
     state: started
   changed_when: false

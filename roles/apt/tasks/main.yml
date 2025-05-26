@@ -4,7 +4,7 @@
   apt:
     name: apt-listbugs
     state: absent
-    purge: yes
+    purge: true
 
 # Clean up residual config files after removal
 - name: Remove apt-listbugs config file 10apt-listbugs
@@ -44,8 +44,8 @@
 # Clean system
 - name: Autoremove unused packages
   apt:
-    autoremove: yes
+    autoremove: true
 
 - name: Clean APT cache
   apt:
-    autoclean: yes
+    autoclean: true

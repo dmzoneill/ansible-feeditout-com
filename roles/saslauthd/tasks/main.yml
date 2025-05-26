@@ -5,12 +5,12 @@
       - sasl2-bin
       - libsasl2-modules
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Enable and start saslauthd
   systemd:
     name: saslauthd
-    enabled: yes
+    enabled: true
     state: started
 
 - name: Ensure /var/run/saslauthd exists
@@ -34,9 +34,9 @@
   user:
     name: saslauth
     group: sasl
-    system: yes
+    system: true
     shell: /usr/sbin/nologin
-    create_home: no
+    create_home: false
 
 - name: Ensure saslauthd runtime directory exists
   file:
@@ -45,13 +45,13 @@
     owner: saslauth
     group: sasl
     mode: '0755'
-    recurse: yes
+    recurse: true
 
 - name: Add postfix to sasl group
   user:
     name: postfix
     groups: sasl
-    append: yes
+    append: true
 
 - name: Configure saslauthd defaults
   template:
@@ -73,7 +73,7 @@
   user:
     name: postfix
     groups: sasl
-    append: yes
+    append: true
 
 - name: Set correct permissions on saslauthd directory
   file:
@@ -83,7 +83,7 @@
 - name: Enable and start saslauthd
   systemd:
     name: saslauthd
-    enabled: yes
+    enabled: true
     state: started
 
 - name: Ensure saslauthd socket is bind-mounted into postfix chroot

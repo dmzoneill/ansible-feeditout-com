@@ -3,7 +3,7 @@
   ansible.builtin.apt:
     name: "{{ ntp_package }}"
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Determine correct NTP service name
   ansible.builtin.set_fact:
@@ -13,7 +13,7 @@
   ansible.builtin.systemd:
     name: "{{ ntp_service_name }}"
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Set timezone to {{ ntp_timezone }}
   ansible.builtin.timezone:
