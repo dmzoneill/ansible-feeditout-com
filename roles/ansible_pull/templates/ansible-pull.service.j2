@@ -14,7 +14,7 @@ ExecStart=/usr/bin/ansible-pull -vv \
   --vault-password-file=/etc/ansible/.vault_pass.txt \
   --limit localhost \
   playbooks/reconcile.yml
-ExecStartPost=/bin/bash -c 'echo "See attached log." | mailx -a /var/log/ansible-pull.log -s "Ansible-pull report from $(hostname)" dmz.oneill@gmail.com'
+ExecStartPost=/bin/bash -c 'gzip -c /var/log/ansible-pull.log > /tmp/ansible-pull.log.gz && echo "See attached log." | mailx -a /tmp/ansible-pull.log.gz -s "Ansible-pull report from $(hostname)" dmz.oneill@gmail.com'
 StandardOutput=append:/var/log/ansible-pull.log
 StandardError=inherit
 
