@@ -1,33 +1,57 @@
 ---
-- name: Check timestamp of last freshclam update
+- name: Check timestamp of last successful freshclam update
   stat:
     path: /var/lib/clamav/.freshclam_update
   register: freshclam_timestamp
 
-- name: Set fact if update is due
+- name: Determine if freshclam update is due (older than 24h)
   set_fact:
     freshclam_due: "{{ (ansible_date_time.epoch | int) - (freshclam_timestamp.stat.mtime | default(0)) > 86400 }}"
 
-- name: Stop freshclam service (only if due)
+- name: Stop clamav-freshclam service before manual update (if due)
   service:
     name: clamav-freshclam
     state: stopped
     enabled: true
   when: freshclam_due
+  ignore_errors: true  # If already stopped or failed, continue
 
-- name: Run freshclam update (only if due)
-  command: freshclam
-  register: freshclam_result
-  changed_when: "'bytecode.cld' in freshclam_result.stdout or 'is up to date' not in freshclam_result.stdout"
+- name: Ensure freshclam log directory is writable
+  file:
+    path: /var/log/clamav
+    state: directory
+    owner: clamav
+    group: clamav
+    mode: '0755'
   when: freshclam_due
 
-- name: Update timestamp file
+- name: Ensure freshclam log file exists and is writable
+  file:
+    path: /var/log/clamav/freshclam.log
+    state: touch
+    owner: clamav
+    group: clamav
+    mode: '0644'
+  when: freshclam_due
+
+- name: Run freshclam manually (if due)
+  command: freshclam
+  register: freshclam_result
+  changed_when: "'is up to date' not in freshclam_result.stdout"
+  when: freshclam_due
+
+- name: Log freshclam output (if updated)
+  debug:
+    var: freshclam_result.stdout_lines
+  when: freshclam_due
+
+- name: Touch the .freshclam_update marker file
   file:
     path: /var/lib/clamav/.freshclam_update
     state: touch
   when: freshclam_due
 
-- name: Start freshclam service again
+- name: Start clamav-freshclam daemon after manual update
   service:
     name: clamav-freshclam
     state: started
