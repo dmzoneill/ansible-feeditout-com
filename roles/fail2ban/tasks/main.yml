@@ -11,17 +11,35 @@
     state: directory
     mode: '0755'
 
-- name: Copy all files from role files/ to /etc/fail2ban/
+- name: Copy all top-level files (e.g. jail.local)
   copy:
-    src: "{{ f2b_file }}"
-    dest: "/etc/fail2ban/{{ f2b_file | basename }}"
+    src: "{{ item }}"
+    dest: "/etc/fail2ban/{{ item | basename }}"
     owner: root
     group: root
     mode: '0644'
   with_fileglob:
-    - "{{ role_path }}/files/*"
-  loop_control:
-    loop_var: f2b_file
+    - "{{ role_path }}/files/*.local"
+  notify: Restart fail2ban
+
+- name: Copy filter.d custom filters
+  copy:
+    src: "{{ role_path }}/files/filter.d/"
+    dest: /etc/fail2ban/filter.d/
+    owner: root
+    group: root
+    mode: '0644'
+    recurse: yes
+  notify: Restart fail2ban
+
+- name: Copy action.d custom actions
+  copy:
+    src: "{{ role_path }}/files/action.d/"
+    dest: /etc/fail2ban/action.d/
+    owner: root
+    group: root
+    mode: '0644'
+    recurse: yes
   notify: Restart fail2ban
 
 - name: Ensure jail2ban is started and enabled
