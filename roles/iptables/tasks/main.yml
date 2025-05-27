@@ -50,3 +50,57 @@
   shell: iptables-restore < "{{ iptables_rules_path }}"
   when: rules_differ
   changed_when: false
+
+
+- name: Ensure iptables-persistent is installed
+  apt:
+    name: iptables-persistent
+    state: present
+    update_cache: true
+
+# IPv6 Part Below
+- name: Slurp live ip6tables rules from the system
+  slurp:
+    src: "{{ ip6tables_rules_path }}"
+  register: live_rules_v6
+  ignore_errors: true
+
+- name: Load reference ip6tables rules file from role (local)
+  set_fact:
+    reference_rules_v6_content: "{{ lookup('file', role_path + '/files/' + ip6tables_rules_file) }}"
+
+- name: Decode and strip comment lines from live ip6tables rules
+  set_fact:
+    live_rules_v6_cleaned: >-
+      {{
+        (live_rules_v6.content | default('') | b64decode).split('\n')
+        | reject("match", "^# ")
+        | join('\n')
+      }}
+
+- name: Decode and strip comment lines from reference ip6tables rules
+  set_fact:
+    reference_rules_v6_cleaned: >-
+      {{
+        reference_rules_v6_content.split('\n')
+        | reject("match", "^# ")
+        | join('\n')
+      }}
+
+- name: Set flag if ip6tables rules differ
+  set_fact:
+    rules_v6_differ: "{{ live_rules_v6_cleaned != reference_rules_v6_cleaned }}"
+
+- name: Copy new ip6tables rules if they differ
+  copy:
+    src: "{{ ip6tables_rules_file }}"
+    dest: "{{ ip6tables_rules_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  when: rules_v6_differ
+
+- name: Restore ip6tables rules from saved file
+  shell: ip6tables-restore < "{{ ip6tables_rules_path }}"
+  when: rules_v6_differ
+  changed_when: false

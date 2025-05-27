@@ -93,6 +93,9 @@ domain: "feeditout.com"
 # iptables
 iptables_rules_file: rules.v4
 iptables_rules_path: /etc/iptables/rules.v4
+ip6tables_rules_file: rules.v6
+ip6tables_rules_path: /etc/iptables/rules.v6
+
 
 # kernel
 kernel_params:
