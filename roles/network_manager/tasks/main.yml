@@ -1,4 +1,17 @@
 ---
+- name: Fail if required NetworkManager variables are missing
+  fail:
+    msg: "Missing required variable(s). Please define network_manager_uuid, network_manager_interface_name, etc."
+  when: network_manager_uuid is not defined or
+        network_manager_interface_name is not defined or
+        network_manager_address1 is not defined or
+        network_manager_dns is not defined
+
+- name: Remove legacy /etc/network directory
+  file:
+    path: /etc/network
+    state: absent
+
 - name: Ensure NetworkManager is installed
   apt:
     name: network-manager
@@ -10,6 +23,22 @@
     name: NetworkManager
     enabled: true
     state: started
+
+- name: Ensure system-connections directory exists
+  file:
+    path: /etc/NetworkManager/system-connections
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Setup systemc connections for static IP
+  template:
+    src: static-ansible.nmconnection.j2
+    dest: /etc/NetworkManager/system-connections/static-ansible.nmconnection
+    owner: root
+    group: root
+    mode: '0600'
 
 - name: Ensure [main] section exists in NetworkManager.conf
   blockinfile:
@@ -28,9 +57,60 @@
   notify: Restart NetworkManager
   when: ansible_facts['distribution'] == 'Debian'
 
-- name: Enable autoconnect for all NetworkManager connections
-  shell: |
-    nmcli -t -f NAME con show | while read line; do
-      nmcli con modify "$line" connection.autoconnect true
-    done
+- name: Get current autoconnect settings
+  command: nmcli -t -f NAME,connection.autoconnect con show
+  register: nmcli_connections
   changed_when: false
+
+- name: Enable autoconnect only where needed
+  shell: |
+    echo "{{ nmcli_connections.stdout_lines | select('search', ':no$') | join('\n') }}" |
+    cut -d':' -f1 |
+    xargs -I{} nmcli con modify "{}" connection.autoconnect yes
+  when: nmcli_connections.stdout_lines | select('search', ':no$') | length > 0
+
+- name: Reload NetworkManager to recognize new connection
+  command: nmcli connection reload
+  ignore_errors: true
+
+- name: Delete default "Wired connection 1" if it exists
+  command: nmcli connection delete "Wired connection 1"
+  register: delete_result
+  failed_when: false
+  changed_when: "'successfully deleted' in delete_result.stdout"
+
+- name: Disable cloud-init without uninstalling
+  copy:
+    dest: /etc/cloud/cloud-init.disabled
+    content: ""
+    owner: root
+    group: root
+    mode: '0644'
+  ignore_errors: true
+
+- name: Uninstall cloud-init completely
+  apt:
+    name: cloud-init
+    state: absent
+  when: "'cloud-init' in ansible_facts.packages"
+
+- name: Remove cloud-init data directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/cloud
+    - /var/lib/cloud
+  ignore_errors: true
+
+- name: Mask systemd-networkd to prevent it starting on reboot
+  systemd:
+    name: systemd-networkd
+    masked: true
+    enabled: false
+
+- name: Disable ifupdown on reboot (via systemctl disable only)
+  systemd:
+    name: networking
+    enabled: false
+    masked: true

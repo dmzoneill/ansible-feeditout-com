@@ -31,6 +31,14 @@ resolv_conf_path: /etc/resolv.conf
 resolv_conf_immutable: true
 disable_systemd_resolved: true
 
+# network-manager
+network_manager_id: static-ansible
+network_manager_uuid: d88f15bb-51d6-401e-9a1c-d1e4e6d5cdbf
+network_manager_type: ethernet
+network_manager_interface_name: eth0
+network_manager_address1: 185.219.84.242/26,185.219.84.193
+network_manager_dns: 1.1.1.1;8.8.8.8
+
 # passwd
 users:
   - name: tim

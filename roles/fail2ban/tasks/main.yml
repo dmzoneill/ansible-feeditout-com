@@ -40,7 +40,6 @@
     mode: '0644'
   notify: Restart fail2ban
 
-
 - name: Ensure jail2ban is started and enabled
   service:
     name: fail2ban
