@@ -5,6 +5,7 @@ ansible_pull_repo_url: "https://github.com/dmzoneill/ansible-feeditout-com"
 ansible_pull_workdir: "/opt/ansible"
 ansible_pull_interval_minutes: 30
 ansible_pull_expected_ip: "185.219.84.242"
+ansible_pull_email: "dmz.oneill@gmail.com"
 
 # auditd
 auditd_alert_email: "dmz.oneill@gmail.com"
@@ -106,6 +107,37 @@ logwatch_output: "mail"
 ntp_timezone: "Europe/Dublin"
 ntp_package: "chrony"
 ntp_service: "chrony"
+
+# apache
+broken_apache_modules:
+  - name: mpm_prefork
+    package: null
+  - name: qos
+    package: libapache2-mod-qos
+  - name: evasive
+    package: libapache2-mod-evasive
+  - name: php
+    package: libapache2-mod-php8.2
+  - name: php8.2
+    package: libapache2-mod-php8.2
+  - name: security2
+    package: libapache2-mod-security2
+required_apache_modules:
+  - name: headers
+    package: apache2
+  - name: mpm_event
+    package: apache2
+  - name: proxy
+    package: apache2
+  - name: proxy_fcgi
+    package: apache2
+  - name: setenvif
+    package: apache2
+  - name: geoip
+    package: libapache2-mod-geoip
+  - name: fcgid
+    package: libapache2-mod-fcgid
+
 
 
 domains:
