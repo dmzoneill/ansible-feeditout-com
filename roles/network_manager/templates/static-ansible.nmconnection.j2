@@ -8,12 +8,21 @@ timestamp=1748190471
 [ethernet]
 
 [ipv4]
-address1={{ network_manager_address1 }}
-dns={{ network_manager_dns }}
+address1={{ network_manager_ipv4_address1 }}
+dns={{ network_manager_ipv4_dns }}
 ignore-auto-routes=true
 method=manual
 
 [ipv6]
-method=ignore
+address1={{ network_manager_ipv6_address1 }}
+gateway={{ network_manager_ipv6_gateway1 }}
+dns={{ network_manager_ipv6_dns }}
+ignore-auto-routes=true
+method=manual
+
+[ipv6-route]
+dst=::/0
+gateway={{ network_manager_ipv6_gateway1 }}
+
 
 [proxy]
