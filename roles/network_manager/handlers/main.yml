@@ -6,9 +6,3 @@
 
 - name: Reload NetworkManager connections
   command: nmcli connection reload
-
-- name: Apply static-ansible connection
-  command: nmcli connection up static-ansible ifname {{ network_manager_interface_name }}
-  register: con_up_result
-  failed_when: con_up_result.rc != 0 and '"already active"' not in con_up_result.stderr
-  changed_when: '"successfully activated"' in con_up_result.stdout
