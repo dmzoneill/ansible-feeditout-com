@@ -7,6 +7,12 @@
         "IsActive": "true"
     },
     {
+        "Name": "@",
+        "Type": "AAAA",
+        "Address": "2a0d:5940:103:1::2",
+        "TTL": "1799"
+    },
+    {
         "Name": "www",
         "Type": "CNAME",
         "Address": "yogamantra.life.",
