@@ -2,10 +2,11 @@
 - name: Fail if required NetworkManager variables are missing
   fail:
     msg: "Missing required variable(s). Please define network_manager_uuid, network_manager_interface_name, etc."
-  when: network_manager_uuid is not defined or
-        network_manager_interface_name is not defined or
-        network_manager_ipv4_address1 is not defined or
-        network_manager_ipv4_dns is not defined
+  when:
+    - network_manager_uuid is not defined
+    - network_manager_interface_name is not defined
+    - network_manager_ipv4_address1 is not defined
+    - network_manager_ipv4_dns is not defined
 
 - name: Remove legacy /etc/network directory
   file:
@@ -32,14 +33,16 @@
     group: root
     mode: '0755'
 
-- name: Setup systemd connections for static IP
+- name: Setup static connection
   template:
     src: static-ansible.nmconnection.j2
     dest: /etc/NetworkManager/system-connections/static-ansible.nmconnection
     owner: root
     group: root
     mode: '0600'
-  notify: Reload NetworkManager connections
+  notify:
+    - Reload NetworkManager connections
+    - Apply static-ansible connection
 
 - name: Ensure [main] section exists in NetworkManager.conf
   blockinfile:
@@ -63,11 +66,11 @@
   register: nmcli_connections
   changed_when: false
 
-- name: Enable autoconnect only where needed
+- name: Enable autoconnect where needed
   shell: |
     echo "{{ nmcli_connections.stdout_lines | select('search', ':no$') | join('\n') }}" |
     cut -d':' -f1 |
-    xargs -I{} nmcli con modify "{}" connection.autoconnect yes
+    xargs -r -I{} nmcli con modify "{}" connection.autoconnect yes
   when: nmcli_connections.stdout_lines | select('search', ':no$') | length > 0
 
 - name: Delete default "Wired connection 1" if it exists
@@ -105,7 +108,7 @@
     masked: true
     enabled: false
 
-- name: Disable ifupdown on reboot (via systemctl disable only)
+- name: Disable ifupdown on reboot
   systemd:
     name: networking
     enabled: false
