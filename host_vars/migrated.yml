@@ -1,23 +1,331 @@
-$ANSIBLE_VAULT;1.1;AES256
-32613565373032356332396537363266313933653234653862353931353132366561336132383762
-3963383133393836306261366164613033323739346132650a356366356132326463386533333564
-61346531386664386532613739353634313861616162303436373964306564613263376464363831
-6231343637326431620a386161636337313136326561333861346132666561623435333632376465
-62653230363165396635316331623237663034363331366561303937353331646563623534306562
-62363339386466323263383464353561323666666330356339363130613961383061323061363032
-35653037313930613061343538663437643731653338376662616462666137646665646439333663
-33366262636134643434396533356135633437386534393130646631663639643434653331316436
-63656135306330636463373630393934373638393334383337396564316336373666336633353232
-33313630343236643037323637616532346437323733346138303763643365653136363330356239
-65303266386665626333636634306631386338616534303665393232303933343662356366656535
-32313134613837316262373039653738373235353961646333393033623434366236363565386162
-37656537343431386238666630323233313532626133316638623033646331656363376630366434
-37636631333262333533643539626630623432326262623037653130333237656166376466643939
-65346331623137303036616532333430653566303466353466323366626631316261656534396633
-39653537366162653961666437653362323636356366356663666535396137396463313064353537
-34666538383333343665353438313563653965653839623338616130316138306335316330656139
-62633634366130373739633862626664313365353162326461326163376634663963623438613764
-35666264636537346265643739616566346232323161396530313839333334343731643635653634
-30346433326462623163616531626438613261613535316565613966626134383862366565656230
-34326533386135313636323836303335343234333233653762353530386331373431396335373064
-6661383630346561346232306561353236323765393861343535
+---
+# ansible_pull
+is_ansible_pull_host: true
+ansible_pull_repo_url: "https://github.com/dmzoneill/ansible-feeditout-com"
+ansible_pull_workdir: "/opt/ansible"
+ansible_pull_interval_minutes: 30
+ansible_pull_expected_ip: "185.219.84.242"
+
+# auditd
+auditd_alert_email: "dmz.oneill@gmail.com"
+
+# certbot
+certbot_helpers_dir: "/home/dave/bin"
+
+# chrootkit
+chkrootkit_alert_email: "dmz.oneill@gmail.com"
+
+# cron
+cron_user_files:
+  - user: "dave"
+    src: "dave"
+  - user: "root"
+    src: "root"
+
+# dns
+dns_nameservers:
+  - 8.8.8.8
+  - 1.1.1.1
+resolv_conf_path: /etc/resolv.conf
+resolv_conf_immutable: true
+disable_systemd_resolved: true
+
+# passwd
+users:
+  - name: tim
+  - name: eunice
+
+# sudo
+sudo_user: dave
+sudo_commands: "ALL"
+
+
+# php-fpm
+php_fpm_package: php8.2-fpm
+php_fpm_mysql_package: php8.2-mysql
+php_fpm_service: php8.2-fpm
+php_fpm_conf_dir: /etc/php/8.2/fpm
+php_fpm_conf_file: "{{ php_fpm_conf_dir }}/php-fpm.conf"
+php_fpm_pool_file: "{{ php_fpm_conf_dir }}/pool.d/www.conf"
+
+# fail2ban
+fail2ban_jail: sshd
+unban_ips:
+  - 119.15.95.38
+
+# saslauthd
+saslauthd_mechanism: pam
+saslauthd_threads: 5
+saslauthd_options: "-c -m /var/spool/postfix/var/run/saslauthd"
+
+# services
+disable_services:
+  - cyrus-imapd.service
+  - geoclue.service
+  - iio-sensor-proxy.service
+  - lynis.service
+  - man-db.service
+  - packagekit.service
+  - packagekit-offline-update.service
+  - wpa_supplicant.service
+
+
+# hostname
+hostname: feeditout
+fqdn: feeditout.com
+loopback_ip: 127.0.1.1
+domain: "feeditout.com"
+
+# iptables
+iptables_rules_file: rules.v4
+iptables_rules_path: /etc/iptables/rules.v4
+
+# kernel
+kernel_params:
+  net.ipv4.ip_forward: 0
+  net.ipv4.conf.all.accept_source_route: 0
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.all.send_redirects: 0
+  net.ipv4.conf.all.rp_filter: 1
+  net.ipv4.conf.all.log_martians: 1
+
+# locale
+locale_timezone: "Europe/Dublin"
+locale_zonefile: "/usr/share/zoneinfo/Europe/Dublin"
+locale_lang: "en_IE.UTF-8"
+locale_language: "en_IE:en"
+locale_lc_all: "en_IE.UTF-8"
+
+# logwatch
+logwatch_mailto: "dmz.oneill@gmail.com"
+logwatch_detail: "High"
+logwatch_range: "yesterday"
+logwatch_output: "mail"
+
+# ntp
+ntp_timezone: "Europe/Dublin"
+ntp_package: "chrony"
+ntp_service: "chrony"
+
+
+domains:
+- domain: fio.ie
+  aliases:
+    - www.fio.ie
+  root: /home/dave/www/feeditout.com
+  ssl_cert: /etc/letsencrypt/live/fio.ie/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/fio.ie/privkey.pem
+
+- domain: feeditout.com
+  aliases:
+    - www.feeditout.com
+  root: /home/dave/www/feeditout.com
+  ssl_cert: /etc/letsencrypt/live/feeditout.com/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/feeditout.com/privkey.pem
+
+- domain: feeditout.xyz
+  aliases:
+    - www.feeditout.xyz
+  root: /home/dave/www/feeditout.xyz
+  ssl_cert: /etc/letsencrypt/live/feeditout.xyz/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/feeditout.xyz/privkey.pem
+
+- domain: feeditout.site
+  aliases:
+    - www.feeditout.site
+  root: /home/dave/www/feeditout.site
+  ssl_cert: /etc/letsencrypt/live/feeditout.sitefullchain.pem
+  ssl_key: /etc/letsencrypt/live/feeditout.site/privkey.pem
+
+- domain: yogamantra.life
+  aliases:
+    - www.yogamantra.life
+  root: /home/dave/www/yogamantra.life
+  ssl_cert: /etc/letsencrypt/live/yogamantra.life/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/yogamantra.life/privkey.pem
+
+- domain: ayc.ie
+  aliases:
+    - www.ayc.ie
+  root: /home/dave/www/ayc.ie
+  ssl_cert: /etc/letsencrypt/live/ayc.ie/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/ayc.ie/privkey.pem
+
+- domain: ecu-emr.com
+  aliases:
+    - www.ecu-emr.com
+  root: /home/dave/www/ecu-emr.com
+  ssl_cert: /etc/letsencrypt/live/ecu-emr.com/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/ecu-emr.com/privkey.pem
+
+- domain: mysore.ie
+  aliases:
+    - www.mysore.ie
+  root: /home/dave/www/mysore.ie
+  ssl_cert: /etc/letsencrypt/live/mysore.ie/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/mysore.ie/privkey.pem
+
+- domain: mysorecork.ie
+  aliases:
+    - www.mysorecork.ie
+  root: /home/dave/www/mysorecork.ie
+  ssl_cert: /etc/letsencrypt/live/mysorecork.ie/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/mysorecork.ie/privkey.pem
+
+- domain: ashtangacork.ie
+  aliases:
+    - www.ashtangacork.ie
+  root: /home/dave/www/ashtangacork.ie
+  ssl_cert: /etc/letsencrypt/live/ashtangacork.ie/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/ashtangacork.ie/privkey.pem
+
+- domain: ashtangayoga.ie
+  aliases:
+    - www.ashtangayoga.ie
+  root: /home/dave/www/ashtangayoga.ie
+  ssl_cert: /etc/letsencrypt/live/ashtangayoga.ie/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/ashtangayoga.ie/privkey.pem
+
+- domain: ashtangayogacork.ie
+  aliases:
+    - www.ashtangayogacork.ie
+  root: /home/dave/www/ashtangayogacork.ie
+  ssl_cert: /etc/letsencrypt/live/ashtangayogacork.ie/fullchain.pem
+  ssl_key: /etc/letsencrypt/live/ashtangayogacork.ie/privkey.pem
+
+logrotate_configs:
+  - name: auth
+    path: /var/log/auth.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: apache2
+    path: /var/log/apache2/*.log
+    options: [daily, rotate 14, compress, delaycompress, missingok, notifempty, create 0640 root adm]
+
+  - name: apparmor
+    path: /var/log/apparmor/*
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: apt
+    path: /var/log/apt/*.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: audit
+    path: /var/log/audit/audit.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: boot
+    path: /var/log/boot.log
+    options: [monthly, rotate 1, compress, missingok, notifempty]
+
+  - name: clamav
+    path: /var/log/clamav/*.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: cron
+    path: /var/log/cron.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: dbconfig-common
+    path: /var/log/dbconfig-common/*.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: dpkg
+    path: /var/log/dpkg.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: exim4
+    path: /var/log/exim4/*.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: fail2ban
+    path: /var/log/fail2ban.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: fontconfig
+    path: /var/log/fontconfig.log
+    options: [weekly, rotate 2, compress, missingok, notifempty]
+
+  - name: installer
+    path: /var/log/installer/syslog
+    options: [monthly, rotate 1, compress, missingok, notifempty]
+
+  - name: journal
+    path: /var/log/journal/*/*.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: kern
+    path: /var/log/kern.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: letsencrypt
+    path: /var/log/letsencrypt/*.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: lynis
+    path: /var/log/lynis*.log
+    options: [weekly, rotate 2, compress, missingok, notifempty]
+
+  - name: mail
+    path: /var/log/mail.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: php-fpm
+    path: /var/log/php*.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: privoxy
+    path: /var/log/privoxy/logfile
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: rclone
+    path: /var/log/rclone-backup.log
+    options: [weekly, rotate 2, compress, missingok, notifempty]
+
+  - name: redis
+    path: /var/log/redis/redis-server.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: runit
+    path: /var/log/runit/*.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: syslog
+    path: /var/log/syslog
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: sysstat
+    path: /var/log/sysstat/*
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: unattended-upgrades
+    path: /var/log/unattended-upgrades/unattended-upgrades.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: usbguard
+    path: /var/log/usbguard/usbguard-audit.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: userlog
+    path: /var/log/user.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: webdis
+    path: /var/log/webdis/*.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
+  - name: wtmp
+    path: /var/log/wtmp
+    options: [monthly, rotate 1, missingok]
+
+  - name: btmp
+    path: /var/log/btmp
+    options: [monthly, rotate 1, missingok]
+
+  - name: lastlog
+    path: /var/log/lastlog
+    options: [monthly, rotate 1, missingok]
+
+  - name: private
+    path: /var/log/private/*.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]

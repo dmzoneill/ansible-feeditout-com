@@ -5,7 +5,7 @@
   gather_facts: true
   vars_files:
     - ../host_vars/migrated.yml
-
+    - ../host_vars/migrated_secrets.yml
   tasks:
     - name: Include roles with ignore_errors
       include_role:

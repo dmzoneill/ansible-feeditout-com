@@ -5,9 +5,9 @@
     state: present
     update_cache: true
 
-- name: Ensure /home/dave/bin exists
+- name: Ensure {{ certbot_helpers_dir }} exists
   file:
-    path: /home/dave/bin
+    path: "{{ certbot_helpers_dir }}"
     state: directory
     mode: '0755'
     owner: dave
@@ -17,7 +17,7 @@
 - name: Copy certbot.sh
   copy:
     src: certbot.sh
-    dest: /home/dave/bin/certbot.sh
+    dest: "{{ certbot_helpers_dir }}/certbot.sh"
     mode: '0755'
     owner: dave
     group: dave
@@ -25,13 +25,13 @@
 - name: Copy missing.sh
   copy:
     src: missing.sh
-    dest: /home/dave/bin/missing.sh
+    dest: "{{ certbot_helpers_dir }}/missing.sh"
     mode: '0755'
     owner: dave
     group: dave
 
 - name: Run missing.sh to check and issue missing certs
-  command: /home/dave/bin/missing.sh
+  command: "{{ certbot_helpers_dir }}/missing.sh"
   become: true
   register: missing_sh_result
   changed_when: false
@@ -41,12 +41,12 @@
 - name: Copy certbot_clean_old.sh
   copy:
     src: certbot_clean_old.sh
-    dest: /home/dave/bin/certbot_clean_old.sh
+    dest: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
     mode: '0755'
     owner: dave
     group: dave
 
 - name: Run clean_old.sh to check and issue missing certs
-  command: /home/dave/bin/certbot_clean_old.sh
+  command: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
   become: true
   changed_when: false
