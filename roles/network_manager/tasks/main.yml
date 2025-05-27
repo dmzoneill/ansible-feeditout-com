@@ -92,7 +92,6 @@
   apt:
     name: cloud-init
     state: absent
-  when: "'cloud-init' in ansible_facts.packages"
 
 - name: Remove cloud-init data directories
   file:
