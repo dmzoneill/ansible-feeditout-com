@@ -3,3 +3,6 @@
   systemd:
     name: NetworkManager
     state: restarted
+
+- name: Reload NetworkManager connections
+  command: nmcli connection reload

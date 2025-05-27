@@ -32,13 +32,14 @@
     group: root
     mode: '0755'
 
-- name: Setup systemc connections for static IP
+- name: Setup systemd connections for static IP
   template:
     src: static-ansible.nmconnection.j2
     dest: /etc/NetworkManager/system-connections/static-ansible.nmconnection
     owner: root
     group: root
     mode: '0600'
+  notify: Reload NetworkManager connections
 
 - name: Ensure [main] section exists in NetworkManager.conf
   blockinfile:
@@ -68,10 +69,6 @@
     cut -d':' -f1 |
     xargs -I{} nmcli con modify "{}" connection.autoconnect yes
   when: nmcli_connections.stdout_lines | select('search', ':no$') | length > 0
-
-- name: Reload NetworkManager to recognize new connection
-  command: nmcli connection reload
-  ignore_errors: true
 
 - name: Delete default "Wired connection 1" if it exists
   command: nmcli connection delete "Wired connection 1"
