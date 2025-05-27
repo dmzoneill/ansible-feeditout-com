@@ -29,17 +29,17 @@ dns_nameservers:
   - "1.1.1.1"
   - "2606:4700:4700::1111"
   - "2001:4860:4860::8888"
-resolv_conf_path: /etc/resolv.conf
+resolv_conf_path: "/etc/resolv.conf"
 resolv_conf_immutable: true
 disable_systemd_resolved: true
 
 # network-manager
-network_manager_id: static-ansible
-network_manager_uuid: d88f15bb-51d6-401e-9a1c-d1e4e6d5cdbf
-network_manager_type: ethernet
-network_manager_interface_name: eth0
-network_manager_ipv4_address1: 185.219.84.242/26,185.219.84.193
-network_manager_ipv4_dns: 1.1.1.1;8.8.8.8
+network_manager_id: "static-ansible"
+network_manager_uuid: "d88f15bb-51d6-401e-9a1c-d1e4e6d5cdbf"
+network_manager_type: "ethernet"
+network_manager_interface_name: "eth0"
+network_manager_ipv4_address1: "185.219.84.242/26,185.219.84.193"
+network_manager_ipv4_dns: "1.1.1.1;8.8.8.8"
 network_manager_ipv6_address1: "2a0d:5940:103:1::2/64"
 network_manager_ipv6_gateway1: "2a0d:5940:103::1"
 network_manager_ipv6_dns: "2606:4700:4700::1111;2001:4860:4860::8888"
