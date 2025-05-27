@@ -58,7 +58,7 @@
   when: ansible_facts['distribution'] == 'Debian'
 
 - name: Get current autoconnect settings
-  command: nmcli -t -f NAME,connection.autoconnect con show
+  command: nmcli -t -f NAME,AUTOCONNECT con show
   register: nmcli_connections
   changed_when: false
 
