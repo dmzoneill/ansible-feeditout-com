@@ -4,8 +4,8 @@
     msg: "Missing required variable(s). Please define network_manager_uuid, network_manager_interface_name, etc."
   when: network_manager_uuid is not defined or
         network_manager_interface_name is not defined or
-        network_manager_address1 is not defined or
-        network_manager_dns is not defined
+        network_manager_ipv4_address1 is not defined or
+        network_manager_ipv4_dns is not defined
 
 - name: Remove legacy /etc/network directory
   file:
