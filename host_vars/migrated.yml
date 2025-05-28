@@ -101,7 +101,7 @@ disable_services:
 # hostname
 hostname: "{{ role_hostname }}"
 fqdn: "{{ role_fqdn }}"
-loopback_ip: 127.0.1.1
+loopback_ip: "127.0.1.1"
 domain: "{{ role_fqdn }}"
 
 # iptables
