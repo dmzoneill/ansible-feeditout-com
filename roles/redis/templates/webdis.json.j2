@@ -2,7 +2,7 @@
   "redis_host": "127.0.0.1",
   "redis_port": 6379,
   "redis_auth": "{{ redis_password }}",
-  "http_host": "::",
+  "http_host": ["0.0.0.0"],
   "threads": 2,
   "pidfile": "/var/run/webdis/webdis.pid",
   "daemonize": true,
