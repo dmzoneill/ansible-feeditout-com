@@ -3,13 +3,24 @@ role_email: "dmz.oneill@gmail.com"
 role_user: "dave"
 role_hostname: "feeditout"
 role_fqdn: "feeditout.com"
+role_ipv4_addr: "185.219.84.242"
+role_ipv4_mask: "26"
+role_ipv4_gw: "185.219.84.193"
+role_ipv4_dns1: "8.8.8.8"
+role_ipv4_dns2: "1.1.1.1"
+role_ipv6_addr: "2a0d:5940:103:1::2"
+role_ipv6_mask: "64"
+role_ipv6_gw: "2a0d:5940:103::1"
+role_ipv6_dns1: "2606:4700:4700::1111"
+role_ipv6_dns2: "2001:4860:4860::8888"
+
 
 # ansible_pull
 is_ansible_pull_host: true
 ansible_pull_repo_url: "https://github.com/dmzoneill/ansible-feeditout-com"
 ansible_pull_workdir: "/opt/ansible"
 ansible_pull_interval_minutes: 30
-ansible_pull_expected_ip: "185.219.84.242"
+ansible_pull_expected_ip: "{{ role_ipv4_addr }}"
 ansible_pull_email: "{{ role_email }}"
 
 # auditd
@@ -30,10 +41,10 @@ cron_user_files:
 
 # dns
 dns_nameservers:
-  - "8.8.8.8"
-  - "1.1.1.1"
-  - "2606:4700:4700::1111"
-  - "2001:4860:4860::8888"
+  - "{{ role_ipv4_dns1 }}"
+  - "{{ role_ipv4_dns2 }}"
+  - "{{ role_ipv6_dns1 }}"
+  - "{{ role_ipv6_dns2 }}"
 resolv_conf_path: "/etc/resolv.conf"
 resolv_conf_immutable: true
 disable_systemd_resolved: true
@@ -43,11 +54,11 @@ network_manager_id: "static-ansible"
 network_manager_uuid: "d88f15bb-51d6-401e-9a1c-d1e4e6d5cdbf"
 network_manager_type: "ethernet"
 network_manager_interface_name: "eth0"
-network_manager_ipv4_address1: "185.219.84.242/26,185.219.84.193"
-network_manager_ipv4_dns: "1.1.1.1;8.8.8.8"
-network_manager_ipv6_address1: "2a0d:5940:103:1::2/64"
-network_manager_ipv6_gateway1: "2a0d:5940:103::1"
-network_manager_ipv6_dns: "2606:4700:4700::1111;2001:4860:4860::8888"
+network_manager_ipv4_address1: "{{ role_ipv4_addr }}/{{ role_ipv4_mask }},{{ role_ipv4_gw }}"
+network_manager_ipv4_dns: "{{ role_ipv4_dns1 }};{{ role_ipv4_dns2 }}"
+network_manager_ipv6_address1: "{{ role_ipv6_addr }}/{{ role_ipv6_mask }}"
+network_manager_ipv6_gateway1: "{{ role_ipv6_gw }}"
+network_manager_ipv6_dns: "{{ role_ipv6_dns1 }};{{ role_ipv6_dns2 }}"
 
 # passwd
 users:
