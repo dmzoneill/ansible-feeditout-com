@@ -83,35 +83,15 @@
     enabled: true
     state: started
 
-- name: Configure Webdis
-  copy:
+- name: Copy full webdis.json
+  template:
+    src: webdis.json.j2
     dest: /etc/webdis/webdis.json
-    content: |
-      {
-        "redis_host": "127.0.0.1",
-        "redis_port": 6379,
-        "redis_auth": "{{ redis_password }}",
-        "http_host": "0.0.0.0",
-        "threads": 2,
-        "pidfile": "/var/run/webdis/webdis.pid",
-        "daemonize": true,
-        "http_port": 6380,
-        "https": true,
-        "ssl_certificate": "/etc/redis/tls/redis.crt",
-        "ssl_private_key": "/etc/redis/tls/redis.key",
-        "acl": [
-            {
-                "disabled":["DEBUG"]
-            },
-
-            {
-                "http_basic_auth": "user:password",
-                "enabled": ["DEBUG"]
-            }
-        ],
-        "logfile": "/var/log/webdis/webdis.log"
-      }
-  notify: Restart Webdis
+    owner: redis
+    group: redis
+    mode: "0644"
+  notify:
+    - Restart Webdis
 
 - name: Enable Webdis on boot
   systemd:

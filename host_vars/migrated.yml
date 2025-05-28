@@ -53,7 +53,6 @@ users:
 sudo_user: dave
 sudo_commands: "ALL"
 
-
 # php-fpm
 php_fpm_package: php8.2-fpm
 php_fpm_mysql_package: php8.2-mysql
@@ -218,6 +217,8 @@ domains:
 - domain: fio.ie
   aliases:
     - www.fio.ie
+    - home.fio.ie
+    - cv.fio.ie
   root: /home/dave/www/feeditout.com
   ssl_cert: /etc/letsencrypt/live/fio.ie/fullchain.pem
   ssl_key: /etc/letsencrypt/live/fio.ie/privkey.pem
