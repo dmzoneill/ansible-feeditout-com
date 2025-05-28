@@ -14,7 +14,6 @@ role_ipv6_gw: "2a0d:5940:103::1"
 role_ipv6_dns1: "2606:4700:4700::1111"
 role_ipv6_dns2: "2001:4860:4860::8888"
 
-
 # ansible_pull
 is_ansible_pull_host: true
 ansible_pull_repo_url: "https://github.com/dmzoneill/ansible-feeditout-com"
