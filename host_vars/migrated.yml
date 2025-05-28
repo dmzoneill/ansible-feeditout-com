@@ -83,7 +83,6 @@ disable_services:
   - packagekit-offline-update.service
   - wpa_supplicant.service
 
-
 # hostname
 hostname: feeditout
 fqdn: feeditout.com
@@ -95,7 +94,6 @@ iptables_rules_file: rules.v4
 iptables_rules_path: /etc/iptables/rules.v4
 ip6tables_rules_file: rules.v6
 ip6tables_rules_path: /etc/iptables/rules.v6
-
 
 # kernel
 kernel_params:
@@ -156,22 +154,22 @@ required_apache_modules:
 
 # postfix
 virtualaliases:
-  - alias: 
-    recipient:
-
-  # Explicit mapping for postmaster with/without trailing dot
+  - alias: "# Explicit mapping for postmaster with/without trailing dot"
+    recipient: ""
   - alias: "postmaster@feeditout.com"
     recipient: "dave, dmz.oneill@gmail.com"
   - alias: "postmaster@feeditout.com."
     recipient: "dave, dmz.oneill@gmail.com"
 
-  # Ayc
+  - alias: "# Ayc"
+    recipient: ""
   - alias: "info@ashtangayoga.ie"
     recipient: "cu.eunice@gmail.com, dmz.oneill@gmail.com"
   - alias: "eunice@ashtangayoga.ie"
     recipient: "cu.eunice@gmail.com, dmz.oneill@gmail.com"
 
-  # tim
+  - alias: "# Tim"
+    recipient: ""
   - alias: "tim@feeditout.com"
     recipient: "dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com"
   - alias: "tim@fio.ie"
@@ -181,11 +179,13 @@ virtualaliases:
   - alias: "feeditout@fio.ie"
     recipient: "dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com"
 
-  # dave alias
+  - alias: "# Dave"
+    recipient: ""
   - alias: "dave@feeditout.com"
     recipient: "dave, dmz.oneill@gmail.com"
 
-  # Catch all
+  - alias: "# Catch all"
+    recipient: ""
   - alias: "@feeditout.site"
     recipient: "dave, dmz.oneill@gmail.com"
   - alias: "@feeditout.xyz"
