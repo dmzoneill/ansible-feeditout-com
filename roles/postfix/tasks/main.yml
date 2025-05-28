@@ -107,7 +107,7 @@
     postfix_maps:
       - { src: "sasl_passwd", tool: "postmap" }
       - { src: "header_checks", tool: "postmap" }
-      - { src: "virtualaliases", tool: "postmap" }
+      - { src: "virtualalias", tool: "postmap" }
 
 - name: Rebuild postfix maps only if config files changed
   command: "{{ map_entry.tool }} hash:/etc/postfix/{{ map_entry.src }}"
