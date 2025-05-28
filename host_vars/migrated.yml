@@ -153,6 +153,8 @@ required_apache_modules:
     package: libapache2-mod-fcgid
 
 # postfix
+mailname: "feeditout.com"
+
 virtualaliases:
   - alias: "# Explicit mapping for postmaster with/without trailing dot"
     recipient: ""

@@ -40,6 +40,38 @@
     postfix_files_changed: true
   when: virtualaliases_result is changed
 
+- name: Render mailname file if defined
+  template:
+    src: mailname.j2
+    dest: /etc/mailname
+    owner: root
+    group: root
+    mode: '0644'
+  register: mailname_result
+
+- name: Update changed flag if mailname changed
+  set_fact:
+    postfix_files_changed: true
+  when: mailname_result is changed
+
+- name: Set virtual_alias_domains as a comma-separated string
+  set_fact:
+    virtual_alias_domains: "{{ mail_domains | join(', ') }}"
+
+- name: Render main.cf file if defined
+  template:
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: '0644'
+  register: main_cf_result
+
+- name: Update changed flag if main.cf changed
+  set_fact:
+    postfix_files_changed: true
+  when: main_cf_result is changed
+
 - name: Run postfix check (ignore error if Postfix not fully initialized)
   command: postfix check
   ignore_errors: true

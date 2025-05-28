@@ -1,24 +1,16 @@
 # Core
 compatibility_level = 3.6
-myhostname = feeditout.com
-mydomain = feeditout.com
-myorigin = feeditout.com
-mydestination = localhost, feeditout.com
+myhostname = {{ mailname }}
+mydomain = {{ mailname }}
+myorigin = {{ mailname }}
+mydestination = localhost, {{ mailname }}
 debug_peer_level = 2
 inet_interfaces = all
 inet_protocols = ipv4
 
 # Virtual aliases
 virtual_alias_maps = hash:/etc/postfix/virtualalias
-virtual_alias_domains =
-    ashtangayoga.ie,
-    ecu-emr.com,
-    feeditout.com,
-    feeditout.site,
-    feeditout.xyz,
-    fio.ie,
-    yogamantra.com
-
+virtual_alias_domains = {{ virtual_alias_domains }}
 # user mapping
 local_recipient_maps = unix:passwd.byname
 
@@ -53,8 +45,8 @@ smtpd_use_tls = yes
 smtpd_tls_security_level = may
 smtp_tls_security_level = may
 smtpd_tls_auth_only = yes
-smtpd_tls_cert_file = /etc/letsencrypt/live/feeditout.com/fullchain.pem
-smtpd_tls_key_file = /etc/letsencrypt/live/feeditout.com/privkey.pem
+smtpd_tls_cert_file = {{ mail_main_tls_cert }}
+smtpd_tls_key_file = {{ mail_main_tls_key }}
 tls_server_sni_maps = hash:/etc/postfix/sni
 
 # Logging
