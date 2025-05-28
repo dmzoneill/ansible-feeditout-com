@@ -154,6 +154,16 @@ required_apache_modules:
 
 # postfix
 mailname: "feeditout.com"
+mail_domains: 
+  - ashtangayoga.ie
+  - ecu-emr.com
+  - feeditout.com
+  - feeditout.site
+  - feeditout.xyz
+  - fio.ie
+  - yogamantra.com
+mail_main_tls_cert: "/etc/letsencrypt/live/feeditout.com/fullchain.pem"
+mail_main_tls_key: "/etc/letsencrypt/live/feeditout.com/privkey.pem"
 
 virtualaliases:
   - alias: "# Explicit mapping for postmaster with/without trailing dot"
