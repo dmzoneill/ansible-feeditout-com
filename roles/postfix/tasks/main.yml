@@ -25,6 +25,21 @@
   set_fact:
     postfix_files_changed: "{{ postfix_file_copy_result is changed }}"
 
+- name: Render virtualalias file if defined
+  template:
+    src: virtualaliases.j2
+    dest: /etc/postfix/virtualalias
+    owner: root
+    group: root
+    mode: '0644'
+  when: virtualaliases is defined
+  register: virtualaliases_result
+
+- name: Update changed flag if virtualaliases changed
+  set_fact:
+    postfix_files_changed: true
+  when: virtualaliases_result is changed
+
 - name: Run postfix check (ignore error if Postfix not fully initialized)
   command: postfix check
   ignore_errors: true
@@ -92,7 +107,7 @@
     postfix_maps:
       - { src: "sasl_passwd", tool: "postmap" }
       - { src: "header_checks", tool: "postmap" }
-      - { src: "virtualalias", tool: "postmap" }
+      - { src: "virtualaliases", tool: "postmap" }
 
 - name: Rebuild postfix maps only if config files changed
   command: "{{ map_entry.tool }} hash:/etc/postfix/{{ map_entry.src }}"
@@ -102,7 +117,7 @@
   when: postfix_files_changed | default(false)
   register: map_build_result
 
-# --- update certs if anyting has changed ---
+# --- update certs if anything has changed ---
 
 - name: Update sni and certs
   command: /usr/bin/postfix-updatecerts
