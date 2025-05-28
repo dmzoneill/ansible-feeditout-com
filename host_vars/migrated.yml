@@ -160,46 +160,46 @@ virtualaliases:
     recipient:
 
   # Explicit mapping for postmaster with/without trailing dot
-  - alias: postmaster@feeditout.com
-    recipient: dave, dmz.oneill@gmail.com
-  - alias: postmaster@feeditout.com.
-    recipient: dave, dmz.oneill@gmail.com
+  - alias: "postmaster@feeditout.com"
+    recipient: "dave, dmz.oneill@gmail.com"
+  - alias: "postmaster@feeditout.com."
+    recipient: "dave, dmz.oneill@gmail.com"
 
   # Ayc
-  - alias: info@ashtangayoga.ie
-    recipient: cu.eunice@gmail.com, dmz.oneill@gmail.com
-  - alias: eunice@ashtangayoga.ie
-    recipient: cu.eunice@gmail.com, dmz.oneill@gmail.com
+  - alias: "info@ashtangayoga.ie"
+    recipient: "cu.eunice@gmail.com, dmz.oneill@gmail.com"
+  - alias: "eunice@ashtangayoga.ie"
+    recipient: "cu.eunice@gmail.com, dmz.oneill@gmail.com"
 
   # tim
-  - alias: tim@feeditout.com
-    recipient: dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
-  - alias: tim@fio.ie
-    recipient: dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
-  - alias: feeditout@feeditout.com
-    recipient: dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
-  - alias: feeditout@fio.ie
-    recipient: dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com
+  - alias: "tim@feeditout.com"
+    recipient: "dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com"
+  - alias: "tim@fio.ie"
+    recipient: "dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com"
+  - alias: "feeditout@feeditout.com"
+    recipient: "dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com"
+  - alias: "feeditout@fio.ie"
+    recipient: "dave, tim, feeditout@gmail.com, dmz.oneill@gmail.com"
 
   # dave alias
-  - alias: dave@feeditout.com
-    recipient: dave, dmz.oneill@gmail.com
+  - alias: "dave@feeditout.com"
+    recipient: "dave, dmz.oneill@gmail.com"
 
   # Catch all
-  - alias: @feeditout.site
-    recipient: dave, dmz.oneill@gmail.com
-  - alias: @feeditout.xyz
-    recipient: dave, dmz.oneill@gmail.com
-  - alias: @feeditout.com
-    recipient: dave, dmz.oneill@gmail.com
-  - alias: @ashtangayoga.ie
-    recipient: dave, dmz.oneill@gmail.com
-  - alias: @yogamantra.com
-    recipient: dave, dmz.oneill@gmail.com
-  - alias: @ecu-emr.com
-    recipient: dave, dmz.oneill@gmail.com
-  - alias: @fio.ie
-    recipient: dave, dmz.oneill@gmail.com
+  - alias: "@feeditout.site"
+    recipient: "dave, dmz.oneill@gmail.com"
+  - alias: "@feeditout.xyz"
+    recipient: "dave, dmz.oneill@gmail.com"
+  - alias: "@feeditout.com"
+    recipient: "dave, dmz.oneill@gmail.com"
+  - alias: "@ashtangayoga.ie"
+    recipient: "dave, dmz.oneill@gmail.com"
+  - alias: "@yogamantra.com"
+    recipient: "dave, dmz.oneill@gmail.com"
+  - alias: "@ecu-emr.com"
+    recipient: "dave, dmz.oneill@gmail.com"
+  - alias: "@fio.ie"
+    recipient: "dave, dmz.oneill@gmail.com"
 
 
 domains:
