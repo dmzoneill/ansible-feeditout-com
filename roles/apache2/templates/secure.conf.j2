@@ -19,14 +19,19 @@
     Require all granted
   </Directory>
 
-  {{ lookup('template', vhost.domain + '.conf.j2', convert_data=False, vars={
-    'domain': vhost.domain,
-    'domain_alias': vhost.domain_alias,
-    'document_root': vhost.document_root,
-    'loglevel': vhost.loglevel,
-    'role_user': vhost.role_user,
-    'custom_directory_perms': vhost.custom_directory_perms
-  }) }}
+  {# ✅ Optional custom per-domain block if template exists #}
+  {% set custom_template = vhost.domain + '.conf.j2' %}
+  {% set has_template = lookup('fileglob', custom_template) %}
+  {% if has_template %}
+    {{ lookup('template', custom_template, convert_data=False, vars={
+      'domain': vhost.domain,
+      'domain_alias': vhost.domain_alias,
+      'document_root': vhost.document_root,
+      'loglevel': vhost.loglevel,
+      'role_user': vhost.role_user,
+      'custom_directory_perms': vhost.custom_directory_perms
+    }) }}
+  {% endif %}
 
   Include /etc/letsencrypt/options-ssl-apache.conf
 
