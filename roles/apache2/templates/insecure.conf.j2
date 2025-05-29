@@ -1,7 +1,7 @@
 <VirtualHost *:80>
   ServerName {{ vhost.domain }}
 {% if vhost.domain_aliases is defined %}
-    ServerAlias {{ vhost.domain_aliases | join(' ') }}
+  ServerAlias {{ vhost.domain_aliases | join(' ') }}
 {% endif %}
 
   DocumentRoot /home/{{ vhost.role_user }}/www/{{ vhost.document_root }}
