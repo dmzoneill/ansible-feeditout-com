@@ -26,6 +26,27 @@
         "IsActive": "true"
     },
     {
+        "Name": "pma",
+        "Type": "CNAME",
+        "Address": "feeditout.com.",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "cv",
+        "Type": "CNAME",
+        "Address": "feeditout.com.",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "home",
+        "Type": "CNAME",
+        "Address": "feeditout.com.",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
         "Name": "@",
         "Type": "MX",
         "MXPref": "10",

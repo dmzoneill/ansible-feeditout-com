@@ -244,23 +244,45 @@
     state: started
     enabled: true
 
-- name: Get list of all domains used in Apache configs (ServerName and ServerAlias)
-  shell: |
-    grep -rhoE '^\s*(ServerName|ServerAlias)\s+\S+' /etc/apache2/sites-enabled \
-    | awk '{print $2}' \
-    | sort -u
-  register: apache_domains
-  changed_when: false
-
-- name: Get list of Let's Encrypt renewal configs
-  find:
-    paths: /etc/letsencrypt/renewal
-    patterns: "*.conf"
-    file_type: file
-  register: letsencrypt_renewals
-
 - name: Remove stale Let's Encrypt certs and configs
-  include_tasks: remove_cert.yml
-  loop: "{{ letsencrypt_renewals.files }}"
-  loop_control:
-    loop_var: cert
+  block:
+
+    - name: Extract list of active domain base certs from domains
+      set_fact:
+        active_cert_domains: >-
+          {{ domains
+              | selectattr('enabled', 'defined') 
+              | selectattr('enabled')
+              | map(attribute='domain')
+              | map('regex_replace', '^www\\.', '')  # Strip www
+              | unique | list }}
+
+    - name: Find all existing renewal config files
+      find:
+        paths: /etc/letsencrypt/renewal
+        patterns: "*.conf"
+        file_type: file
+      register: letsencrypt_renewals
+
+    - name: Remove stale renewal, live, and archive files
+      vars:
+        cert_domain: "{{ cert.path | basename | regex_replace('\\.conf$', '') }}"
+      loop: "{{ letsencrypt_renewals.files }}"
+      loop_control:
+        loop_var: cert
+      when: cert_domain not in active_cert_domains
+      block:
+        - name: Remove stale renewal config
+          file:
+            path: "/etc/letsencrypt/renewal/{{ cert_domain }}.conf"
+            state: absent
+
+        - name: Remove stale cert live directory
+          file:
+            path: "/etc/letsencrypt/live/{{ cert_domain }}"
+            state: absent
+
+        - name: Remove stale cert archive directory
+          file:
+            path: "/etc/letsencrypt/archive/{{ cert_domain }}"
+            state: absent
