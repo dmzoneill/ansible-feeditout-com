@@ -18,6 +18,7 @@
         - ntp
         - sudo
         - entropy
+        - certbot
         - logwatch
         - ansible_pull
         - swap
@@ -52,7 +53,6 @@
         - php_fpm
         - postfix
         - apache2
-        - certbot
         - services
         - chuckbot
         - rclone

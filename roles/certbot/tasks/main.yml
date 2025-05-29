@@ -5,6 +5,72 @@
     state: present
     update_cache: true
 
+- name: Initialize certbot_needed flag
+  set_fact:
+    certbot_needed: false
+    certs_to_issue: []
+
+- name: Evaluate which domains need certbot
+  vars:
+    requested_domains: >-
+      {{ [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique }}
+  block:
+    - name: Check if cert exists for {{ domain_entry.domain }}
+      stat:
+        path: "/etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem"
+      register: cert_stat
+
+    - name: Extract existing SANs from cert if it exists
+      command: >
+        openssl x509 -in /etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem -noout -text
+      register: openssl_cert
+      when: cert_stat.stat.exists
+      changed_when: false
+      failed_when: false
+
+    - name: Parse SANs
+      set_fact:
+        existing_sans: >-
+          {{ openssl_cert.stdout | regex_findall('DNS:([^,\\s]+)') | unique }}
+      when: cert_stat.stat.exists
+
+    - name: Decide whether certbot is needed for {{ domain_entry.domain }}
+      set_fact:
+        certs_to_issue: "{{ certs_to_issue + [ { 'domain': domain_entry.domain, 'domains': requested_domains } ] }}"
+        certbot_needed: true
+      when: not cert_stat.stat.exists or (requested_domains | difference(existing_sans | default([]))) | length > 0
+  loop: "{{ domains }}"
+  loop_control:
+    loop_var: domain_entry
+    label: "{{ domain_entry.domain }}"
+
+- name: Stop Apache if certbot is needed
+  ansible.builtin.service:
+    name: apache2
+    state: stopped
+  when: certbot_needed
+
+- name: Run certbot for missing or outdated domains
+  command: >
+    certbot certonly --standalone
+    --cert-name {{ cert_entry.domain }}
+    {{ cert_entry.domains | map('regex_replace', '^(.*)$', '-d \1') | join(' ') }}
+    --agree-tos --non-interactive --register-unsafely-without-email --expand
+  loop: "{{ certs_to_issue }}"
+  loop_control:
+    loop_var: cert_entry
+    label: "{{ cert_entry.domain }}"
+  register: certbot_result
+  failed_when: certbot_result.rc != 0 and 'Certificate not yet due for renewal' not in certbot_result.stderr
+  ignore_errors: true
+  when: certbot_needed
+
+- name: Start Apache if certbot was run
+  ansible.builtin.service:
+    name: apache2
+    state: started
+  when: certbot_needed
+
 - name: Ensure {{ certbot_helpers_dir }} exists
   file:
     path: "{{ certbot_helpers_dir }}"
@@ -30,13 +96,13 @@
     owner: dave
     group: dave
 
-- name: Run missing.sh to check and issue missing certs
-  command: "{{ certbot_helpers_dir }}/missing.sh"
-  become: true
-  register: missing_sh_result
-  changed_when: false
-  failed_when: missing_sh_result.rc != 0 and "'✅ No missing domains'" not in missing_sh_result.stdout
-  ignore_errors: true
+# - name: Run missing.sh to check and issue missing certs
+#   command: "{{ certbot_helpers_dir }}/missing.sh"
+#   become: true
+#   register: missing_sh_result
+#   changed_when: false
+#   failed_when: missing_sh_result.rc != 0 and "'✅ No missing domains'" not in missing_sh_result.stdout
+#   ignore_errors: true
 
 - name: Copy certbot_clean_old.sh
   copy:

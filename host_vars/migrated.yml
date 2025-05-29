@@ -1,49 +1,52 @@
 ---
-role_email: "dmz.oneill@gmail.com"
-role_user: "dave"
-role_hostname: "feeditout"
-role_fqdn: "feeditout.com"
-role_ipv4_addr: "185.219.84.242"
-role_ipv4_mask: "26"
-role_ipv4_gw: "185.219.84.193"
-role_ipv4_dns1: "8.8.8.8"
-role_ipv4_dns2: "1.1.1.1"
-role_ipv6_addr: "2a0d:5940:103:1::2"
-role_ipv6_mask: "64"
-role_ipv6_gw: "2a0d:5940:103::1"
-role_ipv6_dns1: "2606:4700:4700::1111"
-role_ipv6_dns2: "2001:4860:4860::8888"
+# common
+email: "dmz.oneill@gmail.com"
+user: "dave"
+hostname: "feeditout"
+fqdn: "feeditout.com"
+domain: "{{ fqdn }}"
+ipv4_addr: "185.219.84.242"
+ipv4_mask: "26"
+ipv4_gw: "185.219.84.193"
+ipv4_dns1: "8.8.8.8"
+ipv4_dns2: "1.1.1.1"
+ipv6_addr: "2a0d:5940:103:1::2"
+ipv6_mask: "64"
+ipv6_gw: "2a0d:5940:103::1"
+ipv6_dns1: "2606:4700:4700::1111"
+ipv6_dns2: "2001:4860:4860::8888"
+loopback_ip: "127.0.1.1"
 
 # ansible_pull
 is_ansible_pull_host: true
 ansible_pull_repo_url: "https://github.com/dmzoneill/ansible-feeditout-com"
 ansible_pull_workdir: "/opt/ansible"
 ansible_pull_interval_minutes: 30
-ansible_pull_expected_ip: "{{ role_ipv4_addr }}"
-ansible_pull_email: "{{ role_email }}"
+ansible_pull_expected_ip: "{{ ipv4_addr }}"
+ansible_pull_email: "{{ email }}"
 
 # auditd
-auditd_alert_email: "{{ role_email }}"
+auditd_alert_email: "{{ email }}"
 
 # certbot
-certbot_helpers_dir: "/home/{{ role_user }}/bin"
+certbot_helpers_dir: "/home/{{ user }}/bin"
 
 # chrootkit
-chkrootkit_alert_email: "{{ role_email }}"
+chkrootkit_alert_email: "{{ email }}"
 
 # cron
 cron_user_files:
-  - user: "{{ role_user }}"
-    src: "{{ role_user }}"
+  - user: "{{ user }}"
+    src: "{{ user }}"
   - user: "root"
     src: "root"
 
 # dns
 dns_nameservers:
-  - "{{ role_ipv4_dns1 }}"
-  - "{{ role_ipv4_dns2 }}"
-  - "{{ role_ipv6_dns1 }}"
-  - "{{ role_ipv6_dns2 }}"
+  - "{{ ipv4_dns1 }}"
+  - "{{ ipv4_dns2 }}"
+  - "{{ ipv6_dns1 }}"
+  - "{{ ipv6_dns2 }}"
 resolv_conf_path: "/etc/resolv.conf"
 resolv_conf_immutable: true
 disable_systemd_resolved: true
@@ -53,11 +56,11 @@ network_manager_id: "static-ansible"
 network_manager_uuid: "d88f15bb-51d6-401e-9a1c-d1e4e6d5cdbf"
 network_manager_type: "ethernet"
 network_manager_interface_name: "eth0"
-network_manager_ipv4_address1: "{{ role_ipv4_addr }}/{{ role_ipv4_mask }},{{ role_ipv4_gw }}"
-network_manager_ipv4_dns: "{{ role_ipv4_dns1 }};{{ role_ipv4_dns2 }}"
-network_manager_ipv6_address1: "{{ role_ipv6_addr }}/{{ role_ipv6_mask }}"
-network_manager_ipv6_gateway1: "{{ role_ipv6_gw }}"
-network_manager_ipv6_dns: "{{ role_ipv6_dns1 }};{{ role_ipv6_dns2 }}"
+network_manager_ipv4_address1: "{{ ipv4_addr }}/{{ ipv4_mask }},{{ ipv4_gw }}"
+network_manager_ipv4_dns: "{{ ipv4_dns1 }};{{ ipv4_dns2 }}"
+network_manager_ipv6_address1: "{{ ipv6_addr }}/{{ ipv6_mask }}"
+network_manager_ipv6_gateway1: "{{ ipv6_gw }}"
+network_manager_ipv6_dns: "{{ ipv6_dns1 }};{{ ipv6_dns2 }}"
 
 # passwd
 users:
@@ -65,7 +68,7 @@ users:
   - name: "eunice"
 
 # sudo
-sudo_user: "{{ role_user }}"
+sudo_user: "{{ user }}"
 sudo_commands: "ALL"
 
 # php-fpm
@@ -97,12 +100,6 @@ disable_services:
   - "packagekit-offline-update.service"
   - "wpa_supplicant.service"
 
-# hostname
-hostname: "{{ role_hostname }}"
-fqdn: "{{ role_fqdn }}"
-loopback_ip: "127.0.1.1"
-domain: "{{ role_fqdn }}"
-
 # iptables
 iptables_rules_file: "rules.v4"
 iptables_rules_path: "/etc/iptables/rules.v4"
@@ -126,7 +123,7 @@ locale_language: "en_IE:en"
 locale_lc_all: "en_IE.UTF-8"
 
 # logwatch
-logwatch_mailto: "{{ role_email }}"
+logwatch_mailto: "{{ email }}"
 logwatch_detail: "High"
 logwatch_range: "yesterday"
 logwatch_output: "mail"
@@ -135,6 +132,66 @@ logwatch_output: "mail"
 ntp_timezone: "Europe/Dublin"
 ntp_package: "chrony"
 ntp_service: "chrony"
+
+# postfix
+mailname: "{{ fqdn }}"
+mail_domains:
+  - "ashtangayoga.ie"
+  - "ecu-emr.com"
+  - "{{ fqdn }}"
+  - "feeditout.site"
+  - "feeditout.xyz"
+  - "fio.ie"
+mail_main_tls_cert: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
+mail_main_tls_key: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
+
+virtualaliases:
+  - alias: "# Explicit mapping for postmaster with/without trailing dot"
+    recipient: ""
+  - alias: "postmaster@{{ fqdn }}"
+    recipient: "{{ user }}, {{ email }}"
+  - alias: "postmaster@{{ fqdn }}."
+    recipient: "{{ user }}, {{ email }}"
+
+  - alias: "# Ayc"
+    recipient: ""
+  - alias: "info@ashtangayoga.ie"
+    recipient: "cu.eunice@gmail.com, {{ email }}"
+  - alias: "eunice@ashtangayoga.ie"
+    recipient: "cu.eunice@gmail.com, {{ email }}"
+
+  - alias: "# Tim"
+    recipient: ""
+  - alias: "tim@feeditout.com"
+    recipient: "{{ user }}, tim, feeditout@gmail.com, {{ email }}"
+  - alias: "tim@fio.ie"
+    recipient: "{{ user }}, tim, feeditout@gmail.com, {{ email }}"
+  - alias: "feeditout@feeditout.com"
+    recipient: "{{ user }}, tim, feeditout@gmail.com, {{ email }}"
+  - alias: "feeditout@fio.ie"
+    recipient: "{{ user }}, tim, feeditout@gmail.com, {{ email }}"
+
+  - alias: "# {{ user }}"
+    recipient: ""
+  - alias: "{{ user }}@feeditout.com"
+    recipient: "{{ user }}, {{ email }}"
+
+  - alias: "# Catch all"
+    recipient: ""
+  - alias: "@feeditout.site"
+    recipient: "{{ user }}, {{ email }}"
+  - alias: "@feeditout.xyz"
+    recipient: "{{ user }}, {{ email }}"
+  - alias: "@feeditout.com"
+    recipient: "{{ user }}, {{ email }}"
+  - alias: "@ashtangayoga.ie"
+    recipient: "{{ user }}, {{ email }}"
+  - alias: "@yogamantra.com"
+    recipient: "{{ user }}, {{ email }}"
+  - alias: "@ecu-emr.com"
+    recipient: "{{ user }}, {{ email }}"
+  - alias: "@fio.ie"
+    recipient: "{{ user }}, {{ email }}"
 
 # apache
 broken_apache_modules:
@@ -165,68 +222,6 @@ required_apache_modules:
     package: libapache2-mod-geoip
   - name: fcgid
     package: libapache2-mod-fcgid
-
-# postfix
-mailname: "{{ role_fqdn }}"
-mail_domains:
-  - "ashtangayoga.ie"
-  - "ecu-emr.com"
-  - "{{ role_fqdn }}"
-  - "feeditout.site"
-  - "feeditout.xyz"
-  - "fio.ie"
-  - "yogamantra.com"
-mail_main_tls_cert: "/etc/letsencrypt/live/{{ role_fqdn }}/fullchain.pem"
-mail_main_tls_key: "/etc/letsencrypt/live/{{ role_fqdn }}/privkey.pem"
-
-virtualaliases:
-  - alias: "# Explicit mapping for postmaster with/without trailing dot"
-    recipient: ""
-  - alias: "postmaster@{{ role_fqdn }}"
-    recipient: "{{ role_user }}, {{ role_email }}"
-  - alias: "postmaster@{{ role_fqdn }}."
-    recipient: "{{ role_user }}, {{ role_email }}"
-
-  - alias: "# Ayc"
-    recipient: ""
-  - alias: "info@ashtangayoga.ie"
-    recipient: "cu.eunice@gmail.com, {{ role_email }}"
-  - alias: "eunice@ashtangayoga.ie"
-    recipient: "cu.eunice@gmail.com, {{ role_email }}"
-
-  - alias: "# Tim"
-    recipient: ""
-  - alias: "tim@feeditout.com"
-    recipient: "{{ role_user }}, tim, feeditout@gmail.com, {{ role_email }}"
-  - alias: "tim@fio.ie"
-    recipient: "{{ role_user }}, tim, feeditout@gmail.com, {{ role_email }}"
-  - alias: "feeditout@feeditout.com"
-    recipient: "{{ role_user }}, tim, feeditout@gmail.com, {{ role_email }}"
-  - alias: "feeditout@fio.ie"
-    recipient: "{{ role_user }}, tim, feeditout@gmail.com, {{ role_email }}"
-
-  - alias: "# {{ role_user }}"
-    recipient: ""
-  - alias: "{{ role_user }}@feeditout.com"
-    recipient: "{{ role_user }}, {{ role_email }}"
-
-  - alias: "# Catch all"
-    recipient: ""
-  - alias: "@feeditout.site"
-    recipient: "{{ role_user }}, {{ role_email }}"
-  - alias: "@feeditout.xyz"
-    recipient: "{{ role_user }}, {{ role_email }}"
-  - alias: "@feeditout.com"
-    recipient: "{{ role_user }}, {{ role_email }}"
-  - alias: "@ashtangayoga.ie"
-    recipient: "{{ role_user }}, {{ role_email }}"
-  - alias: "@yogamantra.com"
-    recipient: "{{ role_user }}, {{ role_email }}"
-  - alias: "@ecu-emr.com"
-    recipient: "{{ role_user }}, {{ role_email }}"
-  - alias: "@fio.ie"
-    recipient: "{{ role_user }}, {{ role_email }}"
-
 
 domains:
   - domain: fio.ie
