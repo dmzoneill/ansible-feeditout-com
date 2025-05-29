@@ -1,0 +1,9 @@
+<VirtualHost *:{{ '443' if vhost.secure else '80' }}>
+    ServerName {{ vhost.domain }}
+    {% if vhost.secure %}
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/{{ vhost.cert_domain }}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{ vhost.cert_domain }}/privkey.pem
+    {% endif %}
+    Redirect permanent / https://www.{{ vhost.domain }}/
+</VirtualHost>
