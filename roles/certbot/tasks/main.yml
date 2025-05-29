@@ -13,7 +13,7 @@
 - name: Collect requested domain list
   set_fact:
     requested_domains: >-
-      {{ [item.domain] + (item.virtual_hosts | map(attribute='name') | list) | unique }}
+      {{ [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique }}
   loop: "{{ domains }}"
   loop_control:
     loop_var: domain_entry
