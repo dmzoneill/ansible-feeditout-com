@@ -24,47 +24,52 @@
   set_fact:
     apache_vhosts: []
 
-- name: Add secure vhosts from domain virtual_hosts
+- name: Add secure vhosts from virtual_hosts
   vars:
     current_domain: "{{ domain }}"
   loop: "{{ domains }}"
   loop_control:
     loop_var: domain
-  when: domain.virtual_hosts is defined
+  when: domain.enabled | default(false)
   block:
-    - name: Append secure vhosts to apache_vhosts
+    - name: Append each secure vhost to apache_vhosts
       set_fact:
-        apache_vhosts: "{{ apache_vhosts + [ {
-          'conf_name': vhost.name + '-ssl.conf',
-          'domain': vhost.name,
-          'domain_aliases': ['www.' + vhost.name] if not vhost.name.startswith('www.') else [],
-          'domain_alias': vhost.name,
-          'document_root': vhost.document_root,
-          'loglevel': current_domain.loglevel | default('warn'),
-          'role_user': role_user | default('www-data'),
-          'custom_directory_perms': current_domain.custom_directory_perms | default(false),
-          'enabled': vhost.enabled | default(false),
-          'secure': true } ] }}"
-      loop: "{{ current_domain.virtual_hosts }}"
+        apache_vhosts: "{{ apache_vhosts + [apache_vhost_entry] }}"
+      loop: "{{ current_domain.virtual_hosts | default([]) }}"
       loop_control:
         loop_var: vhost
+      vars:
+        apache_vhost_entry:
+          conf_name: "{{ vhost.name }}-ssl.conf"
+          domain: "{{ vhost.name }}"
+          domain_aliases: "{{ ['www.' + vhost.name] if not vhost.name.startswith('www.') else [] }}"
+          domain_alias: "{{ vhost.name }}"
+          document_root: "{{ vhost.document_root }}"
+          loglevel: "{{ current_domain.loglevel | default('warn') }}"
+          role_user: "{{ role_user | default('www-data') }}"
+          custom_directory_perms: "{{ current_domain.custom_directory_perms | default(false) }}"
+          enabled: "{{ vhost.enabled | default(false) }}"
+          secure: true
 
-- name: Add base domain vhost (http only)
+- name: Add base domain vhosts (http only)
   set_fact:
-    apache_vhosts: "{{ apache_vhosts + [ {
-      'conf_name': domain_entry.domain + '.conf',
-      'domain': domain_entry.domain,
-      'domain_aliases': [ 'www.' + domain_entry.domain ],
-      'domain_alias': domain_entry.domain,
-      'document_root': domain_entry.document_root,
-      'loglevel': domain_entry.loglevel | default('warn'),
-      'role_user': role_user | default('www-data'),
-      'custom_directory_perms': domain_entry.custom_directory_perms | default(false),
-      'enabled': domain_entry.enabled | default(false),
-      'secure': false } ] }}"
+    apache_vhosts: "{{ apache_vhosts + [apache_vhost_entry] }}"
   loop: "{{ domains }}"
   loop_control:
     loop_var: domain_entry
+  when: domain_entry.enabled | default(false)
+  vars:
+    apache_vhost_entry:
+      conf_name: "{{ domain_entry.domain }}.conf"
+      domain: "{{ domain_entry.domain }}"
+      domain_aliases: [ "www.{{ domain_entry.domain }}" ]
+      domain_alias: "{{ domain_entry.domain }}"
+      document_root: "{{ domain_entry.document_root }}"
+      loglevel: "{{ domain_entry.loglevel | default('warn') }}"
+      role_user: "{{ role_user | default('www-data') }}"
+      custom_directory_perms: "{{ domain_entry.custom_directory_perms | default(false) }}"
+      enabled: "{{ domain_entry.enabled | default(false) }}"
+      secure: false
 
 - name: Create insecure vhost files
   template:
