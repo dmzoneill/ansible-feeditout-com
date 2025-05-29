@@ -244,45 +244,52 @@
     state: started
     enabled: true
 
-- name: Remove stale Let's Encrypt certs and configs
-  block:
+- name: Extract enabled domain list
+  set_fact:
+    enabled_domain_names: >-
+      {{ domains
+         | selectattr('enabled', 'defined')
+         | selectattr('enabled')
+         | map(attribute='domain')
+         | list }}
 
-    - name: Extract list of active domain base certs from domains
-      set_fact:
-        active_cert_domains: >-
-          {{ domains
-              | selectattr('enabled', 'defined') 
-              | selectattr('enabled')
-              | map(attribute='domain')
-              | map('regex_replace', '^www\\.', '')  # Strip www
-              | unique | list }}
+- name: Find existing Let's Encrypt renewal configs
+  find:
+    paths: /etc/letsencrypt/renewal
+    patterns: "*.conf"
+    file_type: file
+  register: renewal_confs
 
-    - name: Find all existing renewal config files
-      find:
-        paths: /etc/letsencrypt/renewal
-        patterns: "*.conf"
-        file_type: file
-      register: letsencrypt_renewals
+- name: Build list of stale certs to remove
+  set_fact:
+    stale_certs: >-
+      {{ renewal_confs.files
+         | map(attribute='path')
+         | map('basename')
+         | map('regex_replace', '\\.conf$', '')
+         | difference(enabled_domain_names)
+         | list }}
 
-    - name: Remove stale renewal, live, and archive files
-      vars:
-        cert_domain: "{{ cert.path | basename | regex_replace('\\.conf$', '') }}"
-      loop: "{{ letsencrypt_renewals.files }}"
-      loop_control:
-        loop_var: cert
-      when: cert_domain not in active_cert_domains
-      block:
-        - name: Remove stale renewal config
-          file:
-            path: "/etc/letsencrypt/renewal/{{ cert_domain }}.conf"
-            state: absent
+- name: Remove stale renewal .conf files
+  file:
+    path: "/etc/letsencrypt/renewal/{{ cert_domain }}.conf"
+    state: absent
+  loop: "{{ stale_certs }}"
+  loop_control:
+    loop_var: cert_domain
 
-        - name: Remove stale cert live directory
-          file:
-            path: "/etc/letsencrypt/live/{{ cert_domain }}"
-            state: absent
+- name: Remove stale live cert dirs
+  file:
+    path: "/etc/letsencrypt/live/{{ cert_domain }}"
+    state: absent
+  loop: "{{ stale_certs }}"
+  loop_control:
+    loop_var: cert_domain
 
-        - name: Remove stale cert archive directory
-          file:
-            path: "/etc/letsencrypt/archive/{{ cert_domain }}"
-            state: absent
+- name: Remove stale archive cert dirs
+  file:
+    path: "/etc/letsencrypt/archive/{{ cert_domain }}"
+    state: absent
+  loop: "{{ stale_certs }}"
+  loop_control:
+    loop_var: cert_domain
