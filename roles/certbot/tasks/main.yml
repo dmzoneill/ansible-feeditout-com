@@ -18,48 +18,50 @@
     label: "{{ domain_entry.domain }}"
   register: cert_stat_results
 
-- name: Combine domain info with cert stats
+- name: Normalize domain/stat pair into a structured list
   set_fact:
     domain_cert_pairs: >-
       {{
-        domain_cert_pairs | default([]) + [{
-          'domain': item.0.domain,
-          'virtual_hosts': item.0.virtual_hosts,
-          'stat': item.1.stat
-        }]
+        domain_cert_pairs | default([]) + [ {
+          "domain": item.0.domain,
+          "virtual_hosts": item.0.virtual_hosts,
+          "stat": item.1.stat
+        } ]
       }}
   loop: "{{ domains | zip(cert_stat_results.results) | list }}"
 
 - name: Extract SANs from certs if they exist
-  command: >
-    openssl x509 -in /etc/letsencrypt/live/{{ domain.domain }}/cert.pem -noout -text
+  command: openssl x509 -in /etc/letsencrypt/live/{{ domain_cert.domain }}/cert.pem -noout -text
   loop: "{{ domain_cert_pairs }}"
   loop_control:
-    loop_var: domain_cert_pair
-    label: "{{ domain_cert_pair.0.domain }}"
+    loop_var: domain_cert
+    label: "{{ domain_cert.domain }}"
+  when: domain_cert.stat.exists
   register: openssl_cert_results
-  when: domain_cert_pair.1.stat.exists
   changed_when: false
   failed_when: false
 
 - name: Determine which certs need to be issued
   set_fact:
-    certs_to_issue: "{{ certs_to_issue + [ { 'domain': domain_entry.domain, 'domains': ([domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list)) | unique }] }}"
+    certs_to_issue: "{{ certs_to_issue + [ {
+      'domain': domain_cert.domain,
+      'domains': ([domain_cert.domain] + (domain_cert.virtual_hosts | map(attribute='name') | list)) | unique }] }}"
     certbot_needed: true
   when: >
-    not cert_stat_results.results[loop.index0].stat.exists or
+    not domain_cert.stat.exists or
     (
       (
-        [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list)
+        [domain_cert.domain] + (domain_cert.virtual_hosts | map(attribute='name') | list)
       ) | unique
       | difference(
           (openssl_cert_results.results[loop.index0].stdout | regex_findall('DNS:([^,\\s]+)') | unique) | default([])
         )
     ) | length > 0
-  loop: "{{ domains }}"
+  loop: "{{ domain_cert_pairs }}"
   loop_control:
-    loop_var: domain_entry
-    label: "{{ domain_entry.domain }}"
+    loop_var: domain_cert
+    label: "{{ domain_cert.domain }}"
+
 
 - name: Stop Apache if certbot is needed
   ansible.builtin.service:
