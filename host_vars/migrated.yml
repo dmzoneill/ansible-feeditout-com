@@ -273,6 +273,7 @@ domains:
         enabled: true
       - name: mta-sts.feeditout.com
         document_root: feeditout.com
+        enabled: true
       - name: home.feeditout.com
         document_root: feeditout.com
         enable: true
