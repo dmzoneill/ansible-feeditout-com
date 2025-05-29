@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-APACHE_SITES_DIR="/etc/apache2/sites-enabled"
+APACHE_SITES_DIR="/etc/apache2/sites-enabled/*"
 CERTBOT_LIVE_DIR="/etc/letsencrypt/live"
 
 echo "🔄 Checking for missing domains at $(date)"
