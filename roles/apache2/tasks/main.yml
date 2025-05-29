@@ -91,12 +91,16 @@
     redirect_http_entry:
       conf_name: "000-redirect-{{ domain_entry.domain }}.conf"
       domain: "{{ domain_entry.domain }}"
+      document_root: "/var/www/html"
+      domain_alias: "{{ domain_entry.domain }}"
       redirect_to_www: true
       secure: false
       enabled: true
     redirect_https_entry:
       conf_name: "000-redirect-{{ domain_entry.domain }}-ssl.conf"
       domain: "{{ domain_entry.domain }}"
+      document_root: "/var/www/html"
+      domain_alias: "{{ domain_entry.domain }}"
       redirect_to_www: true
       secure: true
       enabled: true
