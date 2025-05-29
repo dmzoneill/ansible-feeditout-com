@@ -20,38 +20,27 @@
   set_fact:
     apache_vhosts: []
 
-- name: Append all secure vhosts to apache_vhosts
+- name: Append all secure vhosts to apache_vhosts (with numbered conf_name per domain)
   set_fact:
-    apache_vhosts: "{{ apache_vhosts + [apache_vhost_entry] }}"
-  loop: >-
-    {{ domains
-        | selectattr('enabled', 'defined') 
-        | selectattr('enabled') 
-        | map(attribute='virtual_hosts') 
-        | select('defined') 
-        | flatten(levels=1) }}
+    apache_vhosts: "{{ apache_vhosts + domain_vhosts }}"
+  loop: "{{ domains | selectattr('enabled', 'defined') | selectattr('enabled') }}"
   loop_control:
-    loop_var: vhost
+    loop_var: domain_entry
   vars:
-    parent_domain: >-
-      {{ domains
-          | selectattr('virtual_hosts', 'defined')
-          | selectattr('virtual_hosts', 'contains', vhost)
-          | selectattr('enabled', 'defined')
-          | selectattr('enabled')
-          | list
-          | first }}
-    apache_vhost_entry:
-      conf_name: "{{ vhost.name }}-ssl.conf"
-      domain: "{{ parent_domain.domain }}"
-      domain_alias: "{{ vhost.name }}"
-      document_root: "{{ vhost.document_root }}"
-      loglevel: "{{ parent_domain.loglevel | default('warn') }}"
-      role_user: "{{ role_user | default('www-data') }}"
-      custom_directory_perms: "{{ parent_domain.custom_directory_perms | default(false) }}"
-      enabled: "{{ vhost.enabled | default(false) }}"
-      secure: true
-      cert_domain: "{{ parent_domain.domain }}"
+    domain_vhosts: >-
+      {{
+        domain_entry.virtual_hosts | default([]) | selectattr('enabled', 'defined') | selectattr('enabled') | list
+        | zip(range(1, (domain_entry.virtual_hosts | default([]) | selectattr('enabled', 'defined') | selectattr('enabled') | list | length) + 1))
+        | map('combine', [{'domain': domain_entry.domain}])
+        | map('combine', [{'conf_name': "%03d-%s-ssl.conf" % (item.1, item.0.name)}])
+        | map('combine', [{'domain_alias': item.0.name, 'document_root': item.0.document_root, 'secure': true}])
+        | map('combine', [{'loglevel': domain_entry.loglevel | default("warn"),
+                           'role_user': role_user | default("www-data"),
+                           'custom_directory_perms': domain_entry.custom_directory_perms | default(false),
+                           'enabled': item.0.enabled,
+                           'cert_domain': domain_entry.domain }])
+        | list
+      }}
 
 - name: Add base domain vhosts (http only)
   set_fact:
