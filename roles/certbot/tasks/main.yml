@@ -1,65 +1,47 @@
----
 - name: Ensure certbot is installed
   apt:
     name: certbot
     state: present
     update_cache: true
 
-- name: Initialize certbot_needed flag
+- name: Initialize certbot tracking facts
   set_fact:
     certbot_needed: false
     certs_to_issue: []
 
-- name: Collect requested domain list
-  set_fact:
-    requested_domains: >-
-      {{ [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique }}
-  loop: "{{ domains }}"
-  loop_control:
-    loop_var: domain_entry
-    label: "{{ domain_entry.domain }}"
-
 - name: Check if cert exists
   stat:
     path: "/etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem"
-  register: cert_stat
   loop: "{{ domains }}"
   loop_control:
     loop_var: domain_entry
     label: "{{ domain_entry.domain }}"
+  register: cert_stat_results
 
-- name: Extract existing SANs from cert if it exists
-  command: >
-    openssl x509 -in /etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem -noout -text
-  register: openssl_cert
-  when: cert_stat.results[loop.index0].stat.exists
+- name: Extract SANs from certs if they exist
+  command: openssl x509 -in /etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem -noout -text
+  loop: "{{ domains }}"
+  loop_control:
+    loop_var: domain_entry
+    label: "{{ domain_entry.domain }}"
+  when: cert_stat_results.results[loop.index0].stat.exists
   changed_when: false
   failed_when: false
-  loop: "{{ domains }}"
-  loop_control:
-    loop_var: domain_entry
-    label: "{{ domain_entry.domain }}"
+  register: openssl_cert_results
 
-- name: Parse SANs
+- name: Determine which certs need to be issued
   set_fact:
-    existing_sans: >-
-      {{ openssl_cert.results[loop.index0].stdout | regex_findall('DNS:([^,\\s]+)') | unique }}
-  when: cert_stat.results[loop.index0].stat.exists
-  loop: "{{ domains }}"
-  loop_control:
-    loop_var: domain_entry
-    label: "{{ domain_entry.domain }}"
-
-- name: Decide whether certbot is needed
-  set_fact:
-    certs_to_issue: "{{ certs_to_issue + [ { 'domain': domain_entry.domain, 'domains': [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique }] }}"
+    certs_to_issue: "{{ certs_to_issue + [ { 'domain': domain_entry.domain, 'domains': ([domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list)) | unique }] }}"
     certbot_needed: true
   when: >
-    not cert_stat.results[loop.index0].stat.exists or
+    not cert_stat_results.results[loop.index0].stat.exists or
     (
       (
-        [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique
-      ) | difference( openssl_cert.results[loop.index0].stdout | regex_findall('DNS:([^,\\s]+)') | unique )
+        [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list)
+      ) | unique
+      | difference(
+          (openssl_cert_results.results[loop.index0].stdout | regex_findall('DNS:([^,\\s]+)') | unique) | default([])
+        )
     ) | length > 0
   loop: "{{ domains }}"
   loop_control:
@@ -72,7 +54,7 @@
     state: stopped
   when: certbot_needed
 
-- name: Run certbot for missing or outdated domains
+- name: Run certbot for domains that need certificates
   command: >
     certbot certonly --standalone
     --cert-name {{ cert_entry.domain }}
@@ -101,7 +83,6 @@
     owner: dave
     group: dave
 
-# Copy .sh files with executable permissions
 - name: Copy certbot.sh
   copy:
     src: certbot.sh
@@ -118,14 +99,6 @@
     owner: dave
     group: dave
 
-# - name: Run missing.sh to check and issue missing certs
-#   command: "{{ certbot_helpers_dir }}/missing.sh"
-#   become: true
-#   register: missing_sh_result
-#   changed_when: false
-#   failed_when: missing_sh_result.rc != 0 and "'✅ No missing domains'" not in missing_sh_result.stdout
-#   ignore_errors: true
-
 - name: Copy certbot_clean_old.sh
   copy:
     src: certbot_clean_old.sh
@@ -134,7 +107,29 @@
     owner: dave
     group: dave
 
-- name: Run clean_old.sh to check and issue missing certs
+- name: Run clean_old.sh to clean up certs
   command: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
   become: true
   changed_when: false
+
+
+# - name: Run missing.sh to check and issue missing certs
+#   command: "{{ certbot_helpers_dir }}/missing.sh"
+#   become: true
+#   register: missing_sh_result
+#   changed_when: false
+#   failed_when: missing_sh_result.rc != 0 and "'✅ No missing domains'" not in missing_sh_result.stdout
+#   ignore_errors: true
+
+# - name: Copy certbot_clean_old.sh
+#   copy:
+#     src: certbot_clean_old.sh
+#     dest: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
+#     mode: '0755'
+#     owner: dave
+#     group: dave
+
+# - name: Run clean_old.sh to check and issue missing certs
+#   command: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
+#   become: true
+#   changed_when: false
