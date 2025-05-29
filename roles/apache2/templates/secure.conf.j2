@@ -19,9 +19,14 @@
     Require all granted
   </Directory>
 
-{% if custom_directory_perms %}
-  {{ lookup('template', domain + '.conf.j2') }}
-{% endif %}
+{{ lookup('template', domain + '.conf.j2', convert_data=False, vars={
+  'domain': domain,
+  'domain_alias': domain_alias,
+  'document_root': document_root,
+  'loglevel': loglevel,
+  'role_user': role_user,
+  'custom_directory_perms': custom_directory_perms
+}) }}
 
   Include /etc/letsencrypt/options-ssl-apache.conf
 
