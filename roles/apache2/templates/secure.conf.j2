@@ -35,9 +35,9 @@
 
   Include /etc/letsencrypt/options-ssl-apache.conf
 
-  SSLCertificateFile /etc/letsencrypt/live/{{ vhost.domain }}/cert.pem
-  SSLCertificateKeyFile /etc/letsencrypt/live/{{ vhost.domain }}/privkey.pem
-  SSLCertificateChainFile /etc/letsencrypt/live/{{ vhost.domain }}/fullchain.pem
+  SSLCertificateFile /etc/letsencrypt/live/{{ vhost.domain_alias }}/cert.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/{{ vhost.domain_alias }}/privkey.pem
+  SSLCertificateChainFile /etc/letsencrypt/live/{{ vhost.domain_alias }}/fullchain.pem
 
   Header always set Content-Security-Policy "upgrade-insecure-requests"
 </VirtualHost>
