@@ -19,13 +19,13 @@
     Require all granted
   </Directory>
 
-{{ lookup('template', domain + '.conf.j2', convert_data=False, vars={
-  'domain': domain,
-  'domain_alias': domain_alias,
-  'document_root': document_root,
-  'loglevel': loglevel,
-  'role_user': role_user,
-  'custom_directory_perms': custom_directory_perms
+{{ lookup('template', vhost.domain + '.conf.j2', convert_data=False, vars={
+  'domain': vhost.domain,
+  'domain_alias': vhost.domain_alias,
+  'document_root': vhost.document_root,
+  'loglevel': vhost.loglevel,
+  'role_user': vhost.role_user,
+  'custom_directory_perms': vhost.custom_directory_perms
 }) }}
 
   Include /etc/letsencrypt/options-ssl-apache.conf
