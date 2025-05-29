@@ -18,9 +18,17 @@
     label: "{{ domain_entry.domain }}"
   register: cert_stat_results
 
-- name: Combine domains with cert stats
+- name: Combine domain info with cert stats
   set_fact:
-    domain_cert_pairs: "{{ domains | zip(cert_stat_results.results) | list }}"
+    domain_cert_pairs: >-
+      {{
+        domain_cert_pairs | default([]) + [{
+          'domain': item.0.domain,
+          'virtual_hosts': item.0.virtual_hosts,
+          'stat': item.1.stat
+        }]
+      }}
+  loop: "{{ domains | zip(cert_stat_results.results) | list }}"
 
 - name: Extract SANs from certs if they exist
   command: >
