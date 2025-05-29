@@ -11,10 +11,12 @@
     certs_to_issue: []
 
 - name: Evaluate which domains need certbot
-  vars:
-    requested_domains: >-
-      {{ [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique }}
   block:
+    - name: Collect requested domain list for {{ domain_entry.domain }}
+      set_fact:
+        requested_domains: >-
+          {{ [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique }}
+
     - name: Check if cert exists for {{ domain_entry.domain }}
       stat:
         path: "/etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem"
