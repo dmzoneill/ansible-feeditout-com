@@ -18,16 +18,21 @@
     label: "{{ domain_entry.domain }}"
   register: cert_stat_results
 
+- name: Combine domains with cert stats
+  set_fact:
+    domain_cert_pairs: "{{ domains | zip(cert_stat_results.results) | list }}"
+
 - name: Extract SANs from certs if they exist
-  command: openssl x509 -in /etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem -noout -text
-  loop: "{{ domains }}"
+  command: >
+    openssl x509 -in /etc/letsencrypt/live/{{ domain.domain }}/cert.pem -noout -text
+  loop: "{{ domain_cert_pairs }}"
   loop_control:
-    loop_var: domain_entry
-    label: "{{ domain_entry.domain }}"
-  when: cert_stat_results.results[loop.index0].stat.exists
+    loop_var: domain_cert_pair
+    label: "{{ domain_cert_pair.0.domain }}"
+  register: openssl_cert_results
+  when: domain_cert_pair.1.stat.exists
   changed_when: false
   failed_when: false
-  register: openssl_cert_results
 
 - name: Determine which certs need to be issued
   set_fact:
@@ -111,7 +116,6 @@
   command: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
   become: true
   changed_when: false
-
 
 # - name: Run missing.sh to check and issue missing certs
 #   command: "{{ certbot_helpers_dir }}/missing.sh"
