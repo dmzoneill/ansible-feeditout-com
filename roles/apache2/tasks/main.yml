@@ -77,7 +77,7 @@
   loop_control:
     loop_var: vhost
   when: not vhost.secure
-  notify: Reload Apache
+  notify: restart apache2
 
 - name: Create secure vhost files
   template:
@@ -88,7 +88,7 @@
   loop_control:
     loop_var: vhost
   when: vhost.secure
-  notify: Reload Apache
+  notify: restart apache2
 
 - name: Enable vhosts via symlinks
   file:
