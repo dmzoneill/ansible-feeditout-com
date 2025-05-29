@@ -27,17 +27,19 @@
   loop_control:
     loop_var: domain_entry
   vars:
+    filtered_vhosts: >-
+      {{ domain_entry.virtual_hosts | default([]) | selectattr('enabled', 'defined') | selectattr('enabled') | list }}
     domain_vhosts: >-
       {{
-        domain_entry.virtual_hosts | default([]) | selectattr('enabled', 'defined') | selectattr('enabled') | list
-        | zip(range(1, (domain_entry.virtual_hosts | default([]) | selectattr('enabled', 'defined') | selectattr('enabled') | list | length) + 1))
+        filtered_vhosts | zip(range(1, filtered_vhosts | length + 1))
+        | map('community.general.dict_kv', 'vhost', 'index')
         | map('combine', [{'domain': domain_entry.domain}])
-        | map('combine', [{'conf_name': "%03d-%s-ssl.conf" % (item.1, item.0.name)}])
-        | map('combine', [{'domain_alias': item.0.name, 'document_root': item.0.document_root, 'secure': true}])
+        | map('combine', [{'conf_name': "%03d-%s-ssl.conf" % (item.index, item.vhost.name)}])
+        | map('combine', [{'domain_alias': item.vhost.name, 'document_root': item.vhost.document_root, 'secure': true}])
         | map('combine', [{'loglevel': domain_entry.loglevel | default("warn"),
                            'role_user': role_user | default("www-data"),
                            'custom_directory_perms': domain_entry.custom_directory_perms | default(false),
-                           'enabled': item.0.enabled,
+                           'enabled': item.vhost.enabled,
                            'cert_domain': domain_entry.domain }])
         | list
       }}
