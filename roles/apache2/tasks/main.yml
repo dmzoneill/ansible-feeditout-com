@@ -43,7 +43,7 @@
           | first }}
     apache_vhost_entry:
       conf_name: "{{ vhost.name }}-ssl.conf"
-      domain: "{{ vhost.name }}"
+      domain: "{{ parent_domain.domain }}"
       domain_aliases: "{{ ['www.' + vhost.name] if not vhost.name.startswith('www.') else [] }}"
       domain_alias: "{{ vhost.name }}"
       document_root: "{{ vhost.document_root }}"
