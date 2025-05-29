@@ -1,3 +1,4 @@
+---
 - name: Ensure certbot is installed
   apt:
     name: certbot
@@ -29,6 +30,18 @@
         } ]
       }}
   loop: "{{ domains | zip(cert_stat_results.results) | list }}"
+
+- name: Extract SANs from certs if they exist
+  command: >
+    openssl x509 -in /etc/letsencrypt/live/{{ domain_cert.domain }}/cert.pem -noout -text
+  loop: "{{ domain_cert_pairs }}"
+  loop_control:
+    loop_var: domain_cert
+    label: "{{ domain_cert.domain }}"
+  when: domain_cert.stat.exists
+  changed_when: false
+  failed_when: false
+  register: openssl_cert_results
 
 - name: Combine cert data with parsed SANs
   set_fact:
@@ -63,7 +76,6 @@
   loop_control:
     loop_var: domain_cert
     label: "{{ domain_cert.domain }}"
-
 
 - name: Stop Apache if certbot is needed
   ansible.builtin.service:
