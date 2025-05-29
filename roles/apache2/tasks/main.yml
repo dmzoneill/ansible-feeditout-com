@@ -52,6 +52,7 @@
       custom_directory_perms: "{{ parent_domain.custom_directory_perms | default(false) }}"
       enabled: "{{ vhost.enabled | default(false) }}"
       secure: true
+      cert_domain: "{{ parent_domain.domain }}"
 
 - name: Add base domain vhosts (http only)
   set_fact:
