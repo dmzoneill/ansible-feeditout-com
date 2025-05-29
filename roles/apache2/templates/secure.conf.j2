@@ -1,6 +1,6 @@
 <VirtualHost *:443>
   ServerName {{ domain }}
-  ServerAlias {{ domain_alias }}
+  ServerAlias {{ domain_alias | default(domain) }}
   DocumentRoot /home/{{ role_user }}/www/{{ document_root }}
   LogLevel {{ loglevel }}
   CustomLog /var/log/apache2/{{ domain_alias }}-access.log combined
