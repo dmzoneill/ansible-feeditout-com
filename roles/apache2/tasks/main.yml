@@ -16,22 +16,33 @@
   loop_control:
     loop_var: subdir
 
-- name: Build vhost config list from virtual hosts
+- name: Initialize apache_vhosts
   set_fact:
-    apache_vhosts: "{{ apache_vhosts | default([]) + domain_entry.virtual_hosts | default([]) | map('combine', {
-      'conf_name': item.name + '-ssl.conf',
-      'domain': item.name,
-      'domain_aliases': ['www.' + item.name] if not item.name.startswith('www.') else [],
-      'domain_alias': item.name,
-      'document_root': item.document_root,
-      'loglevel': domain_entry.loglevel | default('warn'),
-      'role_user': role_user | default('www-data'),
-      'custom_directory_perms': domain_entry.custom_directory_perms | default(false),
-      'enabled': item.enabled | default(false),
-      'secure': true }) | list }}"
+    apache_vhosts: []
+
+- name: Add secure vhosts from all domain_entry.virtual_hosts
+  vars:
+    domain_entry: "{{ item }}"
   loop: "{{ domains }}"
   loop_control:
-    loop_var: domain_entry
+    loop_var: item
+  block:
+    - name: Append each secure vhost
+      set_fact:
+        apache_vhosts: "{{ apache_vhosts + [ {
+          'conf_name': vhost.name + '-ssl.conf',
+          'domain': vhost.name,
+          'domain_aliases': ['www.' + vhost.name] if not vhost.name.startswith('www.') else [],
+          'domain_alias': vhost.name,
+          'document_root': vhost.document_root,
+          'loglevel': domain_entry.loglevel | default('warn'),
+          'role_user': role_user | default('www-data'),
+          'custom_directory_perms': domain_entry.custom_directory_perms | default(false),
+          'enabled': vhost.enabled | default(false),
+          'secure': true } ] }}"
+      loop: "{{ domain_entry.virtual_hosts | default([]) }}"
+      loop_control:
+        loop_var: vhost
 
 - name: Add base domain vhost (http only)
   set_fact:
