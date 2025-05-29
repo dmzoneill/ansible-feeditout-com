@@ -20,29 +20,38 @@
   set_fact:
     apache_vhosts: []
 
-- name: Append all secure vhosts to apache_vhosts (with numbered conf_name per domain)
+- name: Append all secure vhosts to apache_vhosts
   set_fact:
-    apache_vhosts: "{{ apache_vhosts + domain_vhosts }}"
-  loop: "{{ domains | selectattr('enabled', 'defined') | selectattr('enabled') }}"
+    apache_vhosts: "{{ apache_vhosts + [apache_vhost_entry] }}"
+  loop: >-
+    {{ domains
+        | selectattr('enabled', 'defined') 
+        | selectattr('enabled') 
+        | map(attribute='virtual_hosts') 
+        | select('defined') 
+        | flatten(levels=1) }}
   loop_control:
-    loop_var: domain_entry
+    loop_var: vhost
   vars:
-    filtered_vhosts: >-
-      {{ domain_entry.virtual_hosts | default([]) | selectattr('enabled', 'defined') | selectattr('enabled') | list }}
-    domain_vhosts: >-
-      {{
-        filtered_vhosts | zip(range(1, filtered_vhosts | length + 1))
-        | map('community.general.dict_kv', 'vhost', 'index')
-        | map('combine', [{'domain': domain_entry.domain}])
-        | map('combine', [{'conf_name': "%03d-%s-ssl.conf" % (item.index, item.vhost.name)}])
-        | map('combine', [{'domain_alias': item.vhost.name, 'document_root': item.vhost.document_root, 'secure': true}])
-        | map('combine', [{'loglevel': domain_entry.loglevel | default("warn"),
-                           'role_user': role_user | default("www-data"),
-                           'custom_directory_perms': domain_entry.custom_directory_perms | default(false),
-                           'enabled': item.vhost.enabled,
-                           'cert_domain': domain_entry.domain }])
-        | list
-      }}
+    parent_domain: >-
+      {{ domains
+          | selectattr('virtual_hosts', 'defined')
+          | selectattr('virtual_hosts', 'contains', vhost)
+          | selectattr('enabled', 'defined')
+          | selectattr('enabled')
+          | list
+          | first }}
+    apache_vhost_entry:
+      conf_name: "{{ vhost.name }}-ssl.conf"
+      domain: "{{ parent_domain.domain }}"
+      domain_alias: "{{ vhost.name }}"
+      document_root: "{{ vhost.document_root }}"
+      loglevel: "{{ parent_domain.loglevel | default('warn') }}"
+      role_user: "{{ role_user | default('www-data') }}"
+      custom_directory_perms: "{{ parent_domain.custom_directory_perms | default(false) }}"
+      enabled: "{{ vhost.enabled | default(false) }}"
+      secure: true
+      cert_domain: "{{ parent_domain.domain }}"
 
 - name: Add base domain vhosts (http only)
   set_fact:
