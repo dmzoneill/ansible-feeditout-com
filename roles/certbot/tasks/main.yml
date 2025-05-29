@@ -10,37 +10,57 @@
     certbot_needed: false
     certs_to_issue: []
 
-- name: Evaluate which domains need certbot
-  block:
-    - name: Collect requested domain list for {{ domain_entry.domain }}
-      set_fact:
-        requested_domains: >-
-          {{ [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique }}
+- name: Collect requested domain list
+  set_fact:
+    requested_domains: >-
+      {{ [item.domain] + (item.virtual_hosts | map(attribute='name') | list) | unique }}
+  loop: "{{ domains }}"
+  loop_control:
+    loop_var: domain_entry
+    label: "{{ domain_entry.domain }}"
 
-    - name: Check if cert exists for {{ domain_entry.domain }}
-      stat:
-        path: "/etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem"
-      register: cert_stat
+- name: Check if cert exists
+  stat:
+    path: "/etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem"
+  register: cert_stat
+  loop: "{{ domains }}"
+  loop_control:
+    loop_var: domain_entry
+    label: "{{ domain_entry.domain }}"
 
-    - name: Extract existing SANs from cert if it exists
-      command: >
-        openssl x509 -in /etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem -noout -text
-      register: openssl_cert
-      when: cert_stat.stat.exists
-      changed_when: false
-      failed_when: false
+- name: Extract existing SANs from cert if it exists
+  command: >
+    openssl x509 -in /etc/letsencrypt/live/{{ domain_entry.domain }}/cert.pem -noout -text
+  register: openssl_cert
+  when: cert_stat.results[loop.index0].stat.exists
+  changed_when: false
+  failed_when: false
+  loop: "{{ domains }}"
+  loop_control:
+    loop_var: domain_entry
+    label: "{{ domain_entry.domain }}"
 
-    - name: Parse SANs
-      set_fact:
-        existing_sans: >-
-          {{ openssl_cert.stdout | regex_findall('DNS:([^,\\s]+)') | unique }}
-      when: cert_stat.stat.exists
+- name: Parse SANs
+  set_fact:
+    existing_sans: >-
+      {{ openssl_cert.results[loop.index0].stdout | regex_findall('DNS:([^,\\s]+)') | unique }}
+  when: cert_stat.results[loop.index0].stat.exists
+  loop: "{{ domains }}"
+  loop_control:
+    loop_var: domain_entry
+    label: "{{ domain_entry.domain }}"
 
-    - name: Decide whether certbot is needed for {{ domain_entry.domain }}
-      set_fact:
-        certs_to_issue: "{{ certs_to_issue + [ { 'domain': domain_entry.domain, 'domains': requested_domains } ] }}"
-        certbot_needed: true
-      when: not cert_stat.stat.exists or (requested_domains | difference(existing_sans | default([]))) | length > 0
+- name: Decide whether certbot is needed
+  set_fact:
+    certs_to_issue: "{{ certs_to_issue + [ { 'domain': domain_entry.domain, 'domains': [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique }] }}"
+    certbot_needed: true
+  when: >
+    not cert_stat.results[loop.index0].stat.exists or
+    (
+      (
+        [domain_entry.domain] + (domain_entry.virtual_hosts | map(attribute='name') | list) | unique
+      ) | difference( openssl_cert.results[loop.index0].stdout | regex_findall('DNS:([^,\\s]+)') | unique )
+    ) | length > 0
   loop: "{{ domains }}"
   loop_control:
     loop_var: domain_entry
