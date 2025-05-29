@@ -1,8 +1,8 @@
 <VirtualHost *:80>
   
   ServerName {{ domain }}
-{% if domain_aliases | length > 0 %}
-  ServerAlias {{ domain_aliases | join(' ') }}
+{% if vhost.domain_aliases %}
+  ServerAlias {{ vhost.domain_aliases | join(" ") }}
 {% endif %}
   DocumentRoot /home/{{ role_user }}/www/{{ document_root }}
   LogLevel {{ loglevel }}
