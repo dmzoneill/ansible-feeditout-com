@@ -93,6 +93,8 @@
       domain: "{{ domain_entry.domain }}"
       document_root: "/var/www/html"
       domain_alias: "{{ domain_entry.domain }}"
+      role_user: "{{ role_user | default('www-data') }}"
+      loglevel: "warn"
       redirect_to_www: true
       secure: false
       enabled: true
@@ -101,6 +103,8 @@
       domain: "{{ domain_entry.domain }}"
       document_root: "/var/www/html"
       domain_alias: "{{ domain_entry.domain }}"
+      role_user: "{{ role_user | default('www-data') }}"
+      loglevel: "warn"
       redirect_to_www: true
       secure: true
       enabled: true
