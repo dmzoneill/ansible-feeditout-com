@@ -30,16 +30,18 @@
       }}
   loop: "{{ domains | zip(cert_stat_results.results) | list }}"
 
-- name: Extract SANs from certs if they exist
-  command: openssl x509 -in /etc/letsencrypt/live/{{ domain_cert.domain }}/cert.pem -noout -text
-  loop: "{{ domain_cert_pairs }}"
-  loop_control:
-    loop_var: domain_cert
-    label: "{{ domain_cert.domain }}"
-  when: domain_cert.stat.exists
-  register: openssl_cert_results
-  changed_when: false
-  failed_when: false
+- name: Combine cert data with parsed SANs
+  set_fact:
+    domain_cert_openssl_pairs: >-
+      {{
+        domain_cert_openssl_pairs | default([]) + [ {
+          "domain": item.0.domain,
+          "virtual_hosts": item.0.virtual_hosts,
+          "stat": item.0.stat,
+          "cert_output": item.1.stdout
+        } ]
+      }}
+  loop: "{{ domain_cert_pairs | zip(openssl_cert_results.results) | list }}"
 
 - name: Determine which certs need to be issued
   set_fact:
@@ -54,10 +56,10 @@
         [domain_cert.domain] + (domain_cert.virtual_hosts | map(attribute='name') | list)
       ) | unique
       | difference(
-          (openssl_cert_results.results[loop.index0].stdout | regex_findall('DNS:([^,\\s]+)') | unique) | default([])
+          (domain_cert.cert_output | regex_findall('DNS:([^,\\s]+)') | unique) | default([])
         )
     ) | length > 0
-  loop: "{{ domain_cert_pairs }}"
+  loop: "{{ domain_cert_openssl_pairs }}"
   loop_control:
     loop_var: domain_cert
     label: "{{ domain_cert.domain }}"
