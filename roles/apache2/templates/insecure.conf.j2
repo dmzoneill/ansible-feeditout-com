@@ -1,8 +1,9 @@
 <VirtualHost *:80>
   ServerName {{ vhost.domain }}
-{% if vhost.domain_aliases %}
-  ServerAlias {{ vhost.domain_aliases | join(" ") }}
+{% if vhost.domain_aliases is defined %}
+    ServerAlias {{ vhost.domain_aliases | join(' ') }}
 {% endif %}
+
   DocumentRoot /home/{{ vhost.role_user }}/www/{{ vhost.document_root }}
   LogLevel {{ vhost.loglevel }}
   CustomLog /var/log/apache2/{{ vhost.domain }}-access.log combined
