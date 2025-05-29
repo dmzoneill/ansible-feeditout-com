@@ -20,14 +20,19 @@
   set_fact:
     apache_vhosts: []
 
-- name: Add secure vhosts from all domain_entry.virtual_hosts
+- name: Initialize apache_vhosts
+  set_fact:
+    apache_vhosts: []
+
+- name: Add secure vhosts from domain virtual_hosts
   vars:
-    domain_entry: "{{ item }}"
+    current_domain: "{{ domain }}"
   loop: "{{ domains }}"
   loop_control:
-    loop_var: item
+    loop_var: domain
+  when: domain.virtual_hosts is defined
   block:
-    - name: Append each secure vhost
+    - name: Append secure vhosts to apache_vhosts
       set_fact:
         apache_vhosts: "{{ apache_vhosts + [ {
           'conf_name': vhost.name + '-ssl.conf',
@@ -35,12 +40,12 @@
           'domain_aliases': ['www.' + vhost.name] if not vhost.name.startswith('www.') else [],
           'domain_alias': vhost.name,
           'document_root': vhost.document_root,
-          'loglevel': domain_entry.loglevel | default('warn'),
+          'loglevel': current_domain.loglevel | default('warn'),
           'role_user': role_user | default('www-data'),
-          'custom_directory_perms': domain_entry.custom_directory_perms | default(false),
+          'custom_directory_perms': current_domain.custom_directory_perms | default(false),
           'enabled': vhost.enabled | default(false),
           'secure': true } ] }}"
-      loop: "{{ domain_entry.virtual_hosts | default([]) }}"
+      loop: "{{ current_domain.virtual_hosts }}"
       loop_control:
         loop_var: vhost
 
