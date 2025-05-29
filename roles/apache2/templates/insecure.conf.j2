@@ -1,0 +1,27 @@
+<VirtualHost *:80>
+  
+  ServerName {{ domain }}
+{% if domain_aliases | length > 0 %}
+  ServerAlias {{ domain_aliases | join(' ') }}
+{% endif %}
+  DocumentRoot /home/{{ role_user }}/www/{{ document_root }}
+  LogLevel {{ loglevel }}
+  CustomLog /var/log/apache2/{{ domain_alias }}-access.log combined
+  ErrorLog /var/log/apache2/{{ domain_alias }}-error.log
+
+  RewriteEngine On
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]
+
+  <IfModule mpm_itk_module>
+    AssignUserId {{ role_user }} {{ role_user }}
+  </IfModule>
+
+  <Directory />
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride all
+    Order allow,deny
+    allow from all  
+  </Directory>
+
+</VirtualHost>
+

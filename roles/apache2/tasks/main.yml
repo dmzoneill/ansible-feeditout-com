@@ -5,39 +5,97 @@
     state: directory
     mode: '0755'
 
-- name: Copy Apache config
-  copy:
-    src: "{{ role_path }}/files/"
-    dest: /etc/apache2/
-    owner: root
-    group: root
-    mode: preserve
-    directory_mode: '0755'
-  notify: restart apache2
-
-- name: Get list of site configs defined in role
-  find:
-    paths: "{{ role_path }}/files/sites-enabled"
-    file_type: any
-    patterns: "*.conf"
-  register: role_sites
-
-- name: Get list of active symlinks on system
-  find:
-    paths: /etc/apache2/sites-enabled
-    file_type: link
-    patterns: "*.conf"
-  register: system_site_links
-
-- name: Remove stale site symlinks not in role
+- name: Ensure vhost directories exist
   file:
-    path: "{{ stale.path }}"
-    state: absent
-  loop: "{{ system_site_links.files }}"
+    path: "/etc/apache2/{{ subdir }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - sites-available
+    - sites-enabled
   loop_control:
-    loop_var: stale
-  when: stale.path | basename not in (role_sites.files | map(attribute='path') | map('basename') | list)
-  notify: restart apache2
+    loop_var: subdir
+
+- name: Build vhost config list from virtual hosts
+  set_fact:
+    apache_vhosts: "{{ apache_vhosts | default([]) + domain_entry.virtual_hosts | default([]) | map('combine', {
+      'conf_name': item.name + '-ssl.conf',
+      'domain': item.name,
+      'domain_aliases': ['www.' + item.name] if not item.name.startswith('www.') else [],
+      'domain_alias': item.name,
+      'document_root': item.document_root,
+      'loglevel': domain_entry.loglevel | default('warn'),
+      'role_user': role_user | default('www-data'),
+      'custom_directory_perms': domain_entry.custom_directory_perms | default(false),
+      'enabled': item.enabled | default(false),
+      'secure': true }) | list }}"
+  loop: "{{ domains }}"
+  loop_control:
+    loop_var: domain_entry
+
+- name: Add base domain vhost (http only)
+  set_fact:
+    apache_vhosts: "{{ apache_vhosts + [ {
+      'conf_name': domain_entry.domain + '.conf',
+      'domain': domain_entry.domain,
+      'domain_aliases': [ 'www.' + domain_entry.domain ],
+      'domain_alias': domain_entry.domain,
+      'document_root': domain_entry.document_root,
+      'loglevel': domain_entry.loglevel | default('warn'),
+      'role_user': role_user | default('www-data'),
+      'custom_directory_perms': domain_entry.custom_directory_perms | default(false),
+      'enabled': domain_entry.enabled | default(false),
+      'secure': false } ] }}"
+  loop: "{{ domains }}"
+  loop_control:
+    loop_var: domain_entry
+
+- name: Create insecure vhost files
+  template:
+    src: insecure.conf.j2
+    dest: "/etc/apache2/sites-available/{{ vhost.conf_name }}"
+    mode: '0644'
+  loop: "{{ apache_vhosts }}"
+  loop_control:
+    loop_var: vhost
+  when: not vhost.secure
+  notify: Reload Apache
+
+- name: Create secure vhost files
+  template:
+    src: secure.conf.j2
+    dest: "/etc/apache2/sites-available/{{ vhost.conf_name }}"
+    mode: '0644'
+  loop: "{{ apache_vhosts }}"
+  loop_control:
+    loop_var: vhost
+  when: vhost.secure
+  notify: Reload Apache
+
+- name: Enable vhosts via symlinks
+  file:
+    src: "/etc/apache2/sites-available/{{ vhost.conf_name }}"
+    dest: "/etc/apache2/sites-enabled/{{ vhost.conf_name }}"
+    state: link
+    force: true
+  loop: "{{ apache_vhosts | selectattr('enabled') | list }}"
+  loop_control:
+    loop_var: vhost
+
+- name: List current vhost configs
+  find:
+    paths: /etc/apache2/sites-available
+    patterns: "*.conf"
+  register: existing_confs
+
+- name: Remove unmanaged vhost configs
+  file:
+    path: "{{ conf.path }}"
+    state: absent
+  loop: "{{ existing_confs.files }}"
+  loop_control:
+    loop_var: conf
+  when: (conf.path | basename) not in (apache_vhosts | map(attribute='conf_name') | list)
 
 - name: Disable broken Apache modules by removing .load files
   file:
@@ -133,8 +191,8 @@
   file:
     path: "{{ docroot }}"
     state: directory
-    owner: dave
-    group: dave
+    owner: "{{ role_user }}"
+    group: "{{ role_user }}"
     mode: '0755'
   loop: "{{ document_roots.stdout_lines }}"
   loop_control:

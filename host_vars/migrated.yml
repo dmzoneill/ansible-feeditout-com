@@ -230,90 +230,79 @@ virtualaliases:
 
 domains:
   - domain: fio.ie
-    aliases:
-      - www.fio.ie
-      - home.fio.ie
-      - cv.fio.ie
-    root: /home/{{ role_user }}/www/feeditout.com
-    ssl_cert: /etc/letsencrypt/live/fio.ie/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/fio.ie/privkey.pem
-
-  - domain: feeditout.com
-    aliases:
-      - www.feeditout.com
-    root: /home/{{ role_user }}/www/feeditout.com
-    ssl_cert: /etc/letsencrypt/live/feeditout.com/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/feeditout.com/privkey.pem
+    document_root: feeditout.com
+    virtual_hosts:
+      - name: www.fio.ie
+        document_root: feeditout.com
+        enabled: true
+      - name: home.fio.ie
+        document_root: feeditout.com
+        enabled: true
+      - name: cv.fio.ie
+        document_root: cv.fio.ie
+        enabled: true
+      - name: pma.fio.ie
+        document_root: phpmyadmin
+        enabled: true
+    loglevel: debug
+    enabled: true
 
   - domain: feeditout.xyz
-    aliases:
-      - www.feeditout.xyz
-    root: /home/{{ role_user }}/www/feeditout.xyz
-    ssl_cert: /etc/letsencrypt/live/feeditout.xyz/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/feeditout.xyz/privkey.pem
+    document_root: feeditout.xyz
+    virtual_hosts:
+      - name: www.feeditout.xyz
+        document_root: feeditout.xyz
+        enabled: true
+    loglevel: debug
+    enabled: true
 
   - domain: feeditout.site
-    aliases:
-      - www.feeditout.site
-    root: /home/{{ role_user }}/www/feeditout.site
-    ssl_cert: /etc/letsencrypt/live/feeditout.sitefullchain.pem
-    ssl_key: /etc/letsencrypt/live/feeditout.site/privkey.pem
+    document_root: feeditout.site
+    virtual_hosts:
+      - name: www.feeditout.site
+        document_root: feeditout.site
+        enabled: true
+    loglevel: debug
+    enabled: true
 
-  - domain: yogamantra.life
-    aliases:
-      - www.yogamantra.life
-    root: /home/{{ role_user }}/www/yogamantra.life
-    ssl_cert: /etc/letsencrypt/live/yogamantra.life/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/yogamantra.life/privkey.pem
-
-  - domain: ayc.ie
-    aliases:
-      - www.ayc.ie
-    root: /home/{{ role_user }}/www/ayc.ie
-    ssl_cert: /etc/letsencrypt/live/ayc.ie/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/ayc.ie/privkey.pem
+  - domain: feeditout.com
+    document_root: feeditout.com
+    virtual_hosts:
+      - name: www.feeditout.com
+        document_root: feeditout.com
+        enabled: true
+      - name: mta-sts.feeditout.com
+        document_root: feeditout.com
+      - name: home.feeditout.com
+        document_root: feeditout.com
+        enable: true
+      - name: cv.feeditout.com
+        document_root: cv.fio.ie
+        enabled: true
+      - name: pma.feeditout.com
+        document_root: phpmyadmin
+        enabled: true
+    loglevel: debug
+    enabled: true
 
   - domain: ecu-emr.com
-    aliases:
-      - www.ecu-emr.com
-    root: /home/{{ role_user }}/www/ecu-emr.com
-    ssl_cert: /etc/letsencrypt/live/ecu-emr.com/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/ecu-emr.com/privkey.pem
-
-  - domain: mysore.ie
-    aliases:
-      - www.mysore.ie
-    root: /home/{{ role_user }}/www/mysore.ie
-    ssl_cert: /etc/letsencrypt/live/mysore.ie/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/mysore.ie/privkey.pem
-
-  - domain: mysorecork.ie
-    aliases:
-      - www.mysorecork.ie
-    root: /home/{{ role_user }}/www/mysorecork.ie
-    ssl_cert: /etc/letsencrypt/live/mysorecork.ie/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/mysorecork.ie/privkey.pem
-
-  - domain: ashtangacork.ie
-    aliases:
-      - www.ashtangacork.ie
-    root: /home/{{ role_user }}/www/ashtangacork.ie
-    ssl_cert: /etc/letsencrypt/live/ashtangacork.ie/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/ashtangacork.ie/privkey.pem
+    document_root: ecu-emr.com
+    virtual_hosts:
+      - name: www.ecu-emr.com
+        document_root: ecu-emr.com
+        enabled: true
+    custom_directory_perms: true
+    loglevel: debug
+    enabled: true
 
   - domain: ashtangayoga.ie
-    aliases:
-      - www.ashtangayoga.ie
-    root: /home/{{ role_user }}/www/ashtangayoga.ie
-    ssl_cert: /etc/letsencrypt/live/ashtangayoga.ie/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/ashtangayoga.ie/privkey.pem
-
-  - domain: ashtangayogacork.ie
-    aliases:
-      - www.ashtangayogacork.ie
-    root: /home/{{ role_user }}/www/ashtangayogacork.ie
-    ssl_cert: /etc/letsencrypt/live/ashtangayogacork.ie/fullchain.pem
-    ssl_key: /etc/letsencrypt/live/ashtangayogacork.ie/privkey.pem
+    document_root: ashtangayoga.ie
+    virtual_hosts:
+      - name: www.ashtangayoga.ie
+        document_root: ashtangayoga.ie
+        enabled: true
+    loglevel: debug
+    enabled: true
 
 # logrotate
 logrotate_configs:
