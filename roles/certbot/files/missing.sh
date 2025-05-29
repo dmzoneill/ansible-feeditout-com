@@ -7,7 +7,7 @@ CERTBOT_LIVE_DIR="/etc/letsencrypt/live"
 echo "🔄 Checking for missing domains at $(date)"
 
 # Extract all domains from Apache configs
-apache_domains=$(grep -rhoP 'Server(Name|Alias)\s+\K\S+' "$APACHE_SITES_DIR" | sort -u)
+apache_domains=$(grep -rhoP 'Server(Name|Alias)\s+\K\S+' $APACHE_SITES_DIR | sort -u | uniq)
 
 # Extract domains already in certs
 certbot_domains=$(find "$CERTBOT_LIVE_DIR" -mindepth 1 -maxdepth 1 -type d | while read certdir; do
