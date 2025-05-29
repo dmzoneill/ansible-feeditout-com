@@ -81,31 +81,6 @@
       enabled: "{{ domain_entry.enabled | default(false) }}"
       secure: false
 
-- name: Add www redirect vhosts for HTTP and HTTPS
-  set_fact:
-    apache_vhosts: "{{ apache_vhosts + [redirect_http_entry, redirect_https_entry] }}"
-  loop: "{{ domains | selectattr('enabled', 'defined') | selectattr('enabled') }}"
-  loop_control:
-    loop_var: domain_entry
-  vars:
-    redirect_http_entry:
-      conf_name: "000-redirect-{{ domain_entry.domain }}.conf"
-      domain: "{{ domain_entry.domain }}"
-      document_root: "/var/www/html"
-      domain_alias: "{{ domain_entry.domain }}"
-      redirect_to_www: true
-      secure: false
-      enabled: true
-    redirect_https_entry:
-      conf_name: "000-redirect-{{ domain_entry.domain }}-ssl.conf"
-      domain: "{{ domain_entry.domain }}"
-      document_root: "/var/www/html"
-      domain_alias: "{{ domain_entry.domain }}"
-      redirect_to_www: true
-      secure: true
-      enabled: true
-      cert_domain: "{{ domain_entry.domain }}"
-
 - name: Create insecure vhost files
   template:
     src: insecure.conf.j2
