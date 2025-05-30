@@ -5,38 +5,51 @@
     state: present
     update_cache: true
 
-- name: Check if crontab files are missing
-  stat:
-    path: "/var/spool/cron/crontabs/{{ cron.user }}"
+- name: Initialize list of files needing update
+  set_fact:
+    crontabs_to_update: []
+
+- name: Determine if each crontab file needs update
+  vars:
+    rendered_crontab: "{{ lookup('template', cron.src) }}"
+  block:
+    - name: Slurp existing crontab file
+      slurp:
+        path: "/var/spool/cron/crontabs/{{ cron.user }}"
+      register: existing_crontab_raw
+      ignore_errors: true
+
+    - name: Set fact if crontab differs
+      set_fact:
+        crontabs_to_update: "{{ crontabs_to_update + [cron] }}"
+      when: >
+        existing_crontab_raw.failed or
+        rendered_crontab != (existing_crontab_raw.content | b64decode)
   loop: "{{ cron_user_files }}"
   loop_control:
     loop_var: cron
-  register: cron_stat
 
-- name: Determine if any crontab file is missing
-  set_fact:
-    cron_needs_update: true
-  when: >
-    cron_stat.results
-    | selectattr('stat.exists', 'equalto', false)
-    | list | length > 0
-
-- name: Stop cron before copying crontabs (only if needed)
+- name: Stop cron if crontabs need update
   systemd:
     name: cron
     state: stopped
     enabled: true
-  when: cron_needs_update | default(false)
+  when: crontabs_to_update | length > 0
 
-- name: Copy crontab files for users (actual write)
+- name: Apply crontab templates that need updating
   template:
     src: "{{ cron.src }}"
     dest: "/var/spool/cron/crontabs/{{ cron.user }}"
     owner: "{{ cron.user }}"
     group: crontab
     mode: '0600'
-  loop: "{{ cron_user_files }}"
+  loop: "{{ crontabs_to_update }}"
   loop_control:
     loop_var: cron
-  when: cron_needs_update | default(false)
-  notify: Start and enable cron
+
+- name: Start and enable cron if any crontabs updated
+  systemd:
+    name: cron
+    state: started
+    enabled: true
+  when: crontabs_to_update | length > 0
