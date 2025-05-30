@@ -36,12 +36,14 @@
 
 - name: Apply crontab templates that need updating
   template:
-    src: "{{ item.src }}"
-    dest: "/var/spool/cron/crontabs/{{ item.user }}"
-    owner: "{{ item.user }}"
+    src: "{{ cron.src }}"
+    dest: "/var/spool/cron/crontabs/{{ cron.user }}"
+    owner: "{{ cron.user }}"
     group: crontab
     mode: '0600'
   loop: "{{ crontabs_to_update }}"
+  loop_control:
+    loop_var: cron
 
 - name: Start and enable cron if any crontabs updated
   systemd:
