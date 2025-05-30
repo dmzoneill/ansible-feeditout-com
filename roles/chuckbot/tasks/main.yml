@@ -4,20 +4,20 @@
   file:
     path: /opt/Chuckbot
     state: directory
-    owner: dave
-    group: dave
+    owner: "{{ user }}"
+    group: "{{ user }}"
     mode: '0755'
 
-- name: Check if /opt/Chuckbot is a Git repo (as dave)
+- name: Check if /opt/Chuckbot is a Git repo (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   stat:
     path: /opt/Chuckbot/.git
   register: chuckbot_git
 
-- name: Get current remote if it exists (as dave)
+- name: Get current remote if it exists (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   command: git remote get-url origin
   args:
     chdir: /opt/Chuckbot
@@ -26,9 +26,9 @@
   failed_when: false
   changed_when: false
 
-- name: Clone repo if not present or invalid (as dave)
+- name: Clone repo if not present or invalid (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   git:
     repo: git@github.com:dmzoneill/Chuckbot.git
     dest: /opt/Chuckbot
@@ -37,9 +37,9 @@
     force: true
   when: not chuckbot_git.stat.exists or git_remote.stdout != "git@github.com:dmzoneill/Chuckbot.git"
 
-- name: Check for dirty working directory (as dave)
+- name: Check for dirty working directory (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   command: git status --porcelain
   args:
     chdir: /opt/Chuckbot
@@ -47,9 +47,9 @@
   changed_when: false
   failed_when: false
 
-- name: Check if local branch is ahead of remote (as dave)
+- name: Check if local branch is ahead of remote (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   command: git status -sb
   args:
     chdir: /opt/Chuckbot
@@ -63,9 +63,9 @@
       Dirty: {{ git_dirty.stdout != "" }}
       Ahead: {{ 'ahead' in git_ahead.stdout }}
 
-- name: Amend last commit if dirty and ahead (as dave)
+- name: Amend last commit if dirty and ahead (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   shell: |
     git config user.name "Chuckbot"
     git config user.email "chuckbot@localhost"
@@ -77,9 +77,9 @@
     - git_dirty.stdout != ""
     - git_ahead.stdout is search('ahead')
 
-- name: Create new commit if dirty and not ahead (as dave)
+- name: Create new commit if dirty and not ahead (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   shell: |
     export GIT_COMMITTER_NAME="Chuckbot"
     export GIT_COMMITTER_EMAIL="chuckbot@localhost"
@@ -93,18 +93,18 @@
     - git_dirty.stdout != ""
     - git_ahead.stdout is not search('ahead')
 
-- name: Get current commit hash before pull (as dave)
+- name: Get current commit hash before pull (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   command: git rev-parse HEAD
   args:
     chdir: /opt/Chuckbot
   register: git_hash_before
   changed_when: false
 
-- name: Pull latest from origin with rebase (as dave)
+- name: Pull latest from origin with rebase (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   command: git pull --rebase
   args:
     chdir: /opt/Chuckbot
@@ -114,9 +114,9 @@
     - git_dirty.stdout == ""
     - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
 
-- name: Get current commit hash after pull (as dave)
+- name: Get current commit hash after pull (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   command: git rev-parse HEAD
   args:
     chdir: /opt/Chuckbot
@@ -143,14 +143,14 @@
     (chuckbot_git_updated | default(false)) or
     (service_file is defined and service_file.changed)
 
-- name: Run npm ci if repo was updated (as dave)
+- name: Run npm ci if repo was updated (as {{ user }})
   become: true
-  become_user: dave
+  become_user: "{{ user }}"
   command: npm ci
   args:
     chdir: /opt/Chuckbot
   environment:
-    HOME: "/home/dave"
+    HOME: "/home/{{ user }}"
   when: chuckbot_git_updated | default(false)
   ignore_errors: true
 

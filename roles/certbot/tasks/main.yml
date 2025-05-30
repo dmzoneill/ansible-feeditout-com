@@ -109,32 +109,32 @@
     path: "{{ certbot_helpers_dir }}"
     state: directory
     mode: '0755'
-    owner: dave
-    group: dave
+    owner: "{{ user }}"
+    group: "{{ user }}"
 
 - name: Copy certbot.sh
   copy:
     src: certbot.sh
     dest: "{{ certbot_helpers_dir }}/certbot.sh"
     mode: '0755'
-    owner: dave
-    group: dave
+    owner: "{{ user }}"
+    group: "{{ user }}"
 
 - name: Copy missing.sh
   copy:
     src: missing.sh
     dest: "{{ certbot_helpers_dir }}/missing.sh"
     mode: '0755'
-    owner: dave
-    group: dave
+    owner: "{{ user }}"
+    group: "{{ user }}"
 
 - name: Copy certbot_clean_old.sh
   copy:
     src: certbot_clean_old.sh
     dest: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
     mode: '0755'
-    owner: dave
-    group: dave
+    owner: "{{ user }}"
+    group: "{{ user }}"
 
 - name: Run clean_old.sh to clean up certs
   command: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
@@ -154,8 +154,8 @@
 #     src: certbot_clean_old.sh
 #     dest: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
 #     mode: '0755'
-#     owner: dave
-#     group: dave
+#     owner: "{{ user }}"
+#     group: "{{ user }}"
 
 # - name: Run clean_old.sh to check and issue missing certs
 #   command: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"

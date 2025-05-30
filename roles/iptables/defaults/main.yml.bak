@@ -1,3 +1,0 @@
----
-iptables_rules_file: rules.v4
-iptables_rules_path: /etc/iptables/rules.v4

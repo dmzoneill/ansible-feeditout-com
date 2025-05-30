@@ -25,8 +25,14 @@ ansible_pull_interval_minutes: 30
 ansible_pull_expected_ip: "{{ ipv4_addr }}"
 ansible_pull_email: "{{ email }}"
 
+# php_fpm
+php_fpm_user: "{{ user }}"
+
 # auditd
 auditd_alert_email: "{{ email }}"
+
+# rclone email
+rclone_email: "{{ email }}"
 
 # certbot
 certbot_helpers_dir: "/home/{{ user }}/bin"
@@ -132,6 +138,16 @@ logwatch_output: "mail"
 ntp_timezone: "Europe/Dublin"
 ntp_package: "chrony"
 ntp_service: "chrony"
+
+# webdis
+redis_host: "127.0.0.1"
+redis_port: 6379
+redis_auth: "{{ redis_password }}"
+webdis_http_host: "0.0.0.0"
+webdis_threads: 2
+webdis_http_port: 6380
+webdis_ssl_certificate: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
+webdis_ssl_private_key: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
 
 # postfix
 mailname: "{{ fqdn }}"

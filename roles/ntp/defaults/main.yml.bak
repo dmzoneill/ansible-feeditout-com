@@ -1,4 +1,0 @@
----
-ntp_timezone: "Europe/Dublin"
-ntp_package: "chrony"
-ntp_service: "chrony"

@@ -1,6 +1,0 @@
----
-locale_timezone: "Europe/Dublin"
-locale_zonefile: "/usr/share/zoneinfo/Europe/Dublin"
-locale_lang: "en_IE.UTF-8"
-locale_language: "en_IE:en"
-locale_lc_all: "en_IE.UTF-8"

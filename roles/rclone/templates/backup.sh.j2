@@ -11,7 +11,7 @@ DEST="google-backup:server-backup-$(hostname -s)"
 DATE=$(date +"%Y-%m-%d")
 LOGFILE="/var/log/rclone-backup.log"
 MYSQL_PASS="{{ mysql_root }}"
-EMAIL="dave@fio.ie"
+EMAIL="{{ rclone_email }}"
 
 # Clear log file at the beginning
 : > "$LOGFILE"
@@ -57,23 +57,25 @@ echo "Uploading log file to $DEST/$DATE/log" | tee -a "$LOGFILE"
 rclone copy "$LOGFILE" "$DEST/$DATE/log" --log-level INFO --log-file="$LOGFILE"
 
 # Tiered retention policy
-echo "Applying tiered retention policy (3 daily, 4 weekly, 3 monthly)" | tee -a "$LOGFILE"
+echo "Applying tiered retention policy (28 daily, 1 monthly for 12 months)" | tee -a "$LOGFILE"
 
 all_backups=$(rclone lsf "$DEST" --dirs-only | sed 's|/$||' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort)
 now=$(date +%s)
-declare -A week_map month_map
+declare -A month_map
 keep=()
 
 for date in $all_backups; do
   backup_ts=$(date -d "$date" +%s 2>/dev/null) || continue
   days_old=$(( (now - backup_ts) / 86400 ))
 
-  if (( days_old <= 2 )); then
+  # Keep backups from the last 28 days
+  if (( days_old <= 28 )); then
     keep+=("$date")
-  elif (( days_old <= 30 )); then
-    week=$(date -d "$date" +%G-%V)
-    [[ -z "${week_map[$week]+x}" ]] && keep+=("$date") && week_map["$week"]=1
-  elif [[ "$date" =~ ^[0-9]{4}-[0-9]{2}-01$ ]]; then
+    continue
+  fi
+
+  # Keep one backup per month (only on the 1st of the month) for the last 12 months
+  if [[ "$date" =~ ^[0-9]{4}-[0-9]{2}-01$ ]]; then
     month=$(date -d "$date" +%Y-%m)
     [[ -z "${month_map[$month]+x}" ]] && keep+=("$date") && month_map["$month"]=1
   fi

@@ -1,5 +1,0 @@
----
-logwatch_mailto: "dmz.oneill@gmail.com"
-logwatch_detail: "High"
-logwatch_range: "yesterday"
-logwatch_output: "mail"

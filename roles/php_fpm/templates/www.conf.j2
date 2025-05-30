@@ -1,9 +1,9 @@
 [www]
-user = dave
-group = dave
+user = {{ php_fpm_user }}
+group = {{ php_fpm_user }}
 listen = /run/php/php8.2-fpm.sock
-listen.owner = dave
-listen.group = dave
+listen.owner = {{ php_fpm_user }}
+listen.group = {{ php_fpm_user }}
 listen.mode = 0660
 pm = dynamic
 pm.max_children = 5

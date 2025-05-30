@@ -1,4 +1,0 @@
----
-fail2ban_jail: sshd
-unban_ips:
-  - 119.15.95.38

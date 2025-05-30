@@ -1,8 +1,8 @@
-bind 127.0.0.1
-port 6379
+bind {{ redis_host }}
+port {{ redis_port }}
 tls-port 0
 
-requirepass {{ redis_password }}
+requirepass {{ redis_auth }}
 
 protected-mode yes
 daemonize yes

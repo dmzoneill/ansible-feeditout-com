@@ -1,15 +1,15 @@
 {
-  "redis_host": "127.0.0.1",
-  "redis_port": 6379,
-  "redis_auth": "{{ redis_password }}",
-  "http_host": ["0.0.0.0"],
-  "threads": 2,
+  "redis_host": "{{ redis_host }}",
+  "redis_port": {{ redis_port }},
+  "redis_auth": "{{ redis_auth }}",
+  "http_host": [{{ webdis_http_host }}],
+  "threads": {{ webdis_threads }},
   "pidfile": "/var/run/webdis/webdis.pid",
   "daemonize": true,
-  "http_port": 6380,
+  "http_port": {{ webdis_http_port }},
   "https": true,
-  "ssl_certificate": "/etc/redis/tls/redis.crt",
-  "ssl_private_key": "/etc/redis/tls/redis.key",
+  "ssl_certificate": "{{ webdis_ssl_certificate }}",
+  "ssl_private_key": "{{ webdis_ssl_private_key }}",
   "acl": [
       {
           "disabled":["DEBUG"]

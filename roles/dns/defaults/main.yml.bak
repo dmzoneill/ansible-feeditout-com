@@ -1,9 +1,0 @@
----
-dns_nameservers:
-  - 8.8.8.8
-  - 1.1.1.1
-
-resolv_conf_path: /etc/resolv.conf
-resolv_conf_immutable: true
-
-disable_systemd_resolved: true

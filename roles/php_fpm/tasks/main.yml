@@ -28,14 +28,13 @@
   diff: true
 
 - name: Deploy www.conf pool configuration
-  copy:
-    src: www.conf
+  template:
+    src: www.conf.j2
     dest: "{{ php_fpm_pool_file }}"
     owner: root
     group: root
     mode: '0644'
   notify: Restart php-fpm
-  diff: true
 
 - name: Ensure PHP-FPM is enabled and started
   systemd:

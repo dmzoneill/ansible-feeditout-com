@@ -1,16 +1,12 @@
 ---
 - name: Set expected keyboard config path and content
   set_fact:
-    keyboard_config_path: "{{ '/etc/default/keyboard' if ansible_os_family == 'Debian' else '/etc/vconsole.conf' }}"
+    keyboard_config_path: "/etc/default/keyboard"
     keyboard_config_content: |
-      {% if ansible_os_family == 'Debian' %}
       XKBMODEL="pc105"
       XKBLAYOUT="us"
       XKBVARIANT=""
       XKBOPTIONS="terminate:ctrl_alt_bksp"
-      {% elif ansible_os_family == 'RedHat' %}
-      KEYMAP=us
-      {% endif %}
 
 - name: Write keyboard config if different
   copy:
