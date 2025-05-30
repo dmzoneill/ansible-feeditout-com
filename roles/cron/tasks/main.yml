@@ -20,11 +20,12 @@
   set_fact:
     crontabs_to_update: "{{ crontabs_to_update + [cron_user_files[idx]] }}"
   when: >
-    item.failed or
-    (lookup('template', cron_user_files[idx].src) != (item.content | b64decode))
+    existing.failed or
+    (lookup('template', cron_user_files[idx].src) != (existing.content | b64decode))
   loop: "{{ existing_crontabs.results }}"
   loop_control:
     index_var: idx
+    loop_var: existing
 
 - name: Stop cron if crontabs need update
   systemd:
