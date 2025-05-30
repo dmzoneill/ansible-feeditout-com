@@ -92,11 +92,13 @@
 
 - name: Remove cloud-init data directories
   file:
-    path: "{{ item }}"
+    path: "{{ cloud_dir }}"
     state: absent
   loop:
     - /etc/cloud
     - /var/lib/cloud
+  loop_control:
+    loop_var: cloud_dir
   ignore_errors: true
 
 - name: Mask systemd-networkd to prevent it starting on reboot

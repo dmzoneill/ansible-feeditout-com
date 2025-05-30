@@ -17,13 +17,14 @@
 
 - name: Deploy auditd configuration files individually
   copy:
-    src: "{{ item }}"
-    dest: "/etc/audit/{{ item | basename }}"
+    src: "{{ audit_file }}"
+    dest: "/etc/audit/{{ audit_file | basename }}"
     owner: root
     group: root
     mode: '0640'
-  with_fileglob:
-    - "{{ role_path }}/files/*.conf"
+  loop: "{{ lookup('fileglob', role_path + '/files/*.conf', wantlist=True) }}"
+  loop_control:
+    loop_var: audit_file
   notify: restart auditd
 
 - name: Enable and start auditd
@@ -46,12 +47,14 @@
 
 - name: Enable and start sysstat timers
   systemd:
-    name: "{{ item }}"
+    name: "{{ sysstat_timer }}"
     enabled: true
     state: started
   loop:
     - sysstat-collect.timer
     - sysstat-summary.timer
+  loop_control:
+    loop_var: sysstat_timer
 
 - name: Deploy auditd email alert script
   template:

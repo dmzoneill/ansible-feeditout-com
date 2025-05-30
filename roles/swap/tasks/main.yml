@@ -11,17 +11,21 @@
 
 - name: Disable all active swap entries
   become: true
-  command: swapoff {{ item }}
-  with_items: "{{ swap_paths }}"
+  command: swapoff {{ swap_path }}
+  loop: "{{ swap_paths }}"
+  loop_control:
+    loop_var: swap_path
   ignore_errors: true
 
 - name: Remove swap entries from /etc/fstab
   become: true
   replace:
     path: /etc/fstab
-    regexp: '^{{ item | regex_escape }}\s+none\s+swap\s+.*$'
+    regexp: '^{{ swap_path | regex_escape }}\s+none\s+swap\s+.*$'
     replace: ''
-  with_items: "{{ swap_paths }}"
+  loop: "{{ swap_paths }}"
+  loop_control:
+    loop_var: swap_path
   notify: reload systemd daemon
 
 - name: Remove empty lines from /etc/fstab
@@ -34,7 +38,9 @@
 - name: Remove swap files (only if they are files)
   become: true
   file:
-    path: "{{ item }}"
+    path: "{{ swap_path }}"
     state: absent
-  with_items: "{{ swap_paths }}"
-  when: item.startswith('/')
+  loop: "{{ swap_paths }}"
+  loop_control:
+    loop_var: swap_path
+  when: swap_path.startswith('/')

@@ -11,7 +11,9 @@
 
 - name: Slurp existing crontab files
   slurp:
-    path: "/var/spool/cron/crontabs/{{ item.user }}"
+    path: "/var/spool/cron/crontabs/{{ crontab.user }}"
+  loop_control:
+    loop_var: crontab
   loop: "{{ cron_user_files }}"
   register: existing_crontabs
   ignore_errors: true

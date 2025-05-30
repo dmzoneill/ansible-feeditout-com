@@ -12,10 +12,13 @@
     name: auditd
     state: restarted
 
-- name: restart sysstat timers
+- name: Restart sysstat timers
   systemd:
-    name: "{{ item }}"
+    name: "{{ sysstat_timer }}"
     state: restarted
   loop:
     - sysstat-collect.timer
     - sysstat-summary.timer
+  loop_control:
+    loop_var: sysstat_timer
+

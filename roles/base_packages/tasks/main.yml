@@ -23,9 +23,10 @@
   become: true
   shell: |
     echo "Installing batch {{ batch_index + 1 }} of {{ package_batches | length }}"
-    PATH="/usr/local/bin:$PATH" DEBIAN_FRONTEND=noninteractive apt-get install -y --ignore-missing {{ item | join(' ') }}
+    PATH="/usr/local/bin:$PATH" DEBIAN_FRONTEND=noninteractive apt-get install -y --ignore-missing {{ package | join(' ') }}
   loop: "{{ package_batches }}"
   loop_control:
+    loop_var: package
     index_var: batch_index
     label: "Batch {{ batch_index + 1 }}"
   register: install_results
