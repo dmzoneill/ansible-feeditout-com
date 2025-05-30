@@ -21,6 +21,33 @@
     directory_mode: '0755'
   notify: Restart opendkim
 
+- name: Update opendkim keytable
+  template:
+    src: KeyTable.j2
+    dest: /etc/dkimkeys/KeyTable
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart opendkim
+
+- name: Update opendkim SigningTable
+  template:
+    src: SigningTable.j2
+    dest: /etc/dkimkeys/SigningTable
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart opendkim
+
+- name: Update opendkim TrustedHosts
+  template:
+    src: TrustedHosts.j2
+    dest: /etc/dkimkeys/TrustedHosts
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart opendkim
+
 - name: Enable and start OpenDKIM service
   service:
     name: opendkim

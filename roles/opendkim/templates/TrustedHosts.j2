@@ -6,15 +6,9 @@
 127.0.0.1
 ::1
 localhost
-feeditout.com
-feeditout.site
-feeditout.xyz
-ecu-emr.com
-fio.ie
-ashtangayoga.ie
-*.feeditout.com
-*.feeditout.site
-*.feeditout.xyz
-*.fio.ie
-*.ashtangayoga.ie
-*.ecu-emr.com
+{% for domain in domains | map(attribute='domain') %}
+{{ domain }}
+{% endfor %}
+{% for domain in domains | map(attribute='domain') %}
+*.{{ domain }}
+{% endfor %}

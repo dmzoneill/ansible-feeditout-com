@@ -16,12 +16,13 @@
   notify: Restart postsrsd
 
 - name: Update postsrsd config
-  copy:
-    src: "{{ role_path }}/files/postsrsd"
-    dest: "/etc/default/postsrsd"
+  template:
+    src: postsrsd.j2
+    dest: /etc/default/postsrsd
     owner: root
     group: root
     mode: '0644'
+  notify: Restart postsrsd
 
 - name: Enable and start postsrsd service
   service:

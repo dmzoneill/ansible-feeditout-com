@@ -88,6 +88,7 @@ php_fpm_conf_file: "{{ php_fpm_conf_dir }}/php-fpm.conf"
 php_fpm_pool_file: "{{ php_fpm_conf_dir }}/pool.d/www.conf"
 
 # fail2ban
+fail2ban_destemail: "{{ email }}"
 fail2ban_jail: "sshd"
 unban_ips:
   - "119.15.95.38"

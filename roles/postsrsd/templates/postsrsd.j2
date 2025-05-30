@@ -4,14 +4,14 @@
 # Addresses are rewritten to originate from this domain. The default value
 # is taken from `postconf -h mydomain` and probably okay.
 #
-SRS_DOMAIN=feeditout.com
+SRS_DOMAIN={{ fqdn }}
 
 # Exclude additional domains.
 # You may list domains which shall not be subjected to address rewriting.
 # If a domain name starts with a dot, it matches all subdomains, but not
 # the domain itself. Separate multiple domains by space or comma.
 #
-SRS_EXCLUDE_DOMAINS="feeditout.com ashtangayoga.ie fio.ie feeditout.site feeditout.xyz ecu-emr.com"
+SRS_EXCLUDE_DOMAINS="{{ domains | map(attribute='domain') | join(' ') }}"
 
 # First separator character after SRS0 or SRS1.
 # Can be one of: -+=

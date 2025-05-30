@@ -11,17 +11,6 @@
     state: directory
     mode: '0755'
 
-- name: Copy all top-level files (e.g. jail.local)
-  copy:
-    src: "{{ item }}"
-    dest: "/etc/fail2ban/{{ item | basename }}"
-    owner: root
-    group: root
-    mode: '0644'
-  with_fileglob:
-    - "{{ role_path }}/files/*.local"
-  notify: Restart fail2ban
-
 - name: Copy custom filters to filter.d
   copy:
     src: filter.d/
@@ -35,6 +24,15 @@
   copy:
     src: action.d/
     dest: /etc/fail2ban/action.d/
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart fail2ban
+
+- name: Update jail.local config
+  template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
     owner: root
     group: root
     mode: '0644'

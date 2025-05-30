@@ -15,6 +15,15 @@
     directory_mode: '0755'
   notify: Restart opendmarc
 
+- name: Update opendmarc.conf config
+  template:
+    src: opendmarc.conf.j2
+    dest: /etc/opendmarc/opendmarc.conf.j2
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart opendmarc
+
 - name: Ensure postfix private socket directory for OpenDMARC exists
   file:
     path: /var/spool/postfix/private

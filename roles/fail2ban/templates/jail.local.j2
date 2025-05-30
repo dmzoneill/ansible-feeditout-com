@@ -1,6 +1,6 @@
 [DEFAULT]
-destemail = dmz.oneill@gmail.com
-sender = dave@feeditout.com
+destemail = {{ fail2ban_destemail }}
+sender = root@{{ fqdn }}
 mta = postfix
 action = iptables-multiport[name=fail2ban, port="ssh,smtp,ssmtp,465,submission"]
 backend = auto
@@ -15,7 +15,7 @@ port = ssh
 logpath = /var/log/auth.log
 backend = systemd
 action = iptables-multiport[name=sshd, port="ssh"]
-         email-only[name=apache-badbots, dest=dmz.oneill@gmail.com]
+         email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [postfix]
 enabled = true
@@ -23,7 +23,7 @@ filter = postfix
 port = smtp,ssmtp,submission
 logpath = /var/log/mail.log
 action = iptables-multiport[name=postfix, port="smtp,ssmtp,submission"]
-         email-only[name=apache-badbots, dest=dmz.oneill@gmail.com]
+         email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [postfix-sasl]
 enabled = true
@@ -32,7 +32,7 @@ logpath = /var/log/mail.log
 maxretry = 5
 bantime = 24h
 action = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]
-         email-only[name=apache-badbots, dest=dmz.oneill@gmail.com]
+         email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [sasl]
 enabled = true
@@ -41,7 +41,7 @@ port = smtp
 logpath = /var/log/mail.log
 maxretry = 1
 action = iptables-multiport[name=sasl, port="smtp"]
-         email-only[name=apache-badbots, dest=dmz.oneill@gmail.com]
+         email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [postfix-failedauth]
 enabled = false
@@ -55,7 +55,7 @@ maxretry = 2
 findtime = 600
 bantime = 86400
 action = iptables-multiport[name=BadBots, port="http,https"]
-         email-only[name=apache-badbots, dest=dmz.oneill@gmail.com]
+         email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [apache-noscript]
 enabled = true
@@ -66,7 +66,7 @@ maxretry = 2
 findtime = 600
 bantime = 86400
 action = iptables-multiport[name=NoScript, port="http,https"]
-         email-only[name=apache-badbots, dest=dmz.oneill@gmail.com]
+         email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [apache-overflows]
 enabled = true
@@ -77,7 +77,7 @@ maxretry = 1
 findtime = 300
 bantime = 86400
 action = iptables-multiport[name=Overflow, port="http,https"]
-         email-only[name=apache-badbots, dest=dmz.oneill@gmail.com]
+         email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [apache-wordpress]
 enabled = true
@@ -88,4 +88,4 @@ maxretry = 3
 findtime = 600
 bantime = 86400
 action = iptables-multiport[name=WordPress, port="http,https"]
-         email-only[name=apache-badbots, dest=dmz.oneill@gmail.com]
+         email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]

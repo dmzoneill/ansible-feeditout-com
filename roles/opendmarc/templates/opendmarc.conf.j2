@@ -1,4 +1,4 @@
-AuthservID          feeditout.com
+AuthservID          {{ fqdn }}
 PidFile             /run/opendmarc/opendmarc.pid
 Syslog              true
 SyslogFacility      mail
@@ -7,4 +7,4 @@ Socket              inet:12302@localhost
 UserID              opendmarc:opendmarc
 AutoRestart         true
 IgnoreAuthenticatedClients true
-TrustedAuthservIds  feeditout.com
+TrustedAuthservIds  {{ fqdn }}

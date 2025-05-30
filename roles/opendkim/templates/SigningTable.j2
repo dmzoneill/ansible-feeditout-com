@@ -24,9 +24,6 @@
 
 #example.com default._domainkey.example.com
 
-*@feeditout.com default._domainkey.feeditout.com
-*@feeditout.xyz default._domainkey.feeditout.xyz
-*@feeditout.site default._domainkey.feeditout.site
-*@fio.ie default._domainkey.fio.ie
-*@ashtangayoga.ie default._domainkey.ashtangayoga.ie
-*@ecu-emr.com default._domainkey.ecu-emr.com
+{% for domain in domains | map(attribute='domain') %}
+*@{{ domain }} default._domainkey.{{ domain }}
+{% endfor %}
