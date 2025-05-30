@@ -21,7 +21,7 @@
     crontabs_to_update: "{{ crontabs_to_update + [cron_user_files[idx]] }}"
   when: >
     existing.failed or
-    (lookup('template', cron_user_files[idx].src) != (existing.content | b64decode))
+    (lookup('template', cron_user_files[idx].src, convert_data=False, template_vars={'cron': cron_user_files[idx]}) != (existing.content | b64decode))
   loop: "{{ existing_crontabs.results }}"
   loop_control:
     index_var: idx
