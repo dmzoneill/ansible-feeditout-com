@@ -146,7 +146,7 @@ ntp_service: "chrony"
 redis_host: "127.0.0.1"
 redis_port: 6379
 redis_auth: "{{ redis_password }}"
-webdis_http_host: "0.0.0.0"
+webdis_http_host: "'0.0.0.0'"
 webdis_threads: 2
 webdis_http_port: 6380
 webdis_ssl_certificate: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
