@@ -5,29 +5,29 @@
     state: present
     update_cache: true
 
-- name: Initialize list of files needing update
+- name: Initialize list of crontabs needing update
   set_fact:
     crontabs_to_update: []
 
-- name: Determine if each crontab file needs update
+- name: Check if crontab file for each user needs update
   vars:
-    rendered_crontab: "{{ lookup('template', cron.src) }}"
+    rendered_crontab: "{{ lookup('template', item.src) }}"
   block:
     - name: Slurp existing crontab file
       slurp:
-        path: "/var/spool/cron/crontabs/{{ cron.user }}"
+        path: "/var/spool/cron/crontabs/{{ item.user }}"
       register: existing_crontab_raw
       ignore_errors: true
 
-    - name: Set fact if crontab differs
+    - name: Append to update list if file differs or missing
       set_fact:
-        crontabs_to_update: "{{ crontabs_to_update + [cron] }}"
+        crontabs_to_update: "{{ crontabs_to_update + [item] }}"
       when: >
         existing_crontab_raw.failed or
         rendered_crontab != (existing_crontab_raw.content | b64decode)
   loop: "{{ cron_user_files }}"
   loop_control:
-    loop_var: cron
+    label: "{{ item.user }}"
 
 - name: Stop cron if crontabs need update
   systemd:
