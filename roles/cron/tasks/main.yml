@@ -9,25 +9,22 @@
   set_fact:
     crontabs_to_update: []
 
-- name: Check if crontab file for each user needs update
-  vars:
-    rendered_crontab: "{{ lookup('template', item.src) }}"
-  block:
-    - name: Slurp existing crontab file
-      slurp:
-        path: "/var/spool/cron/crontabs/{{ item.user }}"
-      register: existing_crontab_raw
-      ignore_errors: true
-
-    - name: Append to update list if file differs or missing
-      set_fact:
-        crontabs_to_update: "{{ crontabs_to_update + [item] }}"
-      when: >
-        existing_crontab_raw.failed or
-        rendered_crontab != (existing_crontab_raw.content | b64decode)
+- name: Slurp existing crontab files
+  slurp:
+    path: "/var/spool/cron/crontabs/{{ item.user }}"
   loop: "{{ cron_user_files }}"
+  register: existing_crontabs
+  ignore_errors: true
+
+- name: Compare rendered templates and collect ones needing update
+  set_fact:
+    crontabs_to_update: "{{ crontabs_to_update + [cron_user_files[idx]] }}"
+  when: >
+    item.failed or
+    (lookup('template', cron_user_files[idx].src) != (item.content | b64decode))
+  loop: "{{ existing_crontabs.results }}"
   loop_control:
-    label: "{{ item.user }}"
+    index_var: idx
 
 - name: Stop cron if crontabs need update
   systemd:
@@ -38,14 +35,12 @@
 
 - name: Apply crontab templates that need updating
   template:
-    src: "{{ cron.src }}"
-    dest: "/var/spool/cron/crontabs/{{ cron.user }}"
-    owner: "{{ cron.user }}"
+    src: "{{ item.src }}"
+    dest: "/var/spool/cron/crontabs/{{ item.user }}"
+    owner: "{{ item.user }}"
     group: crontab
     mode: '0600'
   loop: "{{ crontabs_to_update }}"
-  loop_control:
-    loop_var: cron
 
 - name: Start and enable cron if any crontabs updated
   systemd:
