@@ -107,3 +107,7 @@ ansible-lint:
 	find roles/ -type f -iname "*.yml" -exec ansible-lint {} \;
 	find host_vars/ -type f -iname "*.yml" -exec ansible-lint {} \;
 	find group_vars/ -type f -iname "*.yml" -exec ansible-lint {} \;
+
+go-live:
+	- rm -v dns/*bak*
+	git add dns/*; git add host_vars/*; git add roles/*; git add playbooks/*; fancy-git-commit; git pull --rebase; git push
