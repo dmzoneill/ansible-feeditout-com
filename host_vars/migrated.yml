@@ -43,9 +43,11 @@ chkrootkit_alert_email: "{{ email }}"
 # cron
 cron_user_files:
   - user: "{{ user }}"
-    src: "{{ user }}"
+    src: "{{ user }}.j2"
+    email: "{{ email }}"
   - user: "root"
-    src: "root"
+    src: "root.j2"
+    email: "{{ email }}"
 
 # dns
 dns_nameservers:

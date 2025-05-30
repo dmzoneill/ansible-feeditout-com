@@ -29,8 +29,8 @@
   when: cron_needs_update | default(false)
 
 - name: Copy crontab files for users (actual write)
-  copy:
-    src: "files/{{ cron.src }}"
+  template:
+    src: "{{ cron.src }}"
     dest: "/var/spool/cron/crontabs/{{ cron.user }}"
     owner: "{{ cron.user }}"
     group: crontab
