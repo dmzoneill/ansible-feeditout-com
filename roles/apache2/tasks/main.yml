@@ -47,7 +47,7 @@
       domain_alias: "{{ vhost.name }}"
       document_root: "{{ vhost.document_root }}"
       loglevel: "{{ parent_domain.loglevel | default('warn') }}"
-      role_user: "{{ role_user | default('www-data') }}"
+      role_user: "{{ user | default('www-data') }}"
       custom_directory_perms: "{{ parent_domain.custom_directory_perms | default(false) }}"
       enabled: "{{ vhost.enabled | default(false) }}"
       secure: true
@@ -77,7 +77,7 @@
       domain_aliases: "{{ enabled_virtual_domains }}"
       document_root: "{{ domain_entry.document_root }}"
       loglevel: "{{ domain_entry.loglevel | default('warn') }}"
-      role_user: "{{ role_user | default('www-data') }}"
+      role_user: "{{ user | default('www-data') }}"
       enabled: "{{ domain_entry.enabled | default(false) }}"
       secure: false
 
@@ -93,7 +93,7 @@
       domain: "{{ domain_entry.domain }}"
       document_root: "/var/www/html"
       domain_alias: "{{ domain_entry.domain }}"
-      role_user: "{{ role_user | default('www-data') }}"
+      role_user: "{{ user | default('www-data') }}"
       loglevel: "warn"
       redirect_to_www: true
       secure: false
@@ -103,7 +103,7 @@
       domain: "{{ domain_entry.domain }}"
       document_root: "/var/www/html"
       domain_alias: "{{ domain_entry.domain }}"
-      role_user: "{{ role_user | default('www-data') }}"
+      role_user: "{{ user | default('www-data') }}"
       loglevel: "warn"
       redirect_to_www: true
       secure: true
@@ -262,8 +262,8 @@
   file:
     path: "{{ docroot }}"
     state: directory
-    owner: "{{ role_user }}"
-    group: "{{ role_user }}"
+    owner: "{{ user }}"
+    group: "{{ user }}"
     mode: '0755'
   loop: "{{ document_roots.stdout_lines }}"
   loop_control:
