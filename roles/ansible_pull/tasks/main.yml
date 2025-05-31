@@ -30,7 +30,7 @@
 
 - name: Deploy ansible-pull email report script
   template:
-    src: send-ansible-report.j2
+    src: send-ansible-report.sh.j2
     dest: /usr/local/bin/send-ansible-report.sh
     mode: '0755'
 
