@@ -9,7 +9,7 @@
   slurp:
     src: "{{ iptables_rules_path }}"
   register: live_rules
-  ignore_errors: true  # in case rules file does not exist yet
+  ignore_errors: true
 
 - name: Load reference rules file from role (local)
   set_fact:
@@ -21,6 +21,9 @@
       {{
         (live_rules.content | default('') | b64decode).split('\n')
         | reject("match", "^# ")
+        | reject("search", "^:f2b-")     # Remove chain declarations
+        | reject("search", "^-A f2b-")   # Remove rules in f2b-* chains
+        | reject("search", "^-A INPUT.*f2b-")  # Remove jumps to f2b-* chains
         | join('\n')
       }}
 
@@ -30,6 +33,9 @@
       {{
         reference_rules_content.split('\n')
         | reject("match", "^# ")
+        | reject("search", "^:f2b-")
+        | reject("search", "^-A f2b-")
+        | reject("search", "^-A INPUT.*f2b-")
         | join('\n')
       }}
 
