@@ -5,8 +5,6 @@
     state: present
     update_cache: true
 
-# IPv4 Section
-
 - name: Slurp live iptables rules from the system
   slurp:
     src: "{{ iptables_rules_path }}"
@@ -17,24 +15,26 @@
   set_fact:
     reference_rules_content: "{{ lookup('file', role_path + '/files/' + iptables_rules_file) }}"
 
-- name: Decode and strip comment lines from live IPv4 rules
+- name: Decode and strip comment/Fail2Ban lines from live iptables rules
   set_fact:
     live_rules_cleaned: >-
       {{
         (live_rules.content | default('Cg==') | b64decode).split('\n')
-        | reject("match", "^# ")
+        | reject("match", "^#")
+        | reject("match", "^$")
         | reject("search", "^:f2b-")
         | reject("search", "^-A f2b-")
         | reject("search", "^-A INPUT.*f2b-")
         | join('\n')
       }}
 
-- name: Decode and strip comment lines from reference IPv4 rules
+- name: Decode and strip comment/Fail2Ban lines from reference iptables rules
   set_fact:
     reference_rules_cleaned: >-
       {{
         reference_rules_content.split('\n')
-        | reject("match", "^# ")
+        | reject("match", "^#")
+        | reject("match", "^$")
         | reject("search", "^:f2b-")
         | reject("search", "^-A f2b-")
         | reject("search", "^-A INPUT.*f2b-")
@@ -59,8 +59,6 @@
   when: rules_differ
   changed_when: false
 
-# IPv6 Section
-
 - name: Slurp live ip6tables rules from the system
   slurp:
     src: "{{ ip6tables_rules_path }}"
@@ -71,24 +69,26 @@
   set_fact:
     reference_rules_v6_content: "{{ lookup('file', role_path + '/files/' + ip6tables_rules_file) }}"
 
-- name: Decode and strip comment lines from live ip6tables rules
+- name: Decode and strip comment/Fail2Ban lines from live ip6tables rules
   set_fact:
     live_rules_v6_cleaned: >-
       {{
         (live_rules_v6.content | default('Cg==') | b64decode).split('\n')
-        | reject("match", "^# ")
+        | reject("match", "^#")
+        | reject("match", "^$")
         | reject("search", "^:f2b-")
         | reject("search", "^-A f2b-")
         | reject("search", "^-A INPUT.*f2b-")
         | join('\n')
       }}
 
-- name: Decode and strip comment lines from reference ip6tables rules
+- name: Decode and strip comment/Fail2Ban lines from reference ip6tables rules
   set_fact:
     reference_rules_v6_cleaned: >-
       {{
         reference_rules_v6_content.split('\n')
-        | reject("match", "^# ")
+        | reject("match", "^#")
+        | reject("match", "^$")
         | reject("search", "^:f2b-")
         | reject("search", "^-A f2b-")
         | reject("search", "^-A INPUT.*f2b-")
