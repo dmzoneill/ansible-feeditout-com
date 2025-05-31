@@ -1,0 +1,40 @@
+---
+- name: Ensure AIDE is installed
+  ansible.builtin.package:
+    name: aide
+    state: present
+
+- name: Ensure /var/log/aide exists
+  ansible.builtin.file:
+    path: /var/log/aide
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+
+- name: Deploy AIDE config
+  ansible.builtin.template:
+    src: aide.conf.j2
+    dest: /etc/aide/aide.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Initialize AIDE database
+
+- name: Deploy daily AIDE check systemd unit if needed
+  ansible.builtin.copy:
+    src: dailyaidecheck.service
+    dest: /etc/systemd/system/dailyaidecheck.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload systemd
+
+- name: Ensure aide.log permissions are valid
+  ansible.builtin.file:
+    path: /var/log/aide/aide.log
+    state: touch
+    owner: root
+    group: root
+    mode: '0640'
+

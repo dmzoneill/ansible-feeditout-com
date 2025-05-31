@@ -1,0 +1,11 @@
+[Unit]
+Description=daily AIDE check
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/aide --check
+StandardOutput=append:/var/log/aide/aide.log
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

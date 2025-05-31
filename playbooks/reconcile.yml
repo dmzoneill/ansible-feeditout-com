@@ -16,6 +16,7 @@
         - dns
         - locale
         - ntp
+        - aide
         - sudo
         - entropy
         - certbot

@@ -1,0 +1,4 @@
+# Make sure log file rotation doesn't try to hardlink
+@log_file = /var/log/aide/aide.log
+
+# Avoid rotation with hard link if not needed
