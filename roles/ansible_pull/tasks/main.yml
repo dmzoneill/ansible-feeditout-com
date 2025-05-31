@@ -28,6 +28,12 @@
     dest: /etc/systemd/system/ansible-pull.timer
     mode: '0644'
 
+- name: Deploy ansible-pull email report script
+  template:
+    src: send-ansible-report.j2
+    dest: /usr/local/bin/send-ansible-report.sh
+    mode: '0755'
+
 - name: Reload systemd
   systemd:
     daemon_reload: true

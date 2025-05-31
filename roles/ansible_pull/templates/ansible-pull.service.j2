@@ -14,8 +14,7 @@ ExecStart=/usr/bin/ansible-pull -vv \
   --vault-password-file=/etc/ansible/.vault_pass.txt \
   --limit localhost \
   playbooks/reconcile.yml
-ExecStartPost=/bin/bash -c 'cat /var/log/ansible-pull.log | /usr/bin/iconv -f utf-8 -t ascii//TRANSLIT | /usr/bin/mail -a "Content-Type: text/plain; charset=us-ascii" -a "Content-Transfer-Encoding: 7bit" -s "Ansible-pull report from $(hostname)" {{ ansible_pull_email }} && truncate -s 0 /var/log/ansible-pull.log'
-
+ExecStartPost=/usr/local/bin/send-ansible-report.sh
 StandardOutput=append:/var/log/ansible-pull.log
 StandardError=inherit
 
