@@ -132,6 +132,18 @@
   loop_control:
     loop_var: chroot_file
 
+- name: Ensure chroot passwd/group match host exactly
+  copy:
+    src: "{{ chroot_file.src }}"
+    dest: "{{ chroot_file.dest }}"
+    owner: root
+    group: root
+    mode: "{{ chroot_file.mode }}"
+    force: true
+  loop: "{{ postfix_chroot_files }}"
+  loop_control:
+    loop_var: chroot_file
+
 # --- Map Rebuild Logic ---
 
 - name: Define list of postfix map files
@@ -158,8 +170,25 @@
 
 # --- Restart Postfix Only If Files Changed ---
 
+- name: Ensure postfix chroot /etc directory exists
+  file:
+    path: /var/spool/postfix/etc
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Track if chroot files changed
+  set_fact:
+    chroot_files_changed: true
+  when: item.changed
+  loop: "{{ ansible_facts['ansible_loop_var'] | default('chroot_file_result') }}"
+  loop_control:
+    loop_var: item
+
 - name: Restart Postfix if files changed
   service:
     name: postfix
     state: restarted
-  when: postfix_files_changed | default(false)
+  when: postfix_files_changed | default(false) or chroot_files_changed | default(false)
+

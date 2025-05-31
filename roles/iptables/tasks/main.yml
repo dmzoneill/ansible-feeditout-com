@@ -19,11 +19,11 @@
   set_fact:
     live_rules_cleaned: >-
       {{
-        (live_rules.content | default('') | b64decode).split('\n')
+        (live_rules.content | default('') | b64decode(errors='ignore')).split('\n')
         | reject("match", "^# ")
-        | reject("search", "^:f2b-")     # Remove chain declarations
-        | reject("search", "^-A f2b-")   # Remove rules in f2b-* chains
-        | reject("search", "^-A INPUT.*f2b-")  # Remove jumps to f2b-* chains
+        | reject("search", "^:f2b-")
+        | reject("search", "^-A f2b-")
+        | reject("search", "^-A INPUT.*f2b-")
         | join('\n')
       }}
 
@@ -38,6 +38,11 @@
         | reject("search", "^-A INPUT.*f2b-")
         | join('\n')
       }}
+
+- name: Debug raw slurped live rules
+  debug:
+    msg: "{{ live_rules }}"
+
 
 - name: Set flag if iptables rules differ
   set_fact:
