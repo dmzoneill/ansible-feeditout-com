@@ -49,6 +49,9 @@ filter = postfix-sasl
 logpath = /var/log/mail.log
 maxretry = 3
 bantime = 3600
+action = iptables-multiport[name=postfix-failedauth, port="smtp,submission"]
+         email-only[name=postfix-failedauth, dest={{ fail2ban_destemail }}]
+
 
 [apache-badbots]
 enabled = true
