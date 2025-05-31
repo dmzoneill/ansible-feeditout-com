@@ -37,6 +37,7 @@ smtpd_helo_restrictions =
     permit_sasl_authenticated
 
 smtpd_sender_restrictions =
+    check_sender_access hash:/etc/postfix/sender_access,
     permit_mynetworks,
     permit_sasl_authenticated
 
