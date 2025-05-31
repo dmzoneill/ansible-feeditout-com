@@ -97,3 +97,14 @@ findtime = 600
 bantime = 86400
 action = iptables-multiport[name=WordPress, port="http,https"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
+
+[postfix-pipelining]
+enabled = true
+filter = postfix-pipelining
+port = smtp,ssmtp,submission
+logpath = /var/log/mail.log
+maxretry = 1
+findtime = 600
+bantime = 86400
+action = iptables-multiport[name=postfix-pipelining, port="smtp,ssmtp,submission"]
+         email-only[name=postfix-pipelining, dest={{ fail2ban_destemail }}]
