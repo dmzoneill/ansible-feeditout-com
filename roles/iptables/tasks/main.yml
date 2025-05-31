@@ -75,21 +75,27 @@
   set_fact:
     reference_rules_v6_content: "{{ lookup('file', role_path + '/files/' + ip6tables_rules_file) }}"
 
-- name: Decode and strip comment lines from live ip6tables rules
+- name: Decode and strip comment lines from live rules
   set_fact:
-    live_rules_v6_cleaned: >-
+    live_rules_cleaned: >-
       {{
-        (live_rules_v6.content | default('') | b64decode).split('\n')
+        (live_rules.content | default('') | b64decode).split('\n')
         | reject("match", "^# ")
+        | reject("search", "^:f2b-")     # Remove chain declarations
+        | reject("search", "^-A f2b-")   # Remove rules in f2b-* chains
+        | reject("search", "^-A INPUT.*f2b-")  # Remove jumps to f2b-* chains
         | join('\n')
       }}
 
-- name: Decode and strip comment lines from reference ip6tables rules
+- name: Decode and strip comment lines from reference rules
   set_fact:
-    reference_rules_v6_cleaned: >-
+    reference_rules_cleaned: >-
       {{
-        reference_rules_v6_content.split('\n')
+        reference_rules_content.split('\n')
         | reject("match", "^# ")
+        | reject("search", "^:f2b-")
+        | reject("search", "^-A f2b-")
+        | reject("search", "^-A INPUT.*f2b-")
         | join('\n')
       }}
 
