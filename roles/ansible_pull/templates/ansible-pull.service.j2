@@ -16,7 +16,9 @@ ExecStart=/usr/bin/ansible-pull -vv \
   playbooks/reconcile.yml
 ExecStartPost=/bin/bash -c '/usr/bin/mail -s "Ansible-pull report from $(hostname)" {{ ansible_pull_email }} < /var/log/ansible-pull.log && truncate -s 0 /var/log/ansible-pull.log'
 StandardOutput=append:/var/log/ansible-pull.log
+StandardError=append:/var/log/ansible-pull.log
 StandardError=inherit
+LogLevelMax=notice
 
 [Install]
 WantedBy=multi-user.target

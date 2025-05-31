@@ -131,6 +131,7 @@
   loop: "{{ postfix_chroot_files }}"
   loop_control:
     loop_var: chroot_file
+  register: chroot_file_result
 
 - name: Ensure chroot passwd/group match host exactly
   copy:
@@ -182,9 +183,7 @@
   set_fact:
     chroot_files_changed: true
   when: item.changed
-  loop: "{{ ansible_facts['ansible_loop_var'] | default('chroot_file_result') }}"
-  loop_control:
-    loop_var: item
+  loop: "{{ chroot_file_result.results }}"
 
 - name: Restart Postfix if files changed
   service:
