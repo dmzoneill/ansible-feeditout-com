@@ -3,3 +3,18 @@
   apt:
     name: rsyslog
     state: present
+
+- name: Ensure /var/log/mail.log exists with correct ownership and permissions
+  ansible.builtin.file:
+    path: /var/log/mail.log
+    state: touch
+    owner: root
+    group: adm
+    mode: '0640'
+  register: mail_log_file
+
+- name: Restart rsyslog if /var/log/mail.log was changed
+  ansible.builtin.service:
+    name: rsyslog
+    state: restarted
+  when: mail_log_file.changed
