@@ -108,6 +108,9 @@ disable_services:
   - "packagekit.service"
   - "packagekit-offline-update.service"
   - "wpa_supplicant.service"
+  - "pipewire.service"
+  - "pipewire-pulse.service"
+  - "wireplumber.service"
 
 # iptables
 iptables_rules_file: "rules.v4"
