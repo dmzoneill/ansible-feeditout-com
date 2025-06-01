@@ -73,11 +73,12 @@ def write_msf_rc(ip: str, modules: list[str]) -> str:
 def run_msf(ip: str, rc_file: str) -> str:
     output_path = f"/tmp/ip-{ip}.msfout"
     try:
-        subprocess.run(
-            ["msfconsole", "-q", "-r", rc_file],
-            stdout=open(output_path, "w"),
-            stderr=subprocess.STDOUT,
-            timeout=300
+        result = subprocess.run(
+            ["/usr/bin/msfconsole", "-q", "-r", rc_path],
+            capture_output=True,
+            text=True,
+            env=env,
+            timeout=120
         )
         with open(output_path) as f:
             return f.read()
