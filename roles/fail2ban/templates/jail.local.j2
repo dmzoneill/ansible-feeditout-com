@@ -4,9 +4,9 @@ sender = root@{{ fqdn }}
 mta = sendmail
 action = iptables-multiport[name=fail2ban, port="ssh,smtp,ssmtp,465,submission"]
 backend = auto
-bantime = 720m
+bantime = 24h
 findtime = 10m
-maxretry = 3
+maxretry = 2
 allowipv6 = auto
 
 [sshd]
@@ -35,8 +35,6 @@ allowipv6 = auto
 enabled = true
 filter = postfix
 logpath = /var/log/mail.log
-maxretry = 5
-bantime = 24h
 action = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,imaps,pop3,pop3s"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
          fail2counter-analyze
@@ -47,7 +45,6 @@ enabled = true
 filter = postfix
 port = smtp
 logpath = /var/log/mail.log
-maxretry = 1
 action = iptables-multiport[name=sasl, port="smtp"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
          fail2counter-analyze
@@ -57,8 +54,6 @@ allowipv6 = auto
 enabled = true
 filter = postfix-sasl
 logpath = /var/log/mail.log
-maxretry = 3
-bantime = 3600
 action = iptables-multiport[name=postfix-failedauth, port="smtp,submission"]
          email-only[name=postfix-failedauth, dest={{ fail2ban_destemail }}]
          fail2counter-analyze
@@ -70,9 +65,6 @@ enabled = true
 port = http,https
 filter = apache-badbots
 logpath = /var/log/apache2/*access.log
-maxretry = 2
-findtime = 600
-bantime = 86400
 action = iptables-multiport[name=BadBots, port="http,https"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
          fail2counter-analyze
@@ -83,9 +75,6 @@ enabled = true
 port = http,https
 filter = apache-noscript
 logpath = /var/log/apache2/*access.log
-maxretry = 2
-findtime = 600
-bantime = 86400
 action = iptables-multiport[name=NoScript, port="http,https"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
          fail2counter-analyze
@@ -96,9 +85,6 @@ enabled = true
 port = http,https
 filter = apache-overflows
 logpath = /var/log/apache2/*error.log
-maxretry = 1
-findtime = 300
-bantime = 86400
 action = iptables-multiport[name=Overflow, port="http,https"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
          fail2counter-analyze
@@ -109,9 +95,6 @@ enabled = true
 port = http,https
 filter = apache-wordpress
 logpath = /var/log/apache2/*access.log
-maxretry = 3
-findtime = 600
-bantime = 86400
 action = iptables-multiport[name=WordPress, port="http,https"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
          fail2counter-analyze
@@ -122,9 +105,6 @@ enabled = true
 filter = postfix-pipelining
 port = smtp,ssmtp,submission
 logpath = /var/log/mail.log
-maxretry = 1
-findtime = 600
-bantime = 86400
 action = iptables-multiport[name=postfix-pipelining, port="smtp,ssmtp,submission"]
          email-only[name=postfix-pipelining, dest={{ fail2ban_destemail }}]
          fail2counter-analyze
