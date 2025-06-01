@@ -1,6 +1,5 @@
 ---
 - name: Initialize AIDE database
-- name: Initialize AIDE database
   ansible.builtin.command: /usr/bin/aide --init --config=/etc/aide/aide.conf
   args:
     creates: /var/lib/aide/aide.db.new.gz
