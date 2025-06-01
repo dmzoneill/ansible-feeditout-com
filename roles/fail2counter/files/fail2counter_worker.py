@@ -267,27 +267,34 @@ while True:
         logs = []
         continue
 
-    try:
-        capture(f"Sending to OpenAI for analysis...")
-        result = provider.improve_text(system_prompt, f"Nmap output:\n{nmap_output}")
-        result = result.replace("```", "").strip()
-        capture(f"OpenAI response:\n{result}")
+    send_email(
+        subject=f"[Nmap Report] Analysis for {ip}",
+        body="\n".join(logs)
+    )
+    legs = []
+    # continue
 
-        modules = [line.strip() for line in result.strip().splitlines() if line.strip().startswith("use exploit")]
-        if not modules:
-            capture(f"No valid Metasploit modules returned for {ip}", level="WARNING")
-            continue
+    # try:
+    #     capture(f"Sending to OpenAI for analysis...")
+    #     result = provider.improve_text(system_prompt, f"Nmap output:\n{nmap_output}")
+    #     result = result.replace("```", "").strip()
+    #     capture(f"OpenAI response:\n{result}")
 
-        rc_path = write_msf_rc(ip, modules)
-        capture(f"Written Metasploit RC file to {rc_path}")
+    #     modules = [line.strip() for line in result.strip().splitlines() if line.strip().startswith("use exploit")]
+    #     if not modules:
+    #         capture(f"No valid Metasploit modules returned for {ip}", level="WARNING")
+    #         continue
 
-        msf_result = run_msf(ip, rc_path)
-        capture(f"Metasploit output for {ip}:\n{msf_result}")
+    #     rc_path = write_msf_rc(ip, modules)
+    #     capture(f"Written Metasploit RC file to {rc_path}")
 
-        send_email(
-            subject=f"[Fail2Ban Report] Analysis for {ip}",
-            body="\n".join(logs)
-        )
+    #     msf_result = run_msf(ip, rc_path)
+    #     capture(f"Metasploit output for {ip}:\n{msf_result}")
 
-    except Exception as e:
-        log(f"OpenAI or Metasploit processing failed for {ip}: {e}", level="ERROR")
+    #     send_email(
+    #         subject=f"[Fail2Ban Report] Analysis for {ip}",
+    #         body="\n".join(logs)
+    #     )
+
+    # except Exception as e:
+    #     log(f"OpenAI or Metasploit processing failed for {ip}: {e}", level="ERROR")
