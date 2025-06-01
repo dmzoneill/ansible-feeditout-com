@@ -2,6 +2,7 @@
 
 import redis
 import subprocess
+import shlex
 import time
 import requests
 import os
@@ -92,6 +93,9 @@ except Exception as e:
 
 provider = OpenAIProvider()
 
+PRECHECK_TIMEOUT = 30  # seconds
+MIN_EXPECTED_OUTPUT_BYTES = 500  # arbitrary threshold to filter useless scans
+
 while True:
     try:
         ip_entry = r.lpop(REDIS_QUEUE)
@@ -112,15 +116,42 @@ while True:
         log(f"Failed to parse Redis queue entry: {ip_entry} — {e}", level="ERROR")
         continue
 
+    # 🧪 Precheck: ping + fast scan
+    precheck_file = "/tmp/nmap_precheck.txt"
+    log(f"Running precheck for {ip} (timeout {PRECHECK_TIMEOUT}s)")
+    try:
+        precheck_start = time.time()
+        subprocess.run(
+            ["timeout", str(PRECHECK_TIMEOUT), "nmap", "-sn", ip],
+            check=True,
+            stdout=open(precheck_file, "w"),
+            stderr=subprocess.DEVNULL
+        )
+        elapsed = time.time() - precheck_start
+        with open(precheck_file, "r") as f:
+            content = f.read()
+
+        if "Host seems down" in content or "0 hosts up" in content:
+            log(f"[SKIP] Host {ip} seems down after precheck ({elapsed:.1f}s)")
+            continue
+
+        log(f"[PASS] Precheck succeeded in {elapsed:.1f}s for {ip}")
+    except subprocess.CalledProcessError:
+        log(f"[SKIP] Precheck failed or timed out for {ip}", level="WARNING")
+        continue
+
+    # 🛠 Full scan
     log(f"Starting Nmap scan for {ip} (timeout {SCAN_TIMEOUT}s)")
     try:
+        scan_start = time.time()
         subprocess.run(
             ["timeout", str(SCAN_TIMEOUT), "nmap", "-A", "-T4", ip],
             check=True,
             stdout=open(TMP_OUTPUT, "w"),
             stderr=subprocess.DEVNULL
         )
-        log(f"Nmap scan complete: output saved to {TMP_OUTPUT}")
+        duration = time.time() - scan_start
+        log(f"Nmap scan complete in {duration:.1f}s: output saved to {TMP_OUTPUT}")
     except subprocess.CalledProcessError:
         log(f"Nmap scan failed or timed out for {ip}", level="WARNING")
         continue
@@ -128,6 +159,11 @@ while True:
     try:
         with open(TMP_OUTPUT) as f:
             nmap_output = f.read()
+
+        if len(nmap_output) < MIN_EXPECTED_OUTPUT_BYTES:
+            log(f"Skipping {ip} due to minimal scan output ({len(nmap_output)} bytes)", level="WARNING")
+            continue
+
         log(f"Nmap output read: {len(nmap_output)} bytes")
     except Exception as e:
         log(f"Failed to read Nmap output: {e}", level="ERROR")
