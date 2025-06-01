@@ -3,7 +3,7 @@ Description=Fail2Ban Redis IP scanner and AI recommender
 After=network.target redis.service
 
 [Service]
-ExecStart=/opt/fail2counter/fail2ban_scan_worker.py
+ExecStart=/opt/fail2counter/fail2counter_worker.py
 Restart=always
 Environment=OPENAI_API_KEY={{ OPENAI_API_KEY }}
 
