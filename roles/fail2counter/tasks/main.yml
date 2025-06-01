@@ -37,6 +37,7 @@
   command: which msfconsole
   register: metasploit_check
   ignore_errors: true
+  changed_when: false
 
 - name: Download Metasploit install script
   get_url:
