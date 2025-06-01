@@ -2,10 +2,10 @@
 
 import redis
 import subprocess
-import shlex
 import time
 import requests
 import os
+import re
 from datetime import datetime
 
 
@@ -22,12 +22,12 @@ class OpenAIProvider:
         self.model: str = "gpt-4o-mini"
 
     def improve_text(self, prompt: str, text: str) -> str:
-        headers: dict[str, str] = {
+        headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
 
-        body: dict = {
+        body = {
             "model": self.model,
             "messages": [
                 {"role": "system", "content": prompt},
@@ -36,7 +36,7 @@ class OpenAIProvider:
             "temperature": 0.4,
         }
 
-        response: requests.post(self.endpoint, json=body, headers=headers, timeout=120)
+        response = requests.post(self.endpoint, json=body, headers=headers, timeout=120)
         if response.status_code == 200:
             return response.json()["choices"][0]["message"]["content"].strip()
 
@@ -47,14 +47,17 @@ class OpenAIProvider:
 
 # CONFIG
 REDIS_QUEUE = "banned_ips"
-SCAN_TIMEOUT = 600  # 10 minutes
+SCAN_TIMEOUT = 600
+PRECHECK_TIMEOUT = 30
+MIN_EXPECTED_OUTPUT_BYTES = 500
 TMP_OUTPUT = "/tmp/nmap_result.txt"
+FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
 EXPLOITS_FILE = "/opt/fail2counter/exploits.txt"
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 def log(msg, level="INFO"):
     print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
+
 
 # Load exploit list
 log(f"Loading Metasploit module list from {EXPLOITS_FILE}")
@@ -67,7 +70,6 @@ with open(EXPLOITS_FILE, "r") as f:
 
 log(f"Loaded {len(exploits_list.splitlines())} Metasploit modules.")
 
-# Prepare system prompt
 system_prompt = f"""You are a cybersecurity expert helping choose Metasploit modules for post-breach analysis.
 
 Below is a list of available Metasploit modules:
@@ -78,14 +80,13 @@ You will be given Nmap results for a scanned IP address. Using the list above, s
 Only return valid Metasploit module paths from the list, no explanations.
 """
 
-# Initialize Redis and OpenAI
 REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 if not REDIS_PASSWORD:
     log("REDIS_PASSWORD environment variable is not set", level="ERROR")
     exit(2)
 
 try:
-    r = redis.Redis(host='localhost', port=6379, db=0, password=REDIS_PASSWORD)
+    r = redis.Redis(host="localhost", port=6379, db=0, password=REDIS_PASSWORD)
     r.ping()
     log("Connected to Redis successfully.")
 except Exception as e:
@@ -93,9 +94,6 @@ except Exception as e:
     exit(3)
 
 provider = OpenAIProvider()
-
-PRECHECK_TIMEOUT = 30  # seconds
-MIN_EXPECTED_OUTPUT_BYTES = 500  # arbitrary threshold to filter useless scans
 
 while True:
     try:
@@ -117,44 +115,63 @@ while True:
         log(f"Failed to parse Redis queue entry: {ip_entry} — {e}", level="ERROR")
         continue
 
-    # 🧪 Precheck: ping + fast scan
+    # Precheck
     precheck_file = "/tmp/nmap_precheck.txt"
-    log(f"Running precheck for {ip} (timeout {PRECHECK_TIMEOUT}s)")
+    log(f"Running precheck for {ip}")
     try:
-        precheck_start = time.time()
         subprocess.run(
             ["timeout", str(PRECHECK_TIMEOUT), "nmap", "-sn", ip],
             check=True,
             stdout=open(precheck_file, "w"),
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         )
-        elapsed = time.time() - precheck_start
-        with open(precheck_file, "r") as f:
-            content = f.read()
-
-        if "Host seems down" in content or "0 hosts up" in content:
-            log(f"[SKIP] Host {ip} seems down after precheck ({elapsed:.1f}s)")
-            continue
-
-        log(f"[PASS] Precheck succeeded in {elapsed:.1f}s for {ip}")
+        with open(precheck_file) as f:
+            if "Host seems down" in f.read():
+                log(f"[SKIP] Host {ip} seems down")
+                continue
     except subprocess.CalledProcessError:
         log(f"[SKIP] Precheck failed or timed out for {ip}", level="WARNING")
         continue
 
-    # 🛠 Full scan
-    log(f"Starting Nmap scan for {ip} (timeout {SCAN_TIMEOUT}s)")
+    # Fast scan
+    log(f"Running fast port scan on {ip}")
     try:
-        scan_start = time.time()
+        subprocess.run(
+            ["timeout", str(SCAN_TIMEOUT), "nmap", "-T4", "-F", "-oG", FASTSCAN_FILE, "-v", ip],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        with open(FASTSCAN_FILE) as f:
+            grepable = f.read()
+        ports = ",".join(re.findall(r"(\\d+)/open", grepable))
+        if not ports:
+            log(f"No open ports found on {ip}", level="WARNING")
+            continue
+        log(f"Open ports: {ports}")
+    except Exception as e:
+        log(f"Fast scan failed: {e}", level="ERROR")
+        continue
+
+    # Version scan
+    log(f"Running service version detection for {ip}")
+    try:
         with open(TMP_OUTPUT, "w") as out:
             subprocess.run(
-                ["timeout", str(SCAN_TIMEOUT), "nmap", "-A", "-T4", "-v", ip],
+                [
+                    "timeout", str(SCAN_TIMEOUT),
+                    "nmap", "-sV", "--version-light",
+                    "--max-retries", "1",
+                    "--min-parallelism", "10",
+                    "--host-timeout", "60s",
+                    "-p", ports,
+                    "-T4", "-v", ip
+                ],
                 check=True,
                 stdout=out,
-                stderr=out  # 👈 capture stderr too
+                stderr=out,
             )
-
-        duration = time.time() - scan_start
-        log(f"Nmap scan complete in {duration:.1f}s: output saved to {TMP_OUTPUT}")
+        log(f"Scan completed for {ip}")
     except subprocess.CalledProcessError:
         log(f"Nmap scan failed or timed out for {ip}", level="WARNING")
         continue
@@ -162,20 +179,17 @@ while True:
     try:
         with open(TMP_OUTPUT) as f:
             nmap_output = f.read()
-
         if len(nmap_output) < MIN_EXPECTED_OUTPUT_BYTES:
-            log(f"Skipping {ip} due to minimal scan output ({len(nmap_output)} bytes)", level="WARNING")
+            log(f"Skipping {ip} due to small output", level="WARNING")
             continue
-
-        log(f"Nmap output read: {len(nmap_output)} bytes")
+        log(f"Nmap output size: {len(nmap_output)} bytes")
     except Exception as e:
         log(f"Failed to read Nmap output: {e}", level="ERROR")
         continue
 
     try:
-        log(f"Sending Nmap output to OpenAI for {ip}...")
+        log(f"Sending to OpenAI for analysis...")
         result = provider.improve_text(system_prompt, f"Nmap output:\n{nmap_output}")
-        log(f"OpenAI response received for {ip}:")
-        print(result)
+        log(f"OpenAI response:\n{result}")
     except Exception as e:
-        log(f"OpenAI processing failed for {ip}: {e}", level="ERROR")
+        log(f"OpenAI processing failed: {e}", level="ERROR")
