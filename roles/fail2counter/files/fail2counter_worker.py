@@ -103,7 +103,7 @@ def run_msf(ip: str, rc_path: str) -> str:
 def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
     msg = EmailMessage()
     msg["Subject"] = subject
-    msg["From"] = "reeot@feeditut.com"
+    msg["From"] = "root@feeditout.com"
     msg["To"] = to_email
     msg.set_content(body)
 
