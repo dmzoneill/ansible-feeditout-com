@@ -14,7 +14,7 @@ cleanup_orphans() {
         return
     fi
 
-    echo "🔍 Scanning for orphaned $LABELs in $DIR matching '$PATTERN'..."
+    echo "🔍 Scanning for orphaned $LABEL in $DIR matching '$PATTERN'..."
 
     find "$DIR" -type f -name "$PATTERN" | while read -r filepath; do
         # Get hardlink count

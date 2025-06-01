@@ -1,114 +1,97 @@
----
 - name: Ensure iptables-persistent is installed
   apt:
     name: iptables-persistent
     state: present
     update_cache: true
 
-- name: Slurp live iptables rules from the system
-  slurp:
-    src: "{{ iptables_rules_path }}"
-  register: live_rules
-  ignore_errors: true
+- name: Process and sync iptables and ip6tables rules
+  vars:
+    rules_files:
+      - family: "ipv4"
+        rules_file: "{{ iptables_rules_file }}"
+        rules_path: "{{ iptables_rules_path }}"
+        restore_cmd: "iptables-restore"
+        register_var: "live_rules"
+      - family: "ipv6"
+        rules_file: "{{ ip6tables_rules_file }}"
+        rules_path: "{{ ip6tables_rules_path }}"
+        restore_cmd: "ip6tables-restore"
+        register_var: "live_rules_v6"
 
-- name: Load reference rules file from role (local)
-  set_fact:
-    reference_rules_content: "{{ lookup('file', role_path + '/files/' + iptables_rules_file) }}"
+  block:
+    - name: Slurp live rules from the system
+      slurp:
+        src: "{{ rule.rules_path }}"
+      register: live_rules_result
+      ignore_errors: true
+      loop: "{{ rules_files }}"
+      loop_control:
+        loop_var: rule
+        label: "{{ rule.family }}"
 
-- name: Decode and strip comment/Fail2Ban lines from live iptables rules
-  set_fact:
-    live_rules_cleaned: >-
-      {{
-        (live_rules.content | default('Cg==') | b64decode).split('\n')
-        | reject("match", "^#")
-        | reject("match", "^$")
-        | reject("search", "^:f2b-")
-        | reject("search", "^-A f2b-")
-        | reject("search", "^-A INPUT.*f2b-")
-        | join('\n')
-      }}
+    - name: Load reference rules from role
+      set_fact:
+        "reference_{{ rule.family }}_rules_content": "{{ lookup('file', role_path + '/files/' + rule.rules_file) }}"
+      loop: "{{ rules_files }}"
+      loop_control:
+        loop_var: rule
+        label: "{{ rule.family }}"
 
-- name: Decode and strip comment/Fail2Ban lines from reference iptables rules
-  set_fact:
-    reference_rules_cleaned: >-
-      {{
-        reference_rules_content.split('\n')
-        | reject("match", "^#")
-        | reject("match", "^$")
-        | reject("search", "^:f2b-")
-        | reject("search", "^-A f2b-")
-        | reject("search", "^-A INPUT.*f2b-")
-        | join('\n')
-      }}
+    - name: Clean and compare rules
+      set_fact:
+        "live_{{ rule.family }}_rules_cleaned": >-
+          {{
+            (live_rules_result.results[loop.index0].content | default('Cg==') | b64decode).split('\n')
+            | reject("match", "^#")
+            | reject("match", "^$")
+            | reject("search", "^:f2b-")
+            | reject("search", "^-A f2b-")
+            | reject("search", "^-A INPUT.*f2b-")
+            | list | join('\n')
+          }}
+        "reference_{{ rule.family }}_rules_cleaned": >-
+          {{
+            vars['reference_' + rule.family + '_rules_content'].split('\n')
+            | reject("match", "^#")
+            | reject("match", "^$")
+            | reject("search", "^:f2b-")
+            | reject("search", "^-A f2b-")
+            | reject("search", "^-A INPUT.*f2b-")
+            | list | join('\n')
+          }}
+      loop: "{{ rules_files }}"
+      loop_control:
+        loop_var: rule
+        label: "{{ rule.family }}"
 
-- name: Set flag if iptables rules differ
-  set_fact:
-    rules_differ: "{{ live_rules_cleaned != reference_rules_cleaned }}"
+    - name: Set rules differ flags
+      set_fact:
+        "rules_{{ rule.family }}_differ": >-
+          {{ vars['live_' + rule.family + '_rules_cleaned'] !=
+             vars['reference_' + rule.family + '_rules_cleaned'] }}
+      loop: "{{ rules_files }}"
+      loop_control:
+        loop_var: rule
+        label: "{{ rule.family }}"
 
-- name: Copy new iptables rules if they differ
-  copy:
-    src: "{{ iptables_rules_file }}"
-    dest: "{{ iptables_rules_path }}"
-    owner: root
-    group: root
-    mode: '0644'
-  when: rules_differ
+    - name: Copy new rules file if they differ
+      copy:
+        src: "{{ rule.rules_file }}"
+        dest: "{{ rule.rules_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+      when: vars['rules_' + rule.family + '_differ']
+      loop: "{{ rules_files }}"
+      loop_control:
+        loop_var: rule
+        label: "{{ rule.family }}"
 
-- name: Restore iptables rules from saved file
-  shell: iptables-restore < "{{ iptables_rules_path }}"
-  when: rules_differ
-  changed_when: false
-
-- name: Slurp live ip6tables rules from the system
-  slurp:
-    src: "{{ ip6tables_rules_path }}"
-  register: live_rules_v6
-  ignore_errors: true
-
-- name: Load reference ip6tables rules file from role (local)
-  set_fact:
-    reference_rules_v6_content: "{{ lookup('file', role_path + '/files/' + ip6tables_rules_file) }}"
-
-- name: Decode and strip comment/Fail2Ban lines from live ip6tables rules
-  set_fact:
-    live_rules_v6_cleaned: >-
-      {{
-        (live_rules_v6.content | default('Cg==') | b64decode).split('\n')
-        | reject("match", "^#")
-        | reject("match", "^$")
-        | reject("search", "^:f2b-")
-        | reject("search", "^-A f2b-")
-        | reject("search", "^-A INPUT.*f2b-")
-        | join('\n')
-      }}
-
-- name: Decode and strip comment/Fail2Ban lines from reference ip6tables rules
-  set_fact:
-    reference_rules_v6_cleaned: >-
-      {{
-        reference_rules_v6_content.split('\n')
-        | reject("match", "^#")
-        | reject("match", "^$")
-        | reject("search", "^:f2b-")
-        | reject("search", "^-A f2b-")
-        | reject("search", "^-A INPUT.*f2b-")
-        | join('\n')
-      }}
-
-- name: Set flag if ip6tables rules differ
-  set_fact:
-    rules_v6_differ: "{{ live_rules_v6_cleaned != reference_rules_v6_cleaned }}"
-
-- name: Copy new ip6tables rules if they differ
-  copy:
-    src: "{{ ip6tables_rules_file }}"
-    dest: "{{ ip6tables_rules_path }}"
-    owner: root
-    group: root
-    mode: '0644'
-  when: rules_v6_differ
-
-- name: Restore ip6tables rules from saved file
-  shell: ip6tables-restore < "{{ ip6tables_rules_path }}"
-  when: rules_v6_differ
-  changed_when: false
+    - name: Restore rules from saved file
+      shell: "{{ rule.restore_cmd }} < {{ rule.rules_path }}"
+      when: vars['rules_' + rule.family + '_differ']
+      changed_when: false
+      loop: "{{ rules_files }}"
+      loop_control:
+        loop_var: rule
+        label: "{{ rule.family }}"

@@ -25,10 +25,10 @@
     apache_vhosts: "{{ apache_vhosts + [apache_vhost_entry] }}"
   loop: >-
     {{ domains
-        | selectattr('enabled', 'defined') 
-        | selectattr('enabled') 
-        | map(attribute='virtual_hosts') 
-        | select('defined') 
+        | selectattr('enabled', 'defined')
+        | selectattr('enabled')
+        | map(attribute='virtual_hosts')
+        | select('defined')
         | flatten(levels=1) }}
   loop_control:
     loop_var: vhost

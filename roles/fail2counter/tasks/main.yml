@@ -86,9 +86,9 @@
 
 - name: Reload systemd and enable service
   systemd:
-    daemon_reload: yes
+    daemon_reload: true
     name: fail2counter
-    enabled: yes
+    enabled: true
     state: started
 
 - name: Configure Fail2Ban custom action

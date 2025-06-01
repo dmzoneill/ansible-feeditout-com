@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
-import redis
-import subprocess
-import time
-import requests
 import os
 import re
-from datetime import datetime
 import smtplib
+import subprocess
+import time
+from datetime import datetime
 from email.message import EmailMessage
 
+import redis
+import requests
 
 
 class AiError(Exception):
@@ -60,12 +60,15 @@ env = os.environ.copy()
 env["HOME"] = "/root"  # or "/tmp", or another valid directory
 logs = []
 
+
 def log(msg, level="INFO"):
     print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
+
 
 def capture(msg, level="INFO"):
     log(msg, level)
     logs.append(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
+
 
 def write_msf_rc(ip: str, modules: list[str]) -> str:
     rc_path = f"/tmp/ip-{ip}.rc"
@@ -76,6 +79,7 @@ def write_msf_rc(ip: str, modules: list[str]) -> str:
             f.write("set RPORT 80\n")  # You can adjust this dynamically later
             f.write("run\n\n")
     return rc_path
+
 
 def run_msf(ip: str, rc_path: str) -> str:
     output_path = f"/tmp/ip-{ip}.msfout"
@@ -88,7 +92,7 @@ def run_msf(ip: str, rc_path: str) -> str:
             capture_output=True,
             text=True,
             env=env,
-            timeout=120
+            timeout=120,
         )
 
         with open(output_path, "w") as f:
@@ -100,13 +104,13 @@ def run_msf(ip: str, rc_path: str) -> str:
     except Exception as e:
         return f"[ERROR] Metasploit execution failed: {e}"
 
+
 def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = "root@feeditout.com"
     msg["To"] = to_email
     msg.set_content(body)
-    logs = []
 
     try:
         with smtplib.SMTP("localhost") as server:
@@ -114,6 +118,7 @@ def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
         capture(f"Email sent to {to_email}")
     except Exception as e:
         capture(f"Failed to send email: {e}", level="ERROR")
+
 
 # Load exploit list
 capture(f"Loading Metasploit module list from {EXPLOITS_FILE}")
@@ -132,11 +137,12 @@ Below is a list of available Metasploit modules:
 
 {exploits_list}
 
-You will be given Nmap results for a scanned IP address. Using the list above, suggest which modules are likely applicable.
-Only return a valid metasploit rc file for each module identified from the list, no explanations.
-In the RC file, add known parameters like RHOSTS, RPORT, etc for the given exploit. 
+You will be given Nmap results for a scanned IP address. Using the list above,
+suggest which modules are likely applicable. Only return a valid metasploit
+rc file for each module identified from the list, no explanations. In the
+RC file, add known parameters like RHOSTS, RPORT, etc for the given exploit.
 
-e.g: 
+e.g:
 
 use exploit/linux/ssh/ceragon_fibeair_known_privkey
 set RHOSTS 192.0.2.1
@@ -209,7 +215,17 @@ while True:
     capture(f"Running fast port scan on {ip}")
     try:
         subprocess.run(
-            ["timeout", str(SCAN_TIMEOUT), "nmap", "-T4", "-F", "-oG", FASTSCAN_FILE, "-v", ip],
+            [
+                "timeout",
+                str(SCAN_TIMEOUT),
+                "nmap",
+                "-T4",
+                "-F",
+                "-oG",
+                FASTSCAN_FILE,
+                "-v",
+                ip,
+            ],
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
@@ -237,13 +253,22 @@ while True:
         with open(TMP_OUTPUT, "w") as out:
             subprocess.run(
                 [
-                    "timeout", str(SCAN_TIMEOUT),
-                    "nmap", "-sV", "--version-light",
-                    "--max-retries", "1",
-                    "--min-parallelism", "10",
-                    "--host-timeout", "60s",
-                    "-p", ports,
-                    "-T4", "-v", ip
+                    "timeout",
+                    str(SCAN_TIMEOUT),
+                    "nmap",
+                    "-sV",
+                    "--version-light",
+                    "--max-retries",
+                    "1",
+                    "--min-parallelism",
+                    "10",
+                    "--host-timeout",
+                    "60s",
+                    "-p",
+                    ports,
+                    "-T4",
+                    "-v",
+                    ip,
                 ],
                 check=True,
                 stdout=out,
@@ -267,10 +292,7 @@ while True:
         logs = []
         continue
 
-    send_email(
-        subject=f"[Nmap Report] Analysis for {ip}",
-        body="\n".join(logs)
-    )
+    send_email(subject=f"[Nmap Report] Analysis for {ip}", body="\n".join(logs))
     legs = []
     # continue
 
