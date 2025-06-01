@@ -1,17 +1,4 @@
 ---
-- name: Ensure Python and Redis are installed
-  apt:
-    name:
-      - python3
-      - python3-pip
-      - redis-server
-    state: present
-
-- name: Install required Python packages
-  pip:
-    name:
-      - redis
-    executable: pip3
 
 - name: Create script directory
   file:
