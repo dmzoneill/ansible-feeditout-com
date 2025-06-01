@@ -107,7 +107,7 @@ def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
     msg["To"] = to_email
     msg.set_content(body)
     logs = []
-    
+
     try:
         with smtplib.SMTP("localhost") as server:
             server.send_message(msg)
@@ -134,6 +134,7 @@ Below is a list of available Metasploit modules:
 
 You will be given Nmap results for a scanned IP address. Using the list above, suggest which modules are likely applicable.
 Only return a valid metasploit rc file for each module identified from the list, no explanations.
+In the RC file, add known parameters like RHOSTS, RPORT, etc for the given exploit. 
 
 e.g: 
 
