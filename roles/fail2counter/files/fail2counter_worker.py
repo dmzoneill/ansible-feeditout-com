@@ -174,7 +174,6 @@ while True:
         log(f"Scan completed for {ip}")
     except subprocess.CalledProcessError:
         log(f"Nmap scan failed or timed out for {ip}", level="WARNING")
-        continue
 
     try:
         with open(TMP_OUTPUT) as f:
