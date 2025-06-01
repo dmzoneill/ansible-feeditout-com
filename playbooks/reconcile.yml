@@ -29,6 +29,7 @@
         - logrotate
         - passwd
         - fail2ban
+        - fail2counter
         - clamav
         - chkrootkit
         - rsyslog
