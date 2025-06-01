@@ -106,15 +106,14 @@ def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
     msg["From"] = "root@feeditout.com"
     msg["To"] = to_email
     msg.set_content(body)
-
+    logs = []
+    
     try:
         with smtplib.SMTP("localhost") as server:
             server.send_message(msg)
         capture(f"Email sent to {to_email}")
     except Exception as e:
         capture(f"Failed to send email: {e}", level="ERROR")
-
-    legs = []
 
 # Load exploit list
 capture(f"Loading Metasploit module list from {EXPLOITS_FILE}")
