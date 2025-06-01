@@ -231,9 +231,10 @@ while True:
     try:
         log(f"Sending to OpenAI for analysis...")
         result = provider.improve_text(system_prompt, f"Nmap output:\n{nmap_output}")
+        result = result.replace("```", "").strip()
         log(f"OpenAI response:\n{result}")
 
-        modules = [line.strip() for line in result.strip().splitlines() if line.strip().startswith("exploit/")]
+        modules = [line.strip() for line in result.strip().splitlines() if line.strip().startswith("use exploit")]
         if not modules:
             log(f"No valid Metasploit modules returned for {ip}", level="WARNING")
             continue
