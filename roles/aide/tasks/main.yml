@@ -33,8 +33,9 @@
 - name: Ensure aide.log permissions are valid
   ansible.builtin.file:
     path: /var/log/aide/aide.log
-    state: touch
+    state: file
     owner: root
     group: root
     mode: '0640'
+
 
