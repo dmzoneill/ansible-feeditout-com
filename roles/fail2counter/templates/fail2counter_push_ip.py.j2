@@ -1,6 +1,32 @@
 #!/usr/bin/env python3
-import sys, redis, datetime
+import sys
+import redis
+import datetime
+import os
 
-IP = sys.argv[1]
-r = redis.Redis(host='localhost', port=6379, db=0, password="{{ redis_password }}")
-r.rpush("banned_ips", f"{datetime.datetime.utcnow().isoformat()}|{IP}")
+try:
+    IP = sys.argv[1]
+except IndexError:
+    print("[!] No IP address provided as argument.", file=sys.stderr)
+    sys.exit(1)
+
+# You can either inject this via Ansible template or use env vars
+REDIS_PASSWORD = "{{ redis_password }}"  # or: os.environ.get("REDIS_PASSWORD")
+
+print(f"[+] Pushing banned IP to Redis: {IP}")
+
+try:
+    r = redis.Redis(host='localhost', port=6379, db=0, password=REDIS_PASSWORD)
+    now = datetime.datetime.utcnow().isoformat()
+    value = f"{now}|{IP}"
+    result = r.rpush("banned_ips", value)
+    print(f"[+] Successfully pushed to Redis queue 'banned_ips': {value} (length now {result})")
+except redis.AuthenticationError:
+    print("[!] Redis authentication failed. Check password.", file=sys.stderr)
+    sys.exit(2)
+except redis.ConnectionError as e:
+    print(f"[!] Redis connection failed: {e}", file=sys.stderr)
+    sys.exit(3)
+except Exception as e:
+    print(f"[!] Unexpected error: {e}", file=sys.stderr)
+    sys.exit(4)

@@ -51,11 +51,21 @@ EXPLOITS_FILE = "/opt/fail2counter/exploits.txt"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
+def log(msg, level="INFO"):
+    print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
+
 # Load exploit list
+log(f"Loading Metasploit module list from {EXPLOITS_FILE}")
+if not os.path.exists(EXPLOITS_FILE):
+    log(f"Exploit list not found: {EXPLOITS_FILE}", level="ERROR")
+    exit(1)
+
 with open(EXPLOITS_FILE, "r") as f:
     exploits_list = f.read()
 
-# Prepare static prompt
+log(f"Loaded {len(exploits_list.splitlines())} Metasploit modules.")
+
+# Prepare system prompt
 system_prompt = f"""You are a cybersecurity expert helping choose Metasploit modules for post-breach analysis.
 
 Below is a list of available Metasploit modules:
@@ -67,18 +77,42 @@ Only return valid Metasploit module paths from the list, no explanations.
 """
 
 # Initialize Redis and OpenAI
-r = redis.Redis(host='localhost', port=6379, db=0, password=os.environ.get("REDIS_PASSWORD"))
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+if not REDIS_PASSWORD:
+    log("REDIS_PASSWORD environment variable is not set", level="ERROR")
+    exit(2)
+
+try:
+    r = redis.Redis(host='localhost', port=6379, db=0, password=REDIS_PASSWORD)
+    r.ping()
+    log("Connected to Redis successfully.")
+except Exception as e:
+    log(f"Failed to connect to Redis: {e}", level="ERROR")
+    exit(3)
+
 provider = OpenAIProvider()
 
 while True:
-    ip_entry = r.lpop(REDIS_QUEUE)
-    if not ip_entry:
+    try:
+        ip_entry = r.lpop(REDIS_QUEUE)
+    except Exception as e:
+        log(f"Redis error while reading queue: {e}", level="ERROR")
         time.sleep(10)
         continue
 
-    _, ip = ip_entry.decode().split("|")
+    if not ip_entry:
+        log("Queue empty, sleeping 10s...")
+        time.sleep(10)
+        continue
 
-    print(f"[+] Scanning {ip}...")
+    try:
+        timestamp, ip = ip_entry.decode().split("|")
+        log(f"Dequeued IP: {ip} (banned at {timestamp})")
+    except Exception as e:
+        log(f"Failed to parse Redis queue entry: {ip_entry} — {e}", level="ERROR")
+        continue
+
+    log(f"Starting Nmap scan for {ip} (timeout {SCAN_TIMEOUT}s)")
     try:
         subprocess.run(
             ["timeout", str(SCAN_TIMEOUT), "nmap", "-A", "-T4", ip],
@@ -86,15 +120,23 @@ while True:
             stdout=open(TMP_OUTPUT, "w"),
             stderr=subprocess.DEVNULL
         )
+        log(f"Nmap scan complete: output saved to {TMP_OUTPUT}")
     except subprocess.CalledProcessError:
-        print(f"[!] Nmap scan failed or timed out for {ip}")
+        log(f"Nmap scan failed or timed out for {ip}", level="WARNING")
         continue
 
-    with open(TMP_OUTPUT) as f:
-        nmap_output = f.read()
+    try:
+        with open(TMP_OUTPUT) as f:
+            nmap_output = f.read()
+        log(f"Nmap output read: {len(nmap_output)} bytes")
+    except Exception as e:
+        log(f"Failed to read Nmap output: {e}", level="ERROR")
+        continue
 
     try:
+        log(f"Sending Nmap output to OpenAI for {ip}...")
         result = provider.improve_text(system_prompt, f"Nmap output:\n{nmap_output}")
-        print(f"[+] Recommended Metasploit modules for {ip}:\n{result}")
+        log(f"OpenAI response received for {ip}:")
+        print(result)
     except Exception as e:
-        print(f"[!] Failed to get module suggestions from OpenAI: {e}")
+        log(f"OpenAI processing failed for {ip}: {e}", level="ERROR")
