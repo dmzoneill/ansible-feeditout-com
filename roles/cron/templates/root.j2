@@ -24,8 +24,8 @@
 # 
 # m h  dom mon dow   command
 MAILTO="{{ cron.email }}"
-15 3 * * * /home/dave/bin/certbot.sh 
-0 3 * * * /etc/apache2/create_mmap.sh
-0 1 * * * /usr/bin/aide -c /etc/aide/aide.conf -u && cp /var/lib/aide/aide.db{.new,}
-5 * * * * /usr/bin/journalctl --since "1 hour ago" | /bin/grep -i "The MAIL FROM domain"
-10 * * * * /usr/bin/journalctl --since "1 hour ago" | /bin/grep -i "failure"
+15 3 * * * /home/dave/bin/certbot.sh |& grep . || true
+0 3 * * * /etc/apache2/create_mmap.sh |& grep . || true
+0 1 * * * /usr/bin/bash -c '/usr/bin/aide -c /etc/aide/aide.conf -u && cp /var/lib/aide/aide.db{.new,}' |& grep . || true
+5 * * * * /usr/bin/bash -c '/usr/bin/journalctl --since "1 hour ago" | /bin/grep -i "The MAIL FROM domain"' |& grep . || true
+10 * * * * /usr/bin/bash -c '/usr/bin/journalctl --since "1 hour ago" | /bin/grep -i "failure"' |& grep . || true
