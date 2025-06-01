@@ -294,7 +294,7 @@ while True:
         continue
 
     send_email(subject=f"[Nmap Report] Analysis for {ip}", body="\n".join(logs))
-    legs = []
+    logs = []
     # continue
 
     # try:
