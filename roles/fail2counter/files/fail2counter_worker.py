@@ -3,7 +3,6 @@
 import redis
 import subprocess
 import time
-import tempfile
 import requests
 import os
 import re
@@ -54,6 +53,8 @@ MIN_EXPECTED_OUTPUT_BYTES = 500
 TMP_OUTPUT = "/tmp/nmap_result.txt"
 FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
 EXPLOITS_FILE = "/opt/fail2counter/exploits.txt"
+env = os.environ.copy()
+env["HOME"] = "/root"  # or "/tmp", or another valid directory
 
 
 def log(msg, level="INFO"):
