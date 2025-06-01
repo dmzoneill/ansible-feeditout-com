@@ -144,7 +144,7 @@ while True:
         )
         with open(FASTSCAN_FILE) as f:
             grepable = f.read()
-        ports = ",".join(re.findall(r"(\\d+)/open", grepable))
+        ports = ",".join(re.findall(r"(\d+)/open", grepable))
         if not ports:
             log(f"No open ports found on {ip}", level="WARNING")
             continue
