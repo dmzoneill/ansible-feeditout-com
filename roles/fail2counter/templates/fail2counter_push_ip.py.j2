@@ -2,5 +2,5 @@
 import sys, redis, datetime
 
 IP = sys.argv[1]
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis.Redis(host='localhost', port=6379, db=0, password="{{ redis_password }}")
 r.rpush("banned_ips", f"{datetime.datetime.utcnow().isoformat()}|{IP}")

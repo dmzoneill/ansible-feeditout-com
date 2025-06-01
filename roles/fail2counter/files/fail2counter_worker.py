@@ -67,7 +67,7 @@ Only return valid Metasploit module paths from the list, no explanations.
 """
 
 # Initialize Redis and OpenAI
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis.Redis(host='localhost', port=6379, db=0, password=os.environ.get("REDIS_PASSWORD"))
 provider = OpenAIProvider()
 
 while True:

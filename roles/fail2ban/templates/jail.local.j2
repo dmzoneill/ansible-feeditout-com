@@ -4,9 +4,9 @@ sender = root@{{ fqdn }}
 mta = sendmail
 action = iptables-multiport[name=fail2ban, port="ssh,smtp,ssmtp,465,submission"]
 backend = auto
-bantime = 10m
+bantime = 720m
 findtime = 10m
-maxretry = 5
+maxretry = 3
 allowipv6 = auto
 
 [sshd]

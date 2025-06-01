@@ -13,9 +13,11 @@
     mode: '0644'
 
 - name: Deploy push script
-  copy:
-    src: fail2counter_push_ip.py
-    dest: /opt/fail2counter/fail2counter_push_ip.py
+  template:
+    src: "fail2counter_push_ip.py.j2"
+    dest: "/opt/fail2counter/fail2counter_push_ip.py"
+    owner: "root"
+    group: "root"
     mode: '0755'
 
 - name: Deploy worker script
