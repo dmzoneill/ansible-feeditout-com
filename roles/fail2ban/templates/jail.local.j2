@@ -10,6 +10,7 @@ maxretry = 5
 allowipv6 = auto
 
 [sshd]
+allowipv6 = auto
 enabled = true
 filter = sshd
 port = ssh
@@ -19,6 +20,7 @@ action = iptables-multiport[name=sshd, port="ssh"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [postfix]
+allowipv6 = auto
 enabled = true
 filter = postfix
 port = smtp,ssmtp,submission
@@ -27,6 +29,7 @@ action = iptables-multiport[name=postfix, port="smtp,ssmtp,submission"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [postfix-sasl]
+allowipv6 = auto
 enabled = true
 filter = postfix
 logpath = /var/log/mail.log
@@ -36,6 +39,7 @@ action = iptables-multiport[name=postfix, port="smtp,ssmtp,465,submission,imap,i
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [sasl]
+allowipv6 = auto
 enabled = true
 filter = postfix
 port = smtp
@@ -45,6 +49,7 @@ action = iptables-multiport[name=sasl, port="smtp"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [postfix-failedauth]
+allowipv6 = auto
 enabled = true
 filter = postfix-sasl
 logpath = /var/log/mail.log
@@ -55,6 +60,7 @@ action = iptables-multiport[name=postfix-failedauth, port="smtp,submission"]
 
 
 [apache-badbots]
+allowipv6 = auto
 enabled = true
 port = http,https
 filter = apache-badbots
@@ -66,6 +72,7 @@ action = iptables-multiport[name=BadBots, port="http,https"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [apache-noscript]
+allowipv6 = auto
 enabled = true
 port = http,https
 filter = apache-noscript
@@ -77,6 +84,7 @@ action = iptables-multiport[name=NoScript, port="http,https"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [apache-overflows]
+allowipv6 = auto
 enabled = true
 port = http,https
 filter = apache-overflows
@@ -88,6 +96,7 @@ action = iptables-multiport[name=Overflow, port="http,https"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [apache-wordpress]
+allowipv6 = auto
 enabled = true
 port = http,https
 filter = apache-wordpress
@@ -99,6 +108,7 @@ action = iptables-multiport[name=WordPress, port="http,https"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
 
 [postfix-pipelining]
+allowipv6 = auto
 enabled = true
 filter = postfix-pipelining
 port = smtp,ssmtp,submission
