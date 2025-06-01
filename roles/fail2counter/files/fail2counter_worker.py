@@ -70,8 +70,11 @@ def write_msf_rc(ip: str, modules: list[str]) -> str:
             f.write("run\n\n")
     return rc_path
 
-def run_msf(ip: str, rc_file: str) -> str:
+def run_msf(ip: str, rc_path: str) -> str:
     output_path = f"/tmp/ip-{ip}.msfout"
+    env = os.environ.copy()
+    env["HOME"] = "/root"  # or "/tmp" as needed
+
     try:
         result = subprocess.run(
             ["/usr/bin/msfconsole", "-q", "-r", rc_path],
@@ -80,13 +83,15 @@ def run_msf(ip: str, rc_file: str) -> str:
             env=env,
             timeout=120
         )
-        with open(output_path) as f:
-            return f.read()
+
+        with open(output_path, "w") as f:
+            f.write(result.stdout)
+
+        return result.stdout
     except subprocess.TimeoutExpired:
-        return "[TIMEOUT] Metasploit run exceeded 5 minutes"
+        return "[TIMEOUT] Metasploit run exceeded 2 minutes"
     except Exception as e:
         return f"[ERROR] Metasploit execution failed: {e}"
-
 
 # Load exploit list
 log(f"Loading Metasploit module list from {EXPLOITS_FILE}")
