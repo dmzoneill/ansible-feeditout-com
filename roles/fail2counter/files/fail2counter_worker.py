@@ -7,6 +7,7 @@ import subprocess
 import time
 from datetime import datetime
 from email.message import EmailMessage
+from typing import List
 
 import redis
 import requests
@@ -18,7 +19,7 @@ class AiError(Exception):
 
 class OpenAIProvider:
     def __init__(self) -> None:
-        self.api_key: str = os.environ.get("OPENAI_API_KEY")
+        self.api_key: str = str(os.environ.get("OPENAI_API_KEY"))
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY is not set in the environment.")
         self.endpoint: str = "https://api.openai.com/v1/chat/completions"
@@ -58,7 +59,7 @@ FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
 EXPLOITS_FILE = "/opt/fail2counter/exploits.txt"
 env = os.environ.copy()
 env["HOME"] = "/root"  # or "/tmp", or another valid directory
-logs = []
+logs: List[str] = []
 
 
 def log(msg, level="INFO"):

@@ -1,3 +1,4 @@
+---
 - name: Ensure iptables-persistent is installed
   apt:
     name: iptables-persistent
