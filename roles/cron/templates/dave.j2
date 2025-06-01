@@ -25,6 +25,7 @@
 # 
 # m h  dom mon dow   command
 MAILTO="{{ cron.email }}"
-0 11 * * * /usr/bin/bash -c 'cd /home/{{ cron.user }}/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/ && /usr/bin/php site-emailer.php expiration' |& grep . || true
-0 * * * * /usr/bin/bash -c 'cd /home/{{ cron.user }}/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/ && /usr/bin/php site-emailer.php reminder' |& grep . || true
-0 0 * * * /usr/bin/bash -c 'cd /home/{{ cron.user }}/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/ && /usr/bin/php moondays.php' |& grep . || true
+0 11 * * * cd /home/{{ cron.user }}/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/ && /usr/bin/php /home/{{ cron.user }}/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/site-emailer.php expiration
+0 * * * * cd /home/{{ cron.user }}/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/ && /usr/bin/php /home/{{ cron.user }}/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/site-emailer.php reminder
+0 0 * * * cd /home/{{ cron.user }}/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/ && /usr/bin/php /home/{{ cron.user }}/www/ashtangayoga.ie/wp-content/themes/AshtangaYoga/moondays.php
+
