@@ -145,12 +145,14 @@ while True:
     log(f"Starting Nmap scan for {ip} (timeout {SCAN_TIMEOUT}s)")
     try:
         scan_start = time.time()
-        subprocess.run(
-            ["timeout", str(SCAN_TIMEOUT), "nmap", "-A", "-T4", ip],
-            check=True,
-            stdout=open(TMP_OUTPUT, "w"),
-            stderr=subprocess.DEVNULL
-        )
+        with open(TMP_OUTPUT, "w") as out:
+            subprocess.run(
+                ["timeout", str(SCAN_TIMEOUT), "nmap", "-A", "-T4", "-v", ip],
+                check=True,
+                stdout=out,
+                stderr=out  # 👈 capture stderr too
+            )
+
         duration = time.time() - scan_start
         log(f"Nmap scan complete in {duration:.1f}s: output saved to {TMP_OUTPUT}")
     except subprocess.CalledProcessError:
