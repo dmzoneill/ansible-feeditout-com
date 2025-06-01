@@ -126,7 +126,9 @@ while True:
             stderr=subprocess.DEVNULL,
         )
         with open(precheck_file) as f:
-            if "Host seems down" in f.read():
+            lines = f.read()
+            log(lines, "INFO")
+            if "Host seems down" in lines:
                 log(f"[SKIP] Host {ip} seems down")
                 continue
     except subprocess.CalledProcessError:
@@ -143,8 +145,12 @@ while True:
             stderr=subprocess.DEVNULL,
         )
         with open(FASTSCAN_FILE) as f:
-            grepable = f.read()
-        ports = ",".join(re.findall(r"(\d+)/open", grepable))
+            lines = f.read()
+            log(lines, "INFO")
+            grepable = lines
+        matches = re.findall(r"(\d+)/open", grepable)
+        log(matches, "DEBUG")
+        ports = ",".join(matches)
         if not ports:
             log(f"No open ports found on {ip}", level="WARNING")
             continue
@@ -178,6 +184,7 @@ while True:
     try:
         with open(TMP_OUTPUT) as f:
             nmap_output = f.read()
+            log(nmap_output, "DEBUG")
         if len(nmap_output) < MIN_EXPECTED_OUTPUT_BYTES:
             log(f"Skipping {ip} due to small output", level="WARNING")
             continue
