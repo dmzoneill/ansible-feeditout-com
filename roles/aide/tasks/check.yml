@@ -1,5 +1,5 @@
 ---
 - name: Trigger AIDE check now
-  ansible.builtin.command: /usr/sbin/aide --check
+  ansible.builtin.command: /usr/bin/aide --check
   register: aide_check
   changed_when: false

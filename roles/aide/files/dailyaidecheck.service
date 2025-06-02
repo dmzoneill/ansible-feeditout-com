@@ -3,7 +3,7 @@ Description=daily AIDE check
 
 [Service]
 Type=oneshot
-ExecStart=/usr/sbin/aide --check
+ExecStart=/usr/bin/aide --check
 StandardOutput=append:/var/log/aide/aide.log
 StandardError=journal
 
