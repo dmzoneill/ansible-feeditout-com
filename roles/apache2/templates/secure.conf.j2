@@ -19,11 +19,23 @@
     Require all granted
   </Directory>
 
-  {# ✅ Optional custom per-domain block if template exists #}
-  {% set custom_template = vhost.domain + '.conf.j2' %}
-  {% set has_template = lookup('fileglob', custom_template) %}
-  {% if has_template %}
-    {{ lookup('template', custom_template, convert_data=False, vars={
+  {% set alias_template = vhost.domain_alias + '.conf.j2' %}
+  {% set domain_template = vhost.domain + '.conf.j2' %}
+
+  {% set alias_exists = lookup('fileglob', alias_template) %}
+  {% set domain_exists = lookup('fileglob', domain_template) %}
+
+  {% if alias_exists %}
+    {{ lookup('template', alias_template, convert_data=False, vars={
+      'domain': vhost.domain,
+      'domain_alias': vhost.domain_alias,
+      'document_root': vhost.document_root,
+      'loglevel': vhost.loglevel,
+      'role_user': vhost.role_user,
+      'custom_config': vhost.custom_config
+    }) }}
+  {% elif domain_exists %}
+    {{ lookup('template', domain_template, convert_data=False, vars={
       'domain': vhost.domain,
       'domain_alias': vhost.domain_alias,
       'document_root': vhost.document_root,
