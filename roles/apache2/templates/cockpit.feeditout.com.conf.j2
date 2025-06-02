@@ -1,15 +1,19 @@
+
   ProxyPreserveHost On
   ProxyRequests Off
   AllowEncodedSlashes NoDecode
 
-  # 🧠 This block is required for WebSocket support
+  # 🔁 Redirect root to /cockpit/
+  RedirectMatch ^/$ /cockpit/
+
+  # WebSocket support
   <Location /cockpit/socket>
     ProxyPass "ws://localhost:9090/cockpit/socket"
     ProxyPassReverse "ws://localhost:9090/cockpit/socket"
     Require all granted
   </Location>
 
-  # All other Cockpit requests
+  # Main Cockpit interface
   <Location /cockpit/>
     ProxyPass "http://localhost:9090/cockpit/"
     ProxyPassReverse "http://localhost:9090/cockpit/"
