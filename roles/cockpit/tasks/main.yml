@@ -4,6 +4,15 @@
     name: "{{ cockpit_packages }}"
     state: present
 
+- name: Copy cockpit.conf
+  ansible.builtin.copy:
+    src: cockpit.conf
+    dest: /etc/cockpit/cockpit.conf
+    mode: '0644'
+    owner: "{{ user }}"
+    group: "{{ user }}"
+  notify: Restart cockpit
+
 - name: Ensure Cockpit service is enabled and started
   ansible.builtin.service:
     name: cockpit

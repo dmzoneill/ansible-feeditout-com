@@ -1,16 +1,14 @@
-
   ProxyPreserveHost On
   ProxyRequests Off
-  AllowEncodedSlashes NoDecode
 
-  <Location /socket>
-    ProxyPass "ws://localhost:9090/socket"
-    ProxyPassReverse "ws://localhost:9090/socket"
-    Require all granted
-  </Location>
+  # Rewrite rules to proxy WebSocket vs HTTP traffic
+  RewriteEngine On
+  RewriteCond %{HTTP:Upgrade} =websocket [NC]
+  RewriteRule /(.*) ws://127.0.0.1:9090/$1 [P,L]
 
-  <Location />
-    ProxyPass "http://localhost:9090/"
-    ProxyPassReverse "http://localhost:9090/"
-    Require all granted
-  </Location>
+  RewriteCond %{HTTP:Upgrade} !=websocket [NC]
+  RewriteRule /(.*) http://127.0.0.1:9090/$1 [P,L]
+
+  # Fallback proxy (redundant but harmless)
+  ProxyPass / http://127.0.0.1:9090/
+  ProxyPassReverse / http://127.0.0.1:9090/
