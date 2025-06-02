@@ -3,20 +3,21 @@
 import os
 import re
 import smtplib
+import socket
 import subprocess
 import time
 from datetime import datetime
 from email.message import EmailMessage
 from typing import List
-import socket
-import redis
+
 import mysql.connector
+import redis
 
 db = mysql.connector.connect(
     host="localhost",
     user="fail2counter",
     password=os.environ.get("FAIL2COUNTER_PASSWORD"),
-    database="fail2counter"
+    database="fail2counter",
 )
 cursor = db.cursor(dictionary=True)
 
@@ -31,22 +32,29 @@ TMP_OUTPUT = "/tmp/nmap_result.txt"
 FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
 logs: List[str] = []
 
+
 def insert_host(ip: str, hostname: str) -> int:
     cursor.execute("SELECT id FROM hosts WHERE ip_address = %s", (ip,))
     row = cursor.fetchone()
     if row:
         return row["id"]
-    cursor.execute("INSERT INTO hosts (ip_address, hostname) VALUES (%s, %s)", (ip, hostname))
+    cursor.execute(
+        "INSERT INTO hosts (ip_address, hostname) VALUES (%s, %s)", (ip, hostname)
+    )
     db.commit()
     return cursor.lastrowid
 
-def insert_scan(host_id: int, scan_type: str, start_time: datetime, latency: float, duration: float) -> int:
+
+def insert_scan(
+    host_id: int, scan_type: str, start_time: datetime, latency: float, duration: float
+) -> int:
     cursor.execute(
         "INSERT INTO scans (host_id, scan_time, scan_type, latency_seconds, duration_seconds) VALUES (%s, %s, %s, %s, %s)",
         (host_id, start_time, scan_type, latency, duration),
     )
     db.commit()
     return cursor.lastrowid
+
 
 def insert_port(scan_id: int, port: int, protocol: str, state: str) -> int:
     cursor.execute(
@@ -56,19 +64,30 @@ def insert_port(scan_id: int, port: int, protocol: str, state: str) -> int:
     db.commit()
     return cursor.lastrowid
 
-def insert_service(port_id: int, service_name: str, product: str = None, version: str = None, is_ssl=False, recognized=True):
+
+def insert_service(
+    port_id: int,
+    service_name: str,
+    product: str = None,
+    version: str = None,
+    is_ssl=False,
+    recognized=True,
+):
     cursor.execute(
         "INSERT INTO services (port_id, service_name, product, version, is_ssl, recognized) VALUES (%s, %s, %s, %s, %s, %s)",
         (port_id, service_name, product, version, is_ssl, recognized),
     )
     db.commit()
 
+
 def log(msg, level="INFO"):
     print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
+
 
 def capture(msg, level="INFO"):
     log(msg, level)
     logs.append(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
+
 
 def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
     msg = EmailMessage()
@@ -83,6 +102,7 @@ def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
         capture(f"Email sent to {to_email}")
     except Exception as e:
         capture(f"Failed to send email: {e}", level="ERROR")
+
 
 if not REDIS_PASSWORD:
     capture("REDIS_PASSWORD environment variable is not set", level="ERROR")
@@ -239,12 +259,14 @@ while True:
     latency = float(latency_match.group(1)) if latency_match else None
     duration = float(duration_match.group(1)) if duration_match else None
 
-    scan_id = insert_scan(host_id, scan_type, scan_time, latency or 0.0, duration or 0.0)
+    scan_id = insert_scan(
+        host_id, scan_type, scan_time, latency or 0.0, duration or 0.0
+    )
 
     # Parse open ports and service details
     service_matches = re.finditer(
         r"(?P<port>\d+)/tcp\s+open\s+(?P<service>[^\s]+)(?:\s+(?P<product>[^\s]+)(?:\s+(?P<version>[^\s]+))?)?",
-        nmap_output
+        nmap_output,
     )
 
     for match in service_matches:
@@ -260,7 +282,9 @@ while True:
         clean_service_name = service_name.rstrip("?")
 
         port_id = insert_port(scan_id, port, "tcp", "open")
-        insert_service(port_id, clean_service_name, product, version, is_ssl, recognized)
+        insert_service(
+            port_id, clean_service_name, product, version, is_ssl, recognized
+        )
 
     send_email(subject=f"[Nmap Report] Analysis for {ip}", body="\n".join(logs))
     logs = []
