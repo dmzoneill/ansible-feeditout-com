@@ -11,42 +11,69 @@
       - iptables
       - ip6tables
 
-- name: Ensure ANSIBLE_INPUT and ANSIBLE_OUTPUT chains exist (v4/v6)
-  loop: "{{ iptables_cmds }}"
-  loop_control:
-    loop_var: ipt
-  block:
-    - name: Ensure ANSIBLE_INPUT exists
-      command: "{{ ipt }} -N ANSIBLE_INPUT"
-      register: create_ansible_input
-      failed_when: false
-      changed_when: create_ansible_input.rc == 0
+- name: Ensure ANSIBLE_INPUT chain exists for iptables
+  command: iptables -N ANSIBLE_INPUT
+  register: create_ansible_input_v4
+  failed_when: false
+  changed_when: create_ansible_input_v4.rc == 0
 
-    - name: Ensure ANSIBLE_OUTPUT exists
-      command: "{{ ipt }} -N ANSIBLE_OUTPUT"
-      register: create_ansible_output
-      failed_when: false
-      changed_when: create_ansible_output.rc == 0
+- name: Ensure ANSIBLE_OUTPUT chain exists for iptables
+  command: iptables -N ANSIBLE_OUTPUT
+  register: create_ansible_output_v4
+  failed_when: false
+  changed_when: create_ansible_output_v4.rc == 0
 
-    - name: Ensure INPUT jumps to ANSIBLE_INPUT
-      command: "{{ ipt }} -C INPUT -j ANSIBLE_INPUT"
-      register: check_jump_input
-      failed_when: false
-      changed_when: false
+- name: Ensure ANSIBLE_INPUT chain exists for ip6tables
+  command: ip6tables -N ANSIBLE_INPUT
+  register: create_ansible_input_v6
+  failed_when: false
+  changed_when: create_ansible_input_v6.rc == 0
 
-    - name: Insert jump to ANSIBLE_INPUT if missing
-      command: "{{ ipt }} -I INPUT 1 -j ANSIBLE_INPUT"
-      when: check_jump_input.rc != 0
+- name: Ensure ANSIBLE_OUTPUT chain exists for ip6tables
+  command: ip6tables -N ANSIBLE_OUTPUT
+  register: create_ansible_output_v6
+  failed_when: false
+  changed_when: create_ansible_output_v6.rc == 0
 
-    - name: Ensure OUTPUT jumps to ANSIBLE_OUTPUT
-      command: "{{ ipt }} -C OUTPUT -j ANSIBLE_OUTPUT"
-      register: check_jump_output
-      failed_when: false
-      changed_when: false
+- name: Ensure INPUT jumps to ANSIBLE_INPUT (iptables)
+  command: iptables -C INPUT -j ANSIBLE_INPUT
+  register: check_jump_input_v4
+  failed_when: false
+  changed_when: false
 
-    - name: Insert jump to ANSIBLE_OUTPUT if missing
-      command: "{{ ipt }} -I OUTPUT 1 -j ANSIBLE_OUTPUT"
-      when: check_jump_output.rc != 0
+- name: Insert jump to ANSIBLE_INPUT if missing (iptables)
+  command: iptables -I INPUT 1 -j ANSIBLE_INPUT
+  when: check_jump_input_v4.rc != 0
+
+- name: Ensure OUTPUT jumps to ANSIBLE_OUTPUT (iptables)
+  command: iptables -C OUTPUT -j ANSIBLE_OUTPUT
+  register: check_jump_output_v4
+  failed_when: false
+  changed_when: false
+
+- name: Insert jump to ANSIBLE_OUTPUT if missing (iptables)
+  command: iptables -I OUTPUT 1 -j ANSIBLE_OUTPUT
+  when: check_jump_output_v4.rc != 0
+
+- name: Ensure INPUT jumps to ANSIBLE_INPUT (ip6tables)
+  command: ip6tables -C INPUT -j ANSIBLE_INPUT
+  register: check_jump_input_v6
+  failed_when: false
+  changed_when: false
+
+- name: Insert jump to ANSIBLE_INPUT if missing (ip6tables)
+  command: ip6tables -I INPUT 1 -j ANSIBLE_INPUT
+  when: check_jump_input_v6.rc != 0
+
+- name: Ensure OUTPUT jumps to ANSIBLE_OUTPUT (ip6tables)
+  command: ip6tables -C OUTPUT -j ANSIBLE_OUTPUT
+  register: check_jump_output_v6
+  failed_when: false
+  changed_when: false
+
+- name: Insert jump to ANSIBLE_OUTPUT if missing (ip6tables)
+  command: ip6tables -I OUTPUT 1 -j ANSIBLE_OUTPUT
+  when: check_jump_output_v6.rc != 0
 
 - name: Get current ANSIBLE_INPUT rules
   command: iptables -S ANSIBLE_INPUT
@@ -64,91 +91,107 @@
   command: ip6tables -S ANSIBLE_OUTPUT
   register: current_ansible_output_v6_rules
 
-- name: Build expected ANSIBLE_INPUT rule strings
+- name: Build expected rule strings
   set_fact:
     expected_input_rule_lines: >-
-      {{
-        ansible_input_rules | map('community.general.iptables_rule_line', 'ANSIBLE_INPUT') | list
-      }}
+      {{ ansible_input_rules | map('community.general.iptables_rule_line', 'ANSIBLE_INPUT') | list }}
     expected_output_rule_lines: >-
-      {{
-        ansible_output_rules | map('community.general.iptables_rule_line', 'ANSIBLE_OUTPUT') | list
-      }}
+      {{ ansible_output_rules | map('community.general.iptables_rule_line', 'ANSIBLE_OUTPUT') | list }}
 
-- name: Sync ANSIBLE_INPUT rules (v4/v6)
-  vars:
-    rules_by_family:
-      iptables: { current: "{{ current_ansible_input_rules.stdout_lines }}" }
-      ip6tables: { current: "{{ current_ansible_input_v6_rules.stdout_lines }}" }
-  loop: "{{ iptables_cmds }}"
-  loop_control:
-    loop_var: ipt
-  block:
-    - name: Remove extra ANSIBLE_INPUT rules
-      shell: "{{ ipt }} {{ item.replace('-A', '-D') }}"
-      loop: "{{ rules_by_family[ipt].current | difference(expected_input_rule_lines) }}"
-      when: item is search('-A ANSIBLE_INPUT')
+- name: Remove extra ANSIBLE_INPUT rules (iptables)
+  shell: "iptables {{ item.replace('-A', '-D') }}"
+  loop: "{{ current_ansible_input_rules.stdout_lines | difference(expected_input_rule_lines) }}"
+  when: item is search('-A ANSIBLE_INPUT')
 
-    - name: Add missing ANSIBLE_INPUT rules
-      shell: "{{ ipt }} {{ item }}"
-      loop: "{{ expected_input_rule_lines | difference(rules_by_family[ipt].current) }}"
-      when: item is search('-A ANSIBLE_INPUT')
+- name: Add missing ANSIBLE_INPUT rules (iptables)
+  shell: "iptables {{ item }}"
+  loop: "{{ expected_input_rule_lines | difference(current_ansible_input_rules.stdout_lines) }}"
+  when: item is search('-A ANSIBLE_INPUT')
 
-- name: Sync ANSIBLE_OUTPUT rules (v4/v6)
-  vars:
-    rules_by_family:
-      iptables: { current: "{{ current_ansible_output_rules.stdout_lines }}" }
-      ip6tables: { current: "{{ current_ansible_output_v6_rules.stdout_lines }}" }
-  loop: "{{ iptables_cmds }}"
-  loop_control:
-    loop_var: ipt
-  block:
-    - name: Remove extra ANSIBLE_OUTPUT rules
-      shell: "{{ ipt }} {{ item.replace('-A', '-D') }}"
-      loop: "{{ rules_by_family[ipt].current | difference(expected_output_rule_lines) }}"
-      when: item is search('-A ANSIBLE_OUTPUT')
+- name: Remove extra ANSIBLE_INPUT rules (ip6tables)
+  shell: "ip6tables {{ item.replace('-A', '-D') }}"
+  loop: "{{ current_ansible_input_v6_rules.stdout_lines | difference(expected_input_rule_lines) }}"
+  when: item is search('-A ANSIBLE_INPUT')
 
-    - name: Add missing ANSIBLE_OUTPUT rules
-      shell: "{{ ipt }} {{ item }}"
-      loop: "{{ expected_output_rule_lines | difference(rules_by_family[ipt].current) }}"
-      when: item is search('-A ANSIBLE_OUTPUT')
+- name: Add missing ANSIBLE_INPUT rules (ip6tables)
+  shell: "ip6tables {{ item }}"
+  loop: "{{ expected_input_rule_lines | difference(current_ansible_input_v6_rules.stdout_lines) }}"
+  when: item is search('-A ANSIBLE_INPUT')
 
-- name: Prune unmanaged INPUT rules (v4/v6)
-  loop: "{{ iptables_cmds }}"
-  loop_control:
-    loop_var: ipt
+- name: Remove extra ANSIBLE_OUTPUT rules (iptables)
+  shell: "iptables {{ item.replace('-A', '-D') }}"
+  loop: "{{ current_ansible_output_rules.stdout_lines | difference(expected_output_rule_lines) }}"
+  when: item is search('-A ANSIBLE_OUTPUT')
+
+- name: Add missing ANSIBLE_OUTPUT rules (iptables)
+  shell: "iptables {{ item }}"
+  loop: "{{ expected_output_rule_lines | difference(current_ansible_output_rules.stdout_lines) }}"
+  when: item is search('-A ANSIBLE_OUTPUT')
+
+- name: Remove extra ANSIBLE_OUTPUT rules (ip6tables)
+  shell: "ip6tables {{ item.replace('-A', '-D') }}"
+  loop: "{{ current_ansible_output_v6_rules.stdout_lines | difference(expected_output_rule_lines) }}"
+  when: item is search('-A ANSIBLE_OUTPUT')
+
+- name: Add missing ANSIBLE_OUTPUT rules (ip6tables)
+  shell: "ip6tables {{ item }}"
+  loop: "{{ expected_output_rule_lines | difference(current_ansible_output_v6_rules.stdout_lines) }}"
+  when: item is search('-A ANSIBLE_OUTPUT')
+
+- name: Prune unmanaged INPUT rules (iptables)
   shell: |
-    {{ ipt }} -S INPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_INPUT' | grep '\-A INPUT' | while read rule; do
-      {{ ipt }} ${rule/-A/-D}
+    iptables -S INPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_INPUT' | grep '\-A INPUT' | while read rule; do
+      iptables ${rule/-A/-D}
     done
   changed_when: false
 
-- name: Prune unmanaged OUTPUT rules (v4/v6)
-  loop: "{{ iptables_cmds }}"
-  loop_control:
-    loop_var: ipt
+- name: Prune unmanaged INPUT rules (ip6tables)
   shell: |
-    {{ ipt }} -S OUTPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_OUTPUT' | grep '\-A OUTPUT' | while read rule; do
-      {{ ipt }} ${rule/-A/-D}
+    ip6tables -S INPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_INPUT' | grep '\-A INPUT' | while read rule; do
+      ip6tables ${rule/-A/-D}
     done
   changed_when: false
 
-- name: Set chain policies (v4/v6)
-  loop: "{{ iptables_cmds }}"
-  loop_control:
-    loop_var: ipt
-  block:
-    - name: Set INPUT policy to DROP
-      command: "{{ ipt }} -P INPUT DROP"
-      register: input_policy
-      changed_when: input_policy.rc == 0
+- name: Prune unmanaged OUTPUT rules (iptables)
+  shell: |
+    iptables -S OUTPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_OUTPUT' | grep '\-A OUTPUT' | while read rule; do
+      iptables ${rule/-A/-D}
+    done
+  changed_when: false
 
-    - name: Set FORWARD policy to DROP
-      command: "{{ ipt }} -P FORWARD DROP"
-      register: forward_policy
-      changed_when: forward_policy.rc == 0
+- name: Prune unmanaged OUTPUT rules (ip6tables)
+  shell: |
+    ip6tables -S OUTPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_OUTPUT' | grep '\-A OUTPUT' | while read rule; do
+      ip6tables ${rule/-A/-D}
+    done
+  changed_when: false
 
-    - name: Set OUTPUT policy to ACCEPT
-      command: "{{ ipt }} -P OUTPUT ACCEPT"
-      register: output_policy
-      changed_when: output_policy.rc == 0
+- name: Set INPUT policy to DROP (iptables)
+  command: iptables -P INPUT DROP
+  register: input_policy_v4
+  changed_when: input_policy_v4.rc == 0
+
+- name: Set FORWARD policy to DROP (iptables)
+  command: iptables -P FORWARD DROP
+  register: forward_policy_v4
+  changed_when: forward_policy_v4.rc == 0
+
+- name: Set OUTPUT policy to ACCEPT (iptables)
+  command: iptables -P OUTPUT ACCEPT
+  register: output_policy_v4
+  changed_when: output_policy_v4.rc == 0
+
+- name: Set INPUT policy to DROP (ip6tables)
+  command: ip6tables -P INPUT DROP
+  register: input_policy_v6
+  changed_when: input_policy_v6.rc == 0
+
+- name: Set FORWARD policy to DROP (ip6tables)
+  command: ip6tables -P FORWARD DROP
+  register: forward_policy_v6
+  changed_when: forward_policy_v6.rc == 0
+
+- name: Set OUTPUT policy to ACCEPT (ip6tables)
+  command: ip6tables -P OUTPUT ACCEPT
+  register: output_policy_v6
+  changed_when: output_policy_v6.rc == 0
