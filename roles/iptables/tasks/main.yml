@@ -163,23 +163,12 @@
 - name: Prune unmanaged INPUT rules (iptables)
   shell: |
     iptables -S INPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_INPUT' | grep '\-A INPUT' | while read rule; do
-      iptables ${rule/-A/-D}
+      iptables $(echo "$rule" | sed 's/^-A/-D/')
     done
+  args:
+    executable: /bin/bash
   changed_when: false
-
-- name: Prune unmanaged INPUT rules (ip6tables)
-  shell: |
-    ip6tables -S INPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_INPUT' | grep '\-A INPUT' | while read rule; do
-      ip6tables ${rule/-A/-D}
-    done
-  changed_when: false
-
-- name: Prune unmanaged OUTPUT rules (iptables)
-  shell: |
-    iptables -S OUTPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_OUTPUT' | grep '\-A OUTPUT' | while read rule; do
-      iptables ${rule/-A/-D}
-    done
-  changed_when: false
+  failed_when: false
 
 - name: Prune unmanaged INPUT rules (ip6tables)
   shell: |
@@ -189,6 +178,27 @@
   args:
     executable: /bin/bash
   changed_when: false
+  failed_when: false
+
+- name: Prune unmanaged OUTPUT rules (iptables)
+  shell: |
+    iptables -S OUTPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_OUTPUT' | grep '\-A OUTPUT' | while read rule; do
+      iptables $(echo "$rule" | sed 's/^-A/-D/')
+    done
+  args:
+    executable: /bin/bash
+  changed_when: false
+  failed_when: false
+
+- name: Prune unmanaged OUTPUT rules (ip6tables)
+  shell: |
+    ip6tables -S OUTPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_OUTPUT' | grep '\-A OUTPUT' | while read rule; do
+      ip6tables $(echo "$rule" | sed 's/^-A/-D/')
+    done
+  args:
+    executable: /bin/bash
+  changed_when: false
+  failed_when: false
 
 - name: Set INPUT policy to DROP (iptables)
   command: iptables -P INPUT DROP
