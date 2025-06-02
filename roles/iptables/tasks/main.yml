@@ -116,34 +116,49 @@
   when: item is search('-A ANSIBLE_INPUT')
 
 - name: Remove extra ANSIBLE_INPUT rules (ip6tables)
-  shell: "ip6tables {{ item.replace('-A', '-D') }}"
+  shell: "ip6tables {{ item | regex_replace('^-A', '-D') }}"
   loop: "{{ current_ansible_input_v6_rules.stdout_lines | difference(expected_input_rule_lines) }}"
-  when: item is search('-A ANSIBLE_INPUT')
-
+  loop_control:
+    loop_var: rule
+  when: rule is search('-A ANSIBLE_INPUT')
+  failed_when: false
+  register: remove_input_v6
 - name: Add missing ANSIBLE_INPUT rules (ip6tables)
-  shell: "ip6tables {{ item }}"
+  shell: "ip6tables {{ rule }}"
   loop: "{{ expected_input_rule_lines | difference(current_ansible_input_v6_rules.stdout_lines) }}"
-  when: item is search('-A ANSIBLE_INPUT')
+  loop_control:
+    loop_var: rule
+  when: rule is search('-A ANSIBLE_INPUT')
 
 - name: Remove extra ANSIBLE_OUTPUT rules (iptables)
-  shell: "iptables {{ item.replace('-A', '-D') }}"
+  shell: "iptables {{ rule | regex_replace('^-A', '-D') }}"
   loop: "{{ current_ansible_output_rules.stdout_lines | difference(expected_output_rule_lines) }}"
-  when: item is search('-A ANSIBLE_OUTPUT')
+  loop_control:
+    loop_var: rule
+  when: rule is search('-A ANSIBLE_OUTPUT')
+  failed_when: false
 
 - name: Add missing ANSIBLE_OUTPUT rules (iptables)
-  shell: "iptables {{ item }}"
+  shell: "iptables {{ rule }}"
   loop: "{{ expected_output_rule_lines | difference(current_ansible_output_rules.stdout_lines) }}"
-  when: item is search('-A ANSIBLE_OUTPUT')
+  loop_control:
+    loop_var: rule
+  when: rule is search('-A ANSIBLE_OUTPUT')
 
 - name: Remove extra ANSIBLE_OUTPUT rules (ip6tables)
-  shell: "ip6tables {{ item.replace('-A', '-D') }}"
+  shell: "ip6tables {{ rule | regex_replace('^-A', '-D') }}"
   loop: "{{ current_ansible_output_v6_rules.stdout_lines | difference(expected_output_rule_lines) }}"
-  when: item is search('-A ANSIBLE_OUTPUT')
+  loop_control:
+    loop_var: rule
+  when: rule is search('-A ANSIBLE_OUTPUT')
+  failed_when: false
 
 - name: Add missing ANSIBLE_OUTPUT rules (ip6tables)
-  shell: "ip6tables {{ item }}"
+  shell: "ip6tables {{ rule }}"
   loop: "{{ expected_output_rule_lines | difference(current_ansible_output_v6_rules.stdout_lines) }}"
-  when: item is search('-A ANSIBLE_OUTPUT')
+  loop_control:
+    loop_var: rule
+  when: rule is search('-A ANSIBLE_OUTPUT')
 
 - name: Prune unmanaged INPUT rules (iptables)
   shell: |
@@ -174,7 +189,6 @@
   args:
     executable: /bin/bash
   changed_when: false
-
 
 - name: Set INPUT policy to DROP (iptables)
   command: iptables -P INPUT DROP
