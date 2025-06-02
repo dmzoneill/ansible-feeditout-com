@@ -94,12 +94,16 @@
 - name: Manually build expected rule strings for INPUT
   set_fact:
     expected_input_rule_lines: >-
-      {{ ansible_input_rules | map('iptables_build_line', 'ANSIBLE_INPUT') | list }}
+      {{
+        ansible_input_rules | map('regex_replace', '', '') | map('to_nice_input_rule') | list
+      }}
 
 - name: Manually build expected rule strings for OUTPUT
   set_fact:
     expected_output_rule_lines: >-
-      {{ ansible_output_rules | map('iptables_build_line', 'ANSIBLE_OUTPUT') | list }}
+      {{
+        ansible_output_rules | map('regex_replace', '', '') | map('to_nice_output_rule') | list
+      }}
 
 - name: Remove extra ANSIBLE_INPUT rules (iptables)
   shell: "iptables {{ item.replace('-A', '-D') }}"
