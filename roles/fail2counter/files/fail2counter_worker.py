@@ -8,103 +8,67 @@ import time
 from datetime import datetime
 from email.message import EmailMessage
 from typing import List
-
+import socket
 import redis
-import requests
+import mysql.connector
 
-
-class AiError(Exception):
-    pass
-
-
-class OpenAIProvider:
-    def __init__(self) -> None:
-        self.api_key: str = str(os.environ.get("OPENAI_API_KEY"))
-        if not self.api_key:
-            raise ValueError("OPENAI_API_KEY is not set in the environment.")
-        self.endpoint: str = "https://api.openai.com/v1/chat/completions"
-        self.model: str = "gpt-4o-mini"
-
-    def improve_text(self, prompt: str, text: str) -> str:
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-
-        body = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": text},
-            ],
-            "temperature": 0.4,
-        }
-
-        response = requests.post(self.endpoint, json=body, headers=headers, timeout=120)
-        if response.status_code == 200:
-            return response.json()["choices"][0]["message"]["content"].strip()
-
-        raise AiError(
-            f"OpenAI API call failed: {response.status_code} - {response.text}"
-        )
+db = mysql.connector.connect(
+    host="localhost",
+    user="fail2counter",
+    password=os.environ.get("FAIL2COUNTER_PASSWORD"),
+    database="fail2counter"
+)
+cursor = db.cursor(dictionary=True)
 
 
 # CONFIG
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 REDIS_QUEUE = "banned_ips"
 SCAN_TIMEOUT = 600
 PRECHECK_TIMEOUT = 30
 MIN_EXPECTED_OUTPUT_BYTES = 500
 TMP_OUTPUT = "/tmp/nmap_result.txt"
 FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
-EXPLOITS_FILE = "/opt/fail2counter/exploits.txt"
-env = os.environ.copy()
-env["HOME"] = "/root"  # or "/tmp", or another valid directory
 logs: List[str] = []
 
+def insert_host(ip: str, hostname: str) -> int:
+    cursor.execute("SELECT id FROM hosts WHERE ip_address = %s", (ip,))
+    row = cursor.fetchone()
+    if row:
+        return row["id"]
+    cursor.execute("INSERT INTO hosts (ip_address, hostname) VALUES (%s, %s)", (ip, hostname))
+    db.commit()
+    return cursor.lastrowid
+
+def insert_scan(host_id: int, scan_type: str, start_time: datetime, latency: float, duration: float) -> int:
+    cursor.execute(
+        "INSERT INTO scans (host_id, scan_time, scan_type, latency_seconds, duration_seconds) VALUES (%s, %s, %s, %s, %s)",
+        (host_id, start_time, scan_type, latency, duration),
+    )
+    db.commit()
+    return cursor.lastrowid
+
+def insert_port(scan_id: int, port: int, protocol: str, state: str) -> int:
+    cursor.execute(
+        "INSERT INTO ports (scan_id, port_number, protocol, state) VALUES (%s, %s, %s, %s)",
+        (scan_id, port, protocol, state),
+    )
+    db.commit()
+    return cursor.lastrowid
+
+def insert_service(port_id: int, service_name: str, product: str = None, version: str = None, is_ssl=False, recognized=True):
+    cursor.execute(
+        "INSERT INTO services (port_id, service_name, product, version, is_ssl, recognized) VALUES (%s, %s, %s, %s, %s, %s)",
+        (port_id, service_name, product, version, is_ssl, recognized),
+    )
+    db.commit()
 
 def log(msg, level="INFO"):
     print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
 
-
 def capture(msg, level="INFO"):
     log(msg, level)
     logs.append(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
-
-
-def write_msf_rc(ip: str, modules: list[str]) -> str:
-    rc_path = f"/tmp/ip-{ip}.rc"
-    with open(rc_path, "w") as f:
-        for mod in modules:
-            f.write(f"use {mod}\n")
-            f.write(f"set RHOSTS {ip}\n")
-            f.write("set RPORT 80\n")  # You can adjust this dynamically later
-            f.write("run\n\n")
-    return rc_path
-
-
-def run_msf(ip: str, rc_path: str) -> str:
-    output_path = f"/tmp/ip-{ip}.msfout"
-    env = os.environ.copy()
-    env["HOME"] = "/root"  # or "/tmp" as needed
-
-    try:
-        result = subprocess.run(
-            ["/usr/bin/msfconsole", "-q", "-r", rc_path],
-            capture_output=True,
-            text=True,
-            env=env,
-            timeout=120,
-        )
-
-        with open(output_path, "w") as f:
-            f.write(result.stdout)
-
-        return result.stdout
-    except subprocess.TimeoutExpired:
-        return "[TIMEOUT] Metasploit run exceeded 2 minutes"
-    except Exception as e:
-        return f"[ERROR] Metasploit execution failed: {e}"
-
 
 def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
     msg = EmailMessage()
@@ -120,39 +84,6 @@ def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
     except Exception as e:
         capture(f"Failed to send email: {e}", level="ERROR")
 
-
-# Load exploit list
-capture(f"Loading Metasploit module list from {EXPLOITS_FILE}")
-if not os.path.exists(EXPLOITS_FILE):
-    capture(f"Exploit list not found: {EXPLOITS_FILE}", level="ERROR")
-    exit(1)
-
-with open(EXPLOITS_FILE, "r") as f:
-    exploits_list = f.read()
-
-capture(f"Loaded {len(exploits_list.splitlines())} Metasploit modules.")
-
-system_prompt = f"""You are a cybersecurity expert helping choose Metasploit modules for post-breach analysis.
-
-Below is a list of available Metasploit modules:
-
-{exploits_list}
-
-You will be given Nmap results for a scanned IP address. Using the list above,
-suggest which modules are likely applicable. Only return a valid metasploit
-rc file for each module identified from the list, no explanations. In the
-RC file, add known parameters like RHOSTS, RPORT, etc for the given exploit.
-
-e.g:
-
-use exploit/linux/ssh/ceragon_fibeair_known_privkey
-set RHOSTS 192.0.2.1
-set RPORT 22
-run
-
-"""
-
-REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 if not REDIS_PASSWORD:
     capture("REDIS_PASSWORD environment variable is not set", level="ERROR")
     exit(2)
@@ -164,8 +95,6 @@ try:
 except Exception as e:
     capture(f"Failed to connect to Redis: {e}", level="ERROR")
     exit(3)
-
-provider = OpenAIProvider()
 
 while True:
     try:
@@ -293,31 +222,45 @@ while True:
         logs = []
         continue
 
+    # Resolve hostname
+    try:
+        hostname = socket.gethostbyaddr(ip)[0]
+    except socket.herror:
+        hostname = None
+
+    host_id = insert_host(ip, hostname)
+
+    scan_type = "version"
+    scan_time = datetime.utcnow()
+
+    # Extract latency and duration
+    latency_match = re.search(r"Host is up \(([\d.]+)s latency\)", nmap_output)
+    duration_match = re.search(r"scanned in ([\d.]+) seconds", nmap_output)
+    latency = float(latency_match.group(1)) if latency_match else None
+    duration = float(duration_match.group(1)) if duration_match else None
+
+    scan_id = insert_scan(host_id, scan_type, scan_time, latency or 0.0, duration or 0.0)
+
+    # Parse open ports and service details
+    service_matches = re.finditer(
+        r"(?P<port>\d+)/tcp\s+open\s+(?P<service>[^\s]+)(?:\s+(?P<product>[^\s]+)(?:\s+(?P<version>[^\s]+))?)?",
+        nmap_output
+    )
+
+    for match in service_matches:
+        port = int(match.group("port"))
+        service_name = match.group("service")
+        product = match.group("product") or None
+        version = match.group("version") or None
+
+        is_ssl = "ssl" in service_name.lower() or port in (443, 465, 993, 995)
+        recognized = not service_name.endswith("?")
+
+        # Remove trailing '?' from service name if present
+        clean_service_name = service_name.rstrip("?")
+
+        port_id = insert_port(scan_id, port, "tcp", "open")
+        insert_service(port_id, clean_service_name, product, version, is_ssl, recognized)
+
     send_email(subject=f"[Nmap Report] Analysis for {ip}", body="\n".join(logs))
     logs = []
-    # continue
-
-    # try:
-    #     capture(f"Sending to OpenAI for analysis...")
-    #     result = provider.improve_text(system_prompt, f"Nmap output:\n{nmap_output}")
-    #     result = result.replace("```", "").strip()
-    #     capture(f"OpenAI response:\n{result}")
-
-    #     modules = [line.strip() for line in result.strip().splitlines() if line.strip().startswith("use exploit")]
-    #     if not modules:
-    #         capture(f"No valid Metasploit modules returned for {ip}", level="WARNING")
-    #         continue
-
-    #     rc_path = write_msf_rc(ip, modules)
-    #     capture(f"Written Metasploit RC file to {rc_path}")
-
-    #     msf_result = run_msf(ip, rc_path)
-    #     capture(f"Metasploit output for {ip}:\n{msf_result}")
-
-    #     send_email(
-    #         subject=f"[Fail2Ban Report] Analysis for {ip}",
-    #         body="\n".join(logs)
-    #     )
-
-    # except Exception as e:
-    #     log(f"OpenAI or Metasploit processing failed for {ip}: {e}", level="ERROR")

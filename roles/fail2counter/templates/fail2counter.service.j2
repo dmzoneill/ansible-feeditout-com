@@ -7,6 +7,7 @@ ExecStart=/opt/fail2counter/fail2counter_worker.py
 Restart=always
 Environment=OPENAI_API_KEY={{ OPENAI_API_KEY }}
 Environment=REDIS_PASSWORD={{ redis_password }}
+Environment=FAIL2COUNTER_PASSWORD={{ FAIL2COUNTER_PASSWORD }}
 
 [Install]
 WantedBy=multi-user.target
