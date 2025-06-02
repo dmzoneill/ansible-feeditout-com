@@ -5,94 +5,150 @@
     state: present
     update_cache: true
 
-- name: Process and sync iptables and ip6tables rules
-  vars:
-    rules_files:
-      - family: "ipv4"
-        rules_file: "{{ iptables_rules_file }}"
-        rules_path: "{{ iptables_rules_path }}"
-        restore_cmd: "iptables-restore"
-        register_var: "live_rules"
-      - family: "ipv6"
-        rules_file: "{{ ip6tables_rules_file }}"
-        rules_path: "{{ ip6tables_rules_path }}"
-        restore_cmd: "ip6tables-restore"
-        register_var: "live_rules_v6"
+- name: Define iptables command variants
+  set_fact:
+    iptables_cmds:
+      - iptables
+      - ip6tables
 
+- name: Ensure ANSIBLE_INPUT and ANSIBLE_OUTPUT chains exist (v4/v6)
+  loop: "{{ iptables_cmds }}"
+  loop_control:
+    loop_var: ipt
   block:
-    - name: Slurp live rules from the system
-      slurp:
-        src: "{{ rule.rules_path }}"
-      register: live_rules_result
-      ignore_errors: true
-      loop: "{{ rules_files }}"
-      loop_control:
-        loop_var: rule
-        label: "{{ rule.family }}"
+    - name: Ensure ANSIBLE_INPUT exists
+      command: "{{ ipt }} -N ANSIBLE_INPUT"
+      register: create_ansible_input
+      failed_when: false
+      changed_when: create_ansible_input.rc == 0
 
-    - name: Load reference rules from role
-      set_fact:
-        "reference_{{ rule.family }}_rules_content": "{{ lookup('file', role_path + '/files/' + rule.rules_file) }}"
-      loop: "{{ rules_files }}"
-      loop_control:
-        loop_var: rule
-        label: "{{ rule.family }}"
+    - name: Ensure ANSIBLE_OUTPUT exists
+      command: "{{ ipt }} -N ANSIBLE_OUTPUT"
+      register: create_ansible_output
+      failed_when: false
+      changed_when: create_ansible_output.rc == 0
 
-    - name: Clean and compare rules
-      set_fact:
-        "live_{{ rule.family }}_rules_cleaned": >-
-          {{
-            (live_rules_result.results[loop.index0].content | default('Cg==') | b64decode).split('\n')
-            | reject("match", "^#")
-            | reject("match", "^$")
-            | reject("search", "^:f2b-")
-            | reject("search", "^-A f2b-")
-            | reject("search", "^-A INPUT.*f2b-")
-            | list | join('\n')
-          }}
-        "reference_{{ rule.family }}_rules_cleaned": >-
-          {{
-            vars['reference_' + rule.family + '_rules_content'].split('\n')
-            | reject("match", "^#")
-            | reject("match", "^$")
-            | reject("search", "^:f2b-")
-            | reject("search", "^-A f2b-")
-            | reject("search", "^-A INPUT.*f2b-")
-            | list | join('\n')
-          }}
-      loop: "{{ rules_files }}"
-      loop_control:
-        loop_var: rule
-        label: "{{ rule.family }}"
-
-    - name: Set rules differ flags
-      set_fact:
-        "rules_{{ rule.family }}_differ": >-
-          {{ vars['live_' + rule.family + '_rules_cleaned'] !=
-             vars['reference_' + rule.family + '_rules_cleaned'] }}
-      loop: "{{ rules_files }}"
-      loop_control:
-        loop_var: rule
-        label: "{{ rule.family }}"
-
-    - name: Copy new rules file if they differ
-      copy:
-        src: "{{ rule.rules_file }}"
-        dest: "{{ rule.rules_path }}"
-        owner: root
-        group: root
-        mode: '0644'
-      when: vars['rules_' + rule.family + '_differ']
-      loop: "{{ rules_files }}"
-      loop_control:
-        loop_var: rule
-        label: "{{ rule.family }}"
-
-    - name: Restore rules from saved file
-      shell: "{{ rule.restore_cmd }} < {{ rule.rules_path }}"
-      when: vars['rules_' + rule.family + '_differ']
+    - name: Ensure INPUT jumps to ANSIBLE_INPUT
+      command: "{{ ipt }} -C INPUT -j ANSIBLE_INPUT"
+      register: check_jump_input
+      failed_when: false
       changed_when: false
-      loop: "{{ rules_files }}"
-      loop_control:
-        loop_var: rule
-        label: "{{ rule.family }}"
+
+    - name: Insert jump to ANSIBLE_INPUT if missing
+      command: "{{ ipt }} -I INPUT 1 -j ANSIBLE_INPUT"
+      when: check_jump_input.rc != 0
+
+    - name: Ensure OUTPUT jumps to ANSIBLE_OUTPUT
+      command: "{{ ipt }} -C OUTPUT -j ANSIBLE_OUTPUT"
+      register: check_jump_output
+      failed_when: false
+      changed_when: false
+
+    - name: Insert jump to ANSIBLE_OUTPUT if missing
+      command: "{{ ipt }} -I OUTPUT 1 -j ANSIBLE_OUTPUT"
+      when: check_jump_output.rc != 0
+
+- name: Get current ANSIBLE_INPUT rules
+  command: iptables -S ANSIBLE_INPUT
+  register: current_ansible_input_rules
+
+- name: Get current ANSIBLE_OUTPUT rules
+  command: iptables -S ANSIBLE_OUTPUT
+  register: current_ansible_output_rules
+
+- name: Get current ANSIBLE_INPUT rules (IPv6)
+  command: ip6tables -S ANSIBLE_INPUT
+  register: current_ansible_input_v6_rules
+
+- name: Get current ANSIBLE_OUTPUT rules (IPv6)
+  command: ip6tables -S ANSIBLE_OUTPUT
+  register: current_ansible_output_v6_rules
+
+- name: Build expected ANSIBLE_INPUT rule strings
+  set_fact:
+    expected_input_rule_lines: >-
+      {{
+        ansible_input_rules | map('community.general.iptables_rule_line', 'ANSIBLE_INPUT') | list
+      }}
+    expected_output_rule_lines: >-
+      {{
+        ansible_output_rules | map('community.general.iptables_rule_line', 'ANSIBLE_OUTPUT') | list
+      }}
+
+- name: Sync ANSIBLE_INPUT rules (v4/v6)
+  vars:
+    rules_by_family:
+      iptables: { current: "{{ current_ansible_input_rules.stdout_lines }}" }
+      ip6tables: { current: "{{ current_ansible_input_v6_rules.stdout_lines }}" }
+  loop: "{{ iptables_cmds }}"
+  loop_control:
+    loop_var: ipt
+  block:
+    - name: Remove extra ANSIBLE_INPUT rules
+      shell: "{{ ipt }} {{ item.replace('-A', '-D') }}"
+      loop: "{{ rules_by_family[ipt].current | difference(expected_input_rule_lines) }}"
+      when: item is search('-A ANSIBLE_INPUT')
+
+    - name: Add missing ANSIBLE_INPUT rules
+      shell: "{{ ipt }} {{ item }}"
+      loop: "{{ expected_input_rule_lines | difference(rules_by_family[ipt].current) }}"
+      when: item is search('-A ANSIBLE_INPUT')
+
+- name: Sync ANSIBLE_OUTPUT rules (v4/v6)
+  vars:
+    rules_by_family:
+      iptables: { current: "{{ current_ansible_output_rules.stdout_lines }}" }
+      ip6tables: { current: "{{ current_ansible_output_v6_rules.stdout_lines }}" }
+  loop: "{{ iptables_cmds }}"
+  loop_control:
+    loop_var: ipt
+  block:
+    - name: Remove extra ANSIBLE_OUTPUT rules
+      shell: "{{ ipt }} {{ item.replace('-A', '-D') }}"
+      loop: "{{ rules_by_family[ipt].current | difference(expected_output_rule_lines) }}"
+      when: item is search('-A ANSIBLE_OUTPUT')
+
+    - name: Add missing ANSIBLE_OUTPUT rules
+      shell: "{{ ipt }} {{ item }}"
+      loop: "{{ expected_output_rule_lines | difference(rules_by_family[ipt].current) }}"
+      when: item is search('-A ANSIBLE_OUTPUT')
+
+- name: Prune unmanaged INPUT rules (v4/v6)
+  loop: "{{ iptables_cmds }}"
+  loop_control:
+    loop_var: ipt
+  shell: |
+    {{ ipt }} -S INPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_INPUT' | grep '\-A INPUT' | while read rule; do
+      {{ ipt }} ${rule/-A/-D}
+    done
+  changed_when: false
+
+- name: Prune unmanaged OUTPUT rules (v4/v6)
+  loop: "{{ iptables_cmds }}"
+  loop_control:
+    loop_var: ipt
+  shell: |
+    {{ ipt }} -S OUTPUT | grep -v 'DOCKER\|f2b\|ANSIBLE_OUTPUT' | grep '\-A OUTPUT' | while read rule; do
+      {{ ipt }} ${rule/-A/-D}
+    done
+  changed_when: false
+
+- name: Set chain policies (v4/v6)
+  loop: "{{ iptables_cmds }}"
+  loop_control:
+    loop_var: ipt
+  block:
+    - name: Set INPUT policy to DROP
+      command: "{{ ipt }} -P INPUT DROP"
+      register: input_policy
+      changed_when: input_policy.rc == 0
+
+    - name: Set FORWARD policy to DROP
+      command: "{{ ipt }} -P FORWARD DROP"
+      register: forward_policy
+      changed_when: forward_policy.rc == 0
+
+    - name: Set OUTPUT policy to ACCEPT
+      command: "{{ ipt }} -P OUTPUT ACCEPT"
+      register: output_policy
+      changed_when: output_policy.rc == 0
