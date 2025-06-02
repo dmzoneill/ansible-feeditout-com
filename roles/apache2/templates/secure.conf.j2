@@ -51,5 +51,7 @@
   SSLCertificateKeyFile /etc/letsencrypt/live/{{ vhost.cert_domain }}/privkey.pem
   SSLCertificateChainFile /etc/letsencrypt/live/{{ vhost.cert_domain }}/fullchain.pem
 
-  Header always set Content-Security-Policy "upgrade-insecure-requests"
+  <Location />
+    Header always set Content-Security-Policy "upgrade-insecure-requests"
+  </Location>
 </VirtualHost>
