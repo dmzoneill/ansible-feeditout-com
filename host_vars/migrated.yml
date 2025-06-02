@@ -275,10 +275,6 @@ domains:
       - name: pma.fio.ie
         document_root: phpmyadmin
         enabled: true
-      - name: cockpit.fio.ie
-        document_root: /var/www/html
-        enabled: true
-        custom_config: true
     loglevel: debug
     enabled: true
 
@@ -318,10 +314,6 @@ domains:
       - name: pma.feeditout.com
         document_root: phpmyadmin
         enabled: true
-      - name: cockpit.feeditout.com
-        document_root: /var/www/html
-        enabled: true
-        custom_config: true
     loglevel: debug
     enabled: true
 
