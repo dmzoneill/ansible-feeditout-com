@@ -1,6 +1,6 @@
 [Unit]
-Description=Fail2Ban Redis IP scanner and AI recommender
-After=network.target redis.service
+Description=Fail2Counter IP scanner
+After=network.target webdis.service
 
 [Service]
 ExecStart=/opt/fail2counter/fail2counter_worker.py
