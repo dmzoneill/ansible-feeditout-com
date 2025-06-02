@@ -288,6 +288,10 @@ domains:
       - name: www.feeditout.xyz
         document_root: feeditout.xyz
         enabled: true
+      - name: cockpit.feeditout.com
+        document_root: /var/www/html
+        enabled: true
+        custom_config: true
     loglevel: debug
     enabled: true
 

@@ -1,0 +1,12 @@
+  # WebSocket support for Cockpit
+  <Location /cockpit/socket>
+    ProxyPass ws://localhost:9090/cockpit/socket
+    ProxyPassReverse ws://localhost:9090/cockpit/socket
+  </Location>
+
+  # Main proxy to Cockpit backend
+  ProxyPreserveHost On
+  ProxyRequests Off
+  AllowEncodedSlashes NoDecode
+  ProxyPass / http://localhost:9090/
+  ProxyPassReverse / http://localhost:9090/
