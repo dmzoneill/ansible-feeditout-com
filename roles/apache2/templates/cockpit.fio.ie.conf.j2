@@ -2,15 +2,16 @@
   ProxyRequests Off
   AllowEncodedSlashes NoDecode
 
-  # Ensure cockpit WebSocket endpoint is accepted
+  # 🧠 This block is required for WebSocket support
   <Location /cockpit/socket>
-    ProxyPass ws://localhost:9090/cockpit/socket
-    ProxyPassReverse ws://localhost:9090/cockpit/socket
+    ProxyPass "ws://localhost:9090/cockpit/socket"
+    ProxyPassReverse "ws://localhost:9090/cockpit/socket"
     Require all granted
   </Location>
 
-  <Location />
-    ProxyPass http://localhost:9090/
-    ProxyPassReverse http://localhost:9090/
+  # All other Cockpit requests
+  <Location /cockpit/>
+    ProxyPass "http://localhost:9090/cockpit/"
+    ProxyPassReverse "http://localhost:9090/cockpit/"
     Require all granted
   </Location>
