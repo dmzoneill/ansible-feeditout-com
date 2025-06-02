@@ -47,13 +47,6 @@
         "IsActive": "true"
     },
     {
-        "Name": "cockpit",
-        "Type": "CNAME",
-        "Address": "feeditout.com.",
-        "TTL": "1799",
-        "IsActive": "true"
-    },
-    {
         "Name": "@",
         "Type": "MX",
         "MXPref": "10",
