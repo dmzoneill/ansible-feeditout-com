@@ -17,6 +17,14 @@ ipv6_dns1: "2606:4700:4700::1111"
 ipv6_dns2: "2001:4860:4860::8888"
 loopback_ip: "127.0.1.1"
 
+# cockpit
+cockpit_packages:
+  - cockpit
+  - cockpit-system
+  - cockpit-networkmanager
+  - cockpit-storaged
+cockpit_listen_port: 9090
+
 # ansible_pull
 is_ansible_pull_host: true
 ansible_pull_repo_url: "https://github.com/dmzoneill/ansible-feeditout-com"
@@ -244,6 +252,12 @@ required_apache_modules:
     package: libapache2-mod-geoip
   - name: fcgid
     package: libapache2-mod-fcgid
+  - name: proxy
+    package: apache2
+  - name: proxy_http
+    package: apache2
+  - name: proxy_wstunnel
+    package: apache2
 
 domains:
   - domain: fio.ie
@@ -261,6 +275,10 @@ domains:
       - name: pma.fio.ie
         document_root: phpmyadmin
         enabled: true
+      - name: cockpit.fio.ie
+        document_root: n.a
+        enabled: true
+        custom_config: true
     loglevel: debug
     enabled: true
 
@@ -309,7 +327,7 @@ domains:
       - name: www.ecu-emr.com
         document_root: ecu-emr.com
         enabled: true
-    custom_directory_perms: true
+    custom_config: true
     loglevel: debug
     enabled: true
 

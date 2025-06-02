@@ -55,6 +55,7 @@
         - php_fpm
         - postfix
         - apache2
+        - cockpit
         - services
         - chuckbot
         - rclone

@@ -1,0 +1,17 @@
+---
+- name: Install Cockpit packages
+  ansible.builtin.package:
+    name: "{{ cockpit_packages }}"
+    state: present
+
+- name: Ensure Cockpit service is enabled and started
+  ansible.builtin.service:
+    name: cockpit
+    enabled: true
+    state: started
+
+- name: Enable cockpit.socket (Debian/Ubuntu)
+  ansible.builtin.systemd:
+    name: cockpit.socket
+    enabled: true
+    state: started

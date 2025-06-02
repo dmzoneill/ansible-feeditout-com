@@ -48,7 +48,7 @@
       document_root: "{{ vhost.document_root }}"
       loglevel: "{{ parent_domain.loglevel | default('warn') }}"
       role_user: "{{ user | default('www-data') }}"
-      custom_directory_perms: "{{ parent_domain.custom_directory_perms | default(false) }}"
+      custom_config: "{{ vhost.custom_config | default(parent_domain.custom_config | default(false)) }}"
       enabled: "{{ vhost.enabled | default(false) }}"
       secure: true
       cert_domain: "{{ parent_domain.domain }}"
