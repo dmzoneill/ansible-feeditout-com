@@ -51,7 +51,9 @@
   SSLCertificateKeyFile /etc/letsencrypt/live/{{ vhost.cert_domain }}/privkey.pem
   SSLCertificateChainFile /etc/letsencrypt/live/{{ vhost.cert_domain }}/fullchain.pem
 
+  {% if not alias_exists and not domain_exists %}
   <Location />
     Header always set Content-Security-Policy "upgrade-insecure-requests"
   </Location>
+  {% endif %}
 </VirtualHost>
