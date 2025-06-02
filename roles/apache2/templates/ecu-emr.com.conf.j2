@@ -1,10 +1,10 @@
-  <Directory "/home/{{ user }}/www/{{ domain }}">
+  <Directory "/home/{{ user }}/www/{{ vhost.domain_alias | default(vhost.domain) }}">
       AllowOverride FileInfo
       Require all granted
   </Directory>
-  <Directory "/home/{{ user }}/www/{{ domain }}/sites">
+  <Directory "/home/{{ user }}/www/{{ vhost.domain_alias | default(vhost.domain) }}/sites">
       AllowOverride None
   </Directory>
-  <Directory "/home/{{ user }}/www/{{ domain }}/sites/*/documents">
+  <Directory "/home/{{ user }}/www/{{ vhost.domain_alias | default(vhost.domain) }}/sites/*/documents">
       Require all denied
   </Directory>
