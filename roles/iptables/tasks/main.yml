@@ -91,28 +91,18 @@
   command: ip6tables -S ANSIBLE_OUTPUT
   register: current_ansible_output_v6_rules
 
-- name: Manually build expected rule strings for INPUT
+- name: Build expected INPUT rules
   set_fact:
     expected_input_rule_lines: >-
       {{
-        ansible_input_rules
-        | map('dict2items')
-        | map('map', 'join', ' ')
-        | map('join', ' ')
-        | map('regex_replace', '^', '-A ANSIBLE_INPUT ')
-        | list
+        ansible_input_rules | map('iptables_build_rule', 'ANSIBLE_INPUT') | list
       }}
 
-- name: Manually build expected rule strings for OUTPUT
+- name: Build expected OUTPUT rules
   set_fact:
     expected_output_rule_lines: >-
       {{
-        ansible_output_rules
-        | map('dict2items')
-        | map('map', 'join', ' ')
-        | map('join', ' ')
-        | map('regex_replace', '^', '-A ANSIBLE_OUTPUT ')
-        | list
+        ansible_output_rules | map('iptables_build_rule', 'ANSIBLE_OUTPUT') | list
       }}
 
 - name: Remove extra ANSIBLE_INPUT rules (iptables)
