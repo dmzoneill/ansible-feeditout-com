@@ -600,3 +600,9 @@ ansible_output_rules:
     dport: 6380
     state: NEW
     jump: ACCEPT
+
+  - jump: LOG
+    log_prefix: "IPT-OUTPUT: "
+    log_level: 4
+    conntrack: true
+    state: NEW

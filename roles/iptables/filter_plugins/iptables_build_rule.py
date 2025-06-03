@@ -5,8 +5,12 @@ def iptables_build_rule(rule, chain):
     if proto:
         parts.append(f"-p {proto}")
 
-    if "match" in rule:
+    if rule.get("match"):
         parts.append(f"-m {rule['match']}")
+
+    # Add shorthand for conntrack module if requested
+    if rule.get("conntrack"):
+        parts.append("-m conntrack")
 
     if "state" in rule:
         parts.append(f"-m state --state {rule['state']}")
@@ -26,10 +30,18 @@ def iptables_build_rule(rule, chain):
     if "dport" in rule:
         parts.append(f"--dport {rule['dport']}")
 
-    if "jump" in rule:
-        parts.append(f"-j {rule['jump']}")
+    jump = rule.get("jump")
+    if jump == "LOG":
+        parts.append("-j LOG")
+        if "log_prefix" in rule:
+            parts.append(f"--log-prefix \"{rule['log_prefix']}\"")
+        if "log_level" in rule:
+            parts.append(f"--log-level {rule['log_level']}")
+    elif jump:
+        parts.append(f"-j {jump}")
 
     return " ".join(parts)
+
 
 class FilterModule(object):
     def filters(self):
