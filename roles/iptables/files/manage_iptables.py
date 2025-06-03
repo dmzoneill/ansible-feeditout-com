@@ -81,10 +81,30 @@ def sync_ansible_chains(tool, rules_dict):
         existing = set(get_current_rules(tool, chain))
         desired = set(f"-A {chain} {build_rule(r, chain)}" for r in desired_rules)
 
-        for rule in desired - existing:
+        print(f"\n=== Syncing {tool.upper()} {chain} ===")
+        print("[DEBUG] Existing rules:")
+        for rule in sorted(existing):
+            print(f"  {rule}")
+
+        print("[DEBUG] Desired rules:")
+        for rule in sorted(desired):
+            print(f"  {rule}")
+
+        to_add = desired - existing
+        to_remove = existing - desired
+
+        print("[DEBUG] Rules to add:")
+        for rule in sorted(to_add):
+            print(f"  {rule}")
+
+        print("[DEBUG] Rules to remove:")
+        for rule in sorted(to_remove):
+            print(f"  {rule}")
+
+        for rule in to_add:
             print(f"Adding rule: {rule}")
             run(f"/sbin/{tool} {rule}")
-        for rule in existing - desired:
+        for rule in to_remove:
             original = rule.replace("-A", "-D", 1)
             print(f"Removing rule: {original}")
             run(f"/sbin/{tool} {original}")
