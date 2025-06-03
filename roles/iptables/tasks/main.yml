@@ -72,7 +72,11 @@
 
 - name: Show which iptables rules would be pruned (normalized match)
   vars:
-    expected_normalized: "{{ combo.expected_rules | map('normalize_iptables_rule') | list }}"
+    expected_normalized: >-
+      {{ combo.expected_rules
+         | map('regex_replace', ' --log-level [0-9]+', '')
+         | map('regex_replace', ' -p all', '')
+         | list }}
   shell: |
     echo "=== Checking {{ combo.table }} {{ combo.chain }} ==="
     /sbin/{{ combo.table }} -S {{ combo.chain }} | grep "^-A" | while read rule; do
