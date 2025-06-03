@@ -76,20 +76,21 @@ def get_current_rules(tool, chain):
             rules.append(line.strip())
     return rules
 
-def normalize_rule(rule):
-    return " ".join(sorted(rule.strip().split()))
+def clean_rule(rule):
+    return " ".join(rule.strip().split())
 
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
-        existing = set(normalize_rule(r) for r in get_current_rules(tool, chain))
-        desired = set(normalize_rule(build_rule(r, chain)) for r in desired_rules)
+        existing = set(clean_rule(r) for r in get_current_rules(tool, chain))
+        desired = set(clean_rule(build_rule(r, chain)) for r in desired_rules)
 
         for rule in desired - existing:
+            print(f"Adding rule: {rule}")
             run(f"/sbin/{tool} {rule}")
         for rule in existing - desired:
-            original = " ".join(rule.split())
-            del_rule = original.replace("-A", "-D", 1)
-            run(f"/sbin/{tool} {del_rule}")
+            original = rule.replace("-A", "-D", 1)
+            print(f"Removing rule: {original}")
+            run(f"/sbin/{tool} {original}")
 
 def apply_rules(tool, rules_dict):
     for chain in rules_dict:
