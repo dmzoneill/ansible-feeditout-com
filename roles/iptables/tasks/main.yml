@@ -207,6 +207,14 @@
   changed_when: false
   failed_when: false
 
+- name: Ensure logging rule exists in ANSIBLE_OUTPUT
+  shell: 'iptables -C ANSIBLE_OUTPUT -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4 || iptables -I ANSIBLE_OUTPUT 1 -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  failed_when: false
+
+
 - name: Set INPUT policy to DROP (iptables)
   command: iptables -P INPUT {{ ansible_policy_ipv4_input | default('DROP') }}
   register: input_policy_v4
@@ -237,10 +245,28 @@
   register: output_policy_v6
   changed_when: output_policy_v6.rc == 0
 
-- name: Save iptables rules
-  shell: iptables-save > /etc/iptables/rules.v4
+- name: Get current iptables rules (IPv4)
+  command: iptables-save
+  register: iptables_v4_rules
+
+- name: Save iptables rules to /etc/iptables/rules.v4 if changed
+  copy:
+    content: "{{ iptables_v4_rules.stdout }}"
+    dest: /etc/iptables/rules.v4
+    owner: root
+    group: root
+    mode: '0644'
   when: create_ansible_input_v4.changed or create_ansible_output_v4.changed or input_policy_v4.changed or forward_policy_v4.changed or output_policy_v4.changed
 
-- name: Save ip6tables rules
-  shell: ip6tables-save > /etc/iptables/rules.v6
+- name: Get current ip6tables rules (IPv6)
+  command: ip6tables-save
+  register: iptables_v6_rules
+
+- name: Save ip6tables rules to /etc/iptables/rules.v6 if changed
+  copy:
+    content: "{{ iptables_v6_rules.stdout }}"
+    dest: /etc/iptables/rules.v6
+    owner: root
+    group: root
+    mode: '0644'
   when: create_ansible_input_v6.changed or create_ansible_output_v6.changed or input_policy_v6.changed or forward_policy_v6.changed or output_policy_v6.changed
