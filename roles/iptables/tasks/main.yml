@@ -74,8 +74,8 @@
   shell: |
     echo "=== Checking {{ table }} {{ chain }} ==="
     /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
-      rule_str=$(echo "$rule" | sed 's/ --log-level [0-9]*//g')
-      expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/ --log-level [0-9]*//g')"
+      rule_str=$(echo "$rule")
+      expected="{{ expected_rules | join('\n') }}"
       echo "Rule: $rule_str"
       if echo "$expected" | grep -Fxq "$rule_str"; then
         echo " → KEPT (matches expected)"
