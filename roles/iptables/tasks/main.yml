@@ -19,3 +19,4 @@
 
 - name: Execute iptables management script
   command: /usr/bin/python3 /usr/local/bin/manage_iptables.py
+  changed_when: false
