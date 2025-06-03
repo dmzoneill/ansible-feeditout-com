@@ -5,30 +5,38 @@ def iptables_build_rule(rule, chain):
     if proto:
         parts.append(f"-p {proto}")
 
-    # Keep track of modules to avoid duplicates
-    modules = set()
-
-    # conntrack/state modules
-    if "ctstate" in rule:
-        modules.add("conntrack")
-        parts.append(f"--ctstate {rule['ctstate']}")
-
-    if "state" in rule:
-        modules.add("state")
-        parts.append(f"--state {rule['state']}")
-
-    # Explicit match module
-    if "match" in rule:
-        modules.add(rule["match"])
-
-    for mod in sorted(modules):
-        parts.append(f"-m {mod}")
-
     # Interfaces
     if "in_interface" in rule:
         parts.append(f"-i {rule['in_interface']}")
     if "out_interface" in rule:
         parts.append(f"-o {rule['out_interface']}")
+
+    # Track modules added
+    modules = []
+
+    # Match modules and their required arguments (correct ordering!)
+    if "ctstate" in rule:
+        modules.append("conntrack")
+
+    if "state" in rule:
+        modules.append("state")
+
+    if "match" in rule:
+        modules.append(rule["match"])
+
+    # Deduplicate while preserving order
+    seen = set()
+    for mod in modules:
+        if mod not in seen:
+            parts.append(f"-m {mod}")
+            seen.add(mod)
+
+    # Now add the module options (must come after -m)
+    if "ctstate" in rule:
+        parts.append(f"--ctstate {rule['ctstate']}")
+
+    if "state" in rule:
+        parts.append(f"--state {rule['state']}")
 
     # Ports
     if "sport" in rule:
@@ -48,10 +56,3 @@ def iptables_build_rule(rule, chain):
         parts.append(f"-j {jump}")
 
     return " ".join(parts)
-
-
-class FilterModule(object):
-    def filters(self):
-        return {
-            'iptables_build_rule': iptables_build_rule
-        }
