@@ -48,14 +48,16 @@
       }}
 
 - name: Check if each expected rule exists (IPv4)
-  shell: "/sbin/{{ item[1] }} {{ item[0] | regex_replace('^-A', '-C') }}"
+  shell: |
+    /sbin/{{ item[1] }} {{ item[0] | regex_replace('^-A', '-C') }}
   loop: "{{ all_expected_rules }}"
   register: rule_check
   changed_when: false
   failed_when: false
 
 - name: Add missing expected rules (IPv4)
-  shell: "/sbin/{{ item.item[1] }} {{ item.item[0] }}"
+  shell: |
+    /sbin/{{ item.item[1] }} {{ item.item[0] }}
   when: item.rc != 0
   loop: "{{ rule_check.results }}"
   loop_control:
@@ -63,14 +65,14 @@
 
 - name: Prune unmanaged rules (IPv4/IPv6)
   shell: |
-    /sbin/{{ table }} -S {{ direction }} \
-      | grep "^-A {{ direction }}" \
-      | grep -v '{{ chain }}' \
-      | grep -v 'DOCKER' \
-      | grep -v 'f2b' \
-      | while read rule; do
-          /sbin/{{ table }} $(echo "$rule" | sed 's/^-A/-D/') || true
-        done
+    /sbin/{{ table }} -S {{ direction }} | \
+    grep "^-A {{ direction }}" | \
+    grep -v '{{ chain }}' | \
+    grep -v 'DOCKER' | \
+    grep -v 'f2b' | \
+    while read rule; do
+      /sbin/{{ table }} $(echo "$rule" | sed 's/^-A/-D/') || true
+    done
   loop: "{{ iptables_cmds | product([['INPUT', 'ANSIBLE_INPUT'], ['OUTPUT', 'ANSIBLE_OUTPUT']]) | list }}"
   loop_control:
     loop_var: combo
