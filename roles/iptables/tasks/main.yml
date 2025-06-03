@@ -135,14 +135,14 @@
   changed_when: true
   failed_when: false
 
-- name: Ensure logging rule exists in ANSIBLE_OUTPUT (IPv4)
-  shell: |
-    /sbin/iptables -C ANSIBLE_OUTPUT -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4 || \
-    /sbin/iptables -I ANSIBLE_OUTPUT 1 -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4
-  args:
-    executable: /bin/bash
-  changed_when: false
-  failed_when: false
+# - name: Ensure logging rule exists in ANSIBLE_OUTPUT (IPv4)
+#   shell: |
+#     /sbin/iptables -C ANSIBLE_OUTPUT -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4 || \
+#     /sbin/iptables -I ANSIBLE_OUTPUT 1 -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4
+#   args:
+#     executable: /bin/bash
+#   changed_when: false
+#   failed_when: false
 
 - name: Build policy list from host vars
   set_fact:
