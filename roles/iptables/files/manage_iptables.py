@@ -1,131 +1,138 @@
+#!/usr/bin/env python3
+
 import subprocess
 import yaml
 import os
 import sys
-import logging
 import socket
-
-logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(message)s")
-log = logging.getLogger("iptables-update")
-
-RULES_FILE = "/etc/ansible/iptables.yml"
+import urllib.request
 
 
-def run(cmd, check=True):
-    log.debug(f"Running: {cmd}")
-    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    if check and result.returncode != 0:
-        log.error(f"Command failed: {cmd}\n{result.stderr}")
-        raise subprocess.CalledProcessError(result.returncode, cmd)
-    return result.stdout.strip()
+def run(cmd, check=False):
+    print(f"[+] {cmd}")
+    return subprocess.run(cmd, shell=True, text=True, capture_output=True, check=check)
 
 
-def ensure_custom_chain(tool, chain):
-    run(f"/sbin/{tool} -N {chain} || true", check=False)
+def chain_exists(tool, chain):
+    result = run(f"/sbin/{tool} -L {chain} -n", check=False)
+    return result.returncode == 0
 
 
-def ensure_jump_from_main_chain(tool, main_chain, custom_chain):
-    existing = run(f"/sbin/{tool} -S {main_chain} || true", check=False)
-    if f"-A {main_chain} -j {custom_chain}" not in existing:
-        run(f"/sbin/{tool} -I {main_chain} 1 -j {custom_chain}")
+def ensure_chain(tool, chain):
+    if not chain_exists(tool, chain):
+        run(f"/sbin/{tool} -N {chain}")
 
 
-def normalize_rule(rule):
-    parts = [f"-A"]
-    proto = rule.get("proto")
+def ensure_jump(tool, parent_chain, target_chain):
+    check = run(f"/sbin/{tool} -C {parent_chain} -j {target_chain}")
+    if check.returncode != 0:
+        run(f"/sbin/{tool} -I {parent_chain} 1 -j {target_chain}")
+
+
+def build_rule(rule_dict, chain):
+    parts = [f"-A {chain}"]
+
+    proto = rule_dict.get("proto")
     if proto:
-        parts.extend(["-p", proto])
+        parts.append(f"-p {proto}")
         if proto in ("tcp", "udp"):
-            parts.extend(["-m", proto])
+            parts.append(f"-m {proto}")
 
-    if "in_interface" in rule:
-        parts.extend(["-i", rule["in_interface"]])
-    if "out_interface" in rule:
-        parts.extend(["-o", rule["out_interface"]])
+    if "in_interface" in rule_dict:
+        parts.append(f"-i {rule_dict['in_interface']}")
+    if "out_interface" in rule_dict:
+        parts.append(f"-o {rule_dict['out_interface']}")
 
-    if "match" in rule:
-        parts.extend(["-m", rule["match"]])
-    if "ctstate" in rule:
-        parts.extend(["-m", "conntrack", "--ctstate", rule["ctstate"]])
-    if "state" in rule:
-        parts.extend(["-m", "state", "--state", rule["state"]])
-    if "sport" in rule:
-        parts.extend(["--sport", str(rule["sport"])])
-    if "dport" in rule:
-        parts.extend(["--dport", str(rule["dport"])])
+    match = rule_dict.get("match")
+    if match:
+        parts.append(f"-m {match}")
+    if "ctstate" in rule_dict:
+        parts.append("-m conntrack")
+        parts.append(f"--ctstate {rule_dict['ctstate']}")
+    if "state" in rule_dict:
+        parts.append("-m state")
+        parts.append(f"--state {rule_dict['state']}")
 
-    jump = rule.get("jump")
+    if "sport" in rule_dict:
+        parts.append(f"--sport {rule_dict['sport']}")
+    if "dport" in rule_dict:
+        parts.append(f"--dport {rule_dict['dport']}")
+
+    jump = rule_dict.get("jump")
     if jump == "LOG":
-        parts.extend(["-j", "LOG"])
-        if "log_prefix" in rule:
-            parts.extend(["--log-prefix", f'\"{rule["log_prefix"]}\"'])
-        if "log_level" in rule:
-            parts.extend(["--log-level", str(rule["log_level"])])
+        parts.append("-j LOG")
+        if "log_prefix" in rule_dict:
+            parts.append(f'--log-prefix "{rule_dict["log_prefix"]}"')
+        if "log_level" in rule_dict:
+            parts.append(f"--log-level {rule_dict['log_level']}")
     elif jump:
-        parts.extend(["-j", jump])
+        parts.append(f"-j {jump}")
 
     return " ".join(parts)
 
 
-def apply_rule(tool, chain, rule):
-    rule_str = normalize_rule(rule).replace("-A", f"-C {chain}", 1)
-    result = subprocess.run(f"/sbin/{tool} {rule_str}", shell=True)
-    if result.returncode != 0:
-        add_cmd = normalize_rule(rule).replace("-A", f"-A {chain}", 1)
-        run(f"/sbin/{tool} {add_cmd}")
+def flush_ansible_chains(tool):
+    result = run(f"/sbin/{tool} -S", check=False)
+    for line in result.stdout.splitlines():
+        if line.startswith("-A ANSIBLE_") and not any(x in line for x in ("DOCKER", "f2b-")):
+            del_cmd = line.replace("-A", "-D", 1)
+            run(f"/sbin/{tool} {del_cmd}")
 
 
-def set_default_policies(policies):
-    for version, chains in policies.items():
-        tool = "iptables" if version == "ipv4" else "ip6tables"
-        for chain, policy in chains.items():
-            run(f"/sbin/{tool} -P {chain} {policy}", check=False)
+def apply_rules(tool, rules_dict):
+    for chain, rules in rules_dict.items():
+        ensure_chain(tool, chain)
+        ensure_jump(tool, "INPUT" if "INPUT" in chain else "OUTPUT", chain)
+    flush_ansible_chains(tool)
+    for chain, rules in rules_dict.items():
+        for rule in rules:
+            rule_str = build_rule(rule, chain)
+            run(f"/sbin/{tool} {rule_str}")
 
 
-def disaster_recovery_check():
+def apply_policies(tool, policy_map):
+    for chain, policy in policy_map.items():
+        run(f"/sbin/{tool} -P {chain} {policy}")
+
+
+def github_accessible():
     try:
-        socket.gethostbyname("github.com")
-    except Exception:
-        log.error("Disaster recovery triggered: github.com is unreachable")
-        for tool in ["iptables", "ip6tables"]:
-            run(f"/sbin/{tool} -F")
-            run(f"/sbin/{tool} -X")
-            for chain in ["INPUT", "OUTPUT", "FORWARD"]:
-                run(f"/sbin/{tool} -P {chain} ACCEPT")
-        sys.exit(0)
+        urllib.request.urlopen("https://github.com", timeout=3)
+        return True
+    except:
+        return False
+
+
+def disaster_recovery():
+    for tool in ("iptables", "ip6tables"):
+        run(f"/sbin/{tool} -F")
+        run(f"/sbin/{tool} -X")
+        run(f"/sbin/{tool} -P INPUT ACCEPT")
+        run(f"/sbin/{tool} -P OUTPUT ACCEPT")
+        run(f"/sbin/{tool} -P FORWARD ACCEPT")
 
 
 def main():
-    if not os.path.exists(RULES_FILE):
-        log.error(f"Rules file not found: {RULES_FILE}")
+    config_file = "/etc/ansible/iptables.yml"
+    if not os.path.exists(config_file):
+        print(f"Missing config file: {config_file}", file=sys.stderr)
         sys.exit(1)
 
-    disaster_recovery_check()
+    with open(config_file) as f:
+        config = yaml.safe_load(f)
 
-    with open(RULES_FILE, "r") as f:
-        data = yaml.safe_load(f)
+    if not github_accessible():
+        print("GitHub not reachable. Entering disaster recovery mode.")
+        disaster_recovery()
+        return
 
-    policies = data.get("iptables", {}).get("policies", {})
-    rulesets = data.get("iptables", {}).get("rules", {})
+    policies = config.get("policies", {})
+    rules = config.get("rules", {})
 
-    set_default_policies(policies)
-
-    for tool in ["iptables", "ip6tables"]:
-        if tool == "ip6tables":
-            continue  # for now only apply IPv4 rules
-
-        for custom_chain, rules in rulesets.items():
-            ensure_custom_chain(tool, custom_chain)
-            main_chain = "INPUT" if "INPUT" in custom_chain else "OUTPUT"
-            ensure_jump_from_main_chain(tool, main_chain, custom_chain)
-
-            run(f"/sbin/{tool} -F {custom_chain}", check=False)
-            for rule in rules:
-                apply_rule(tool, custom_chain, rule)
-
-    for tool in ["iptables", "ip6tables"]:
-        version = "6" if tool == "ip6tables" else "4"
-        run(f"/sbin/{tool}-save > /etc/iptables/rules.v{version}", check=False)
+    for tool in ("iptables", "ip6tables"):
+        version = "ipv6" if tool == "ip6tables" else "ipv4"
+        apply_policies(tool, policies.get(version, {}))
+        apply_rules(tool, rules)
 
 
 if __name__ == "__main__":
