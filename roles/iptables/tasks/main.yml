@@ -95,12 +95,20 @@
   register: current_ansible_output_v6_rules
   changed_when: false
 
+- name: Show raw ansible_input_rules
+  debug:
+    var: ansible_input_rules
+
 - name: Build expected INPUT rules
   set_fact:
     expected_input_rule_lines: >-
       {{
         ansible_input_rules | map('iptables_build_rule', 'ANSIBLE_INPUT') | list
       }}
+
+- name: Show raw ansible_input_rules
+  debug:
+    var: ansible_input_rules
 
 - name: Build expected OUTPUT rules
   set_fact:
