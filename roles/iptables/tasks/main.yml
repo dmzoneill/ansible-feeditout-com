@@ -130,8 +130,14 @@
   loop: "{{ expected_input_rule_lines | difference(current_ansible_input_rules.stdout_lines) }}"
   loop_control:
     loop_var: rule
-  when: rule is search('-A ANSIBLE_INPUT')
+  register: rule_add_result
   failed_when: false
+  changed_when: false
+
+- name: Show failed input rule adds
+  debug:
+    msg: "{{ item }}"
+  loop: "{{ rule_add_result.results | selectattr('rc', '!=', 0) | list }}"
 
 - name: Remove extra ANSIBLE_INPUT rules (ip6tables)
   shell: "ip6tables {{ rule | regex_replace('^-A', '-D') }}"
