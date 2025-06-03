@@ -41,12 +41,16 @@
       - "INPUT rules: {{ ansible_input_rules | length }} items"
       - "OUTPUT rules: {{ ansible_output_rules | length }} items"
 
-- name: Build expected rule strings
+- name: Build expected rule strings for INPUT
   set_fact:
-    expected_input_rule_lines: >-
-      {{ ansible_input_rules | map('iptables_build_rule', 'ANSIBLE_INPUT') | list }}
-    expected_output_rule_lines: >-
-      {{ ansible_output_rules | map('iptables_build_rule', 'ANSIBLE_OUTPUT') | list }}
+    expected_input_rule_lines: "{{ ansible_input_rules | map('iptables_build_rule', 'ANSIBLE_INPUT') | list }}"
+
+- name: Build expected rule strings for OUTPUT
+  set_fact:
+    expected_output_rule_lines: "{{ ansible_output_rules | map('iptables_build_rule', 'ANSIBLE_OUTPUT') | list }}"
+
+- name: Combine all expected rules
+  set_fact:
     all_expected_rules: >-
       {{
         (expected_input_rule_lines | zip(['iptables'] * (expected_input_rule_lines | length))) +
