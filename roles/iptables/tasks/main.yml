@@ -258,6 +258,16 @@
   when: ip6tables_v6_policies is defined and "'-P OUTPUT ACCEPT' not in ip6tables_v6_policies.stdout_lines"
   changed_when: false
 
+- name: Get current iptables rules (for saving to rules.v4)
+  command: iptables-save
+  register: iptables_v4_rules
+  changed_when: false
+
+- name: Get current ip6tables rules (for saving to rules.v6)
+  command: ip6tables-save
+  register: ip6tables_v6_rules
+  changed_when: false
+
 - name: Save iptables rules to /etc/iptables/rules.v4 if changed
   copy:
     content: "{{ iptables_v4_rules.stdout }}"
