@@ -6,6 +6,7 @@ import os
 import sys
 import urllib.request
 import shlex
+import pprint
 
 def run(cmd, check=False):
     print(f"[+] {cmd}")
@@ -30,6 +31,10 @@ def ensure_jump(tool, parent_chain, target_chain):
         run(f"/sbin/{tool} -I {parent_chain} 1 -j {target_chain}")
 
 def build_rule(rule_dict, chain):
+    # Print dictionary contents for debugging
+    print("[DEBUG] Rule dictionary:")
+    pprint.pprint(rule_dict)
+
     proto = rule_dict.get("proto")
     match_module = rule_dict.get("match")
     ctstate = rule_dict.get("ctstate")
