@@ -94,6 +94,7 @@
     - { table: ip6tables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
   loop_control:
     loop_var: combo
+  register: prune_check_output
   changed_when: false
   failed_when: false
 
