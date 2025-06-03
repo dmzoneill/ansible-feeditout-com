@@ -35,6 +35,12 @@
     chain: "{{ combo[1][1] }}"
   changed_when: false
 
+- name: Debug rules before building strings
+  debug:
+    msg:
+      - "INPUT rules: {{ ansible_input_rules | length }} items"
+      - "OUTPUT rules: {{ ansible_output_rules | length }} items"
+
 - name: Build expected rule strings
   set_fact:
     expected_input_rule_lines: >-
