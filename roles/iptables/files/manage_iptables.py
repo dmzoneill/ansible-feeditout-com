@@ -79,9 +79,26 @@ def normalize_rule(rule_line):
         index = tokens.index("-A") + 1
     except ValueError:
         return rule_line
+
     prefix = " ".join(tokens[:index + 1])
-    body = sorted(tokens[index + 1:])
-    return f"{prefix} {' '.join(body)}"
+    args = tokens[index + 1:]
+
+    grouped = []
+    skip_next = False
+    for i, tok in enumerate(args):
+        if skip_next:
+            skip_next = False
+            continue
+        if tok.startswith("-") and i + 1 < len(args) and not args[i + 1].startswith("-"):
+            grouped.append((tok, args[i + 1]))
+            skip_next = True
+        else:
+            grouped.append((tok,))
+
+    sorted_grouped = sorted(grouped, key=lambda g: g[0])
+    flat = [" ".join(group) for group in sorted_grouped]
+
+    return f"{prefix} {' '.join(flat)}"
 
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
