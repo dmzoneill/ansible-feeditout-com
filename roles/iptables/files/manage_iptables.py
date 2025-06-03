@@ -30,7 +30,7 @@ def ensure_jump(tool, parent_chain, target_chain):
         run(f"/sbin/{tool} -I {parent_chain} 1 -j {target_chain}")
 
 def build_rule(rule_dict, chain):
-    parts = []
+    parts = [f"-A {chain}"]
 
     proto = rule_dict.get("proto")
     if proto and proto != "all":
@@ -61,7 +61,7 @@ def build_rule(rule_dict, chain):
     if jump == "LOG":
         parts.append("-j LOG")
         if "log_prefix" in rule_dict:
-            parts.append(f"--log-prefix \"{rule_dict['log_prefix']}\"")
+            parts.append(f"--log-prefix '{rule_dict['log_prefix']}'")
         if "log_level" in rule_dict:
             parts.append(f"--log-level {rule_dict['log_level']}")
     elif jump:
@@ -71,25 +71,23 @@ def build_rule(rule_dict, chain):
 
 def get_current_rules(tool, chain):
     result = run(f"/sbin/{tool} -S {chain}", check=False)
-    rules = []
-    for line in result.stdout.splitlines():
-        if line.startswith(f"-A {chain} "):
-            rules.append(" ".join(line.strip().split()))
-    return rules
+    return [line.strip() for line in result.stdout.splitlines() if line.startswith(f"-A {chain} ")]
 
 def normalize_rule(rule_line):
     tokens = shlex.split(rule_line)
-    if len(tokens) < 3:
+    try:
+        index = tokens.index("-A") + 1
+    except ValueError:
         return rule_line
-    prefix = " ".join(tokens[:2])
-    body = sorted(tokens[2:])
+    prefix = " ".join(tokens[:index + 1])
+    body = sorted(tokens[index + 1:])
     return f"{prefix} {' '.join(body)}"
 
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
         existing_raw = get_current_rules(tool, chain)
         existing = set(normalize_rule(r) for r in existing_raw)
-        desired_raw = [f"-A {chain} {build_rule(r, chain)}" for r in desired_rules]
+        desired_raw = [build_rule(r, chain) for r in desired_rules]
         desired = set(normalize_rule(r) for r in desired_raw)
 
         print(f"\n=== Syncing {tool.upper()} {chain} ===")
@@ -116,9 +114,8 @@ def sync_ansible_chains(tool, rules_dict):
             print(f"Adding rule: {rule}")
             run(f"/sbin/{tool} {rule}")
         for rule in to_remove:
-            original = rule.replace("-A", "-D", 1)
-            print(f"Removing rule: {original}")
-            run(f"/sbin/{tool} {original}")
+            print(f"Removing rule: {rule}")
+            run(f"/sbin/{tool} {rule.replace('-A', '-D', 1)}")
 
 def apply_rules(tool, rules_dict):
     for chain in rules_dict:
