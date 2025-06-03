@@ -4,6 +4,9 @@ def iptables_build_rule(rule, chain):
     proto = rule.get("proto")
     if proto:
         parts.append(f"-p {proto}")
+        # iptables -S outputs -m <proto> for tcp/udp
+        if proto in ("tcp", "udp"):
+            parts.append(f"-m {proto}")
 
     # Interfaces
     if "in_interface" in rule:
@@ -11,10 +14,10 @@ def iptables_build_rule(rule, chain):
     if "out_interface" in rule:
         parts.append(f"-o {rule['out_interface']}")
 
-    # Track modules added
+    # Track modules added to avoid duplicates
     modules = []
 
-    # Match modules and their required arguments (correct ordering!)
+    # Match modules and required arguments
     if "ctstate" in rule:
         modules.append("conntrack")
 
@@ -31,7 +34,7 @@ def iptables_build_rule(rule, chain):
             parts.append(f"-m {mod}")
             seen.add(mod)
 
-    # Now add the module options (must come after -m)
+    # Now add module-specific arguments
     if "ctstate" in rule:
         parts.append(f"--ctstate {rule['ctstate']}")
 
