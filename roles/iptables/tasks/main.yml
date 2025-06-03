@@ -125,14 +125,20 @@
   when: rule is search('-A ANSIBLE_INPUT')
   failed_when: false
 
-- name: Add missing ANSIBLE_INPUT rules (iptables)
-  shell: "iptables {{ rule }}"
-  loop: "{{ expected_input_rule_lines | difference(current_ansible_input_rules.stdout_lines) }}"
+- name: Check if ANSIBLE_INPUT rule exists
+  shell: "iptables {{ rule | regex_replace('^-A', '-C') }}"
+  register: rule_check
+  loop: "{{ expected_input_rule_lines }}"
   loop_control:
     loop_var: rule
-  register: rule_add_result
   failed_when: false
   changed_when: false
+
+- name: Add missing ANSIBLE_INPUT rules (iptables)
+  shell: "iptables {{ item.item }}"
+  when: item.rc != 0
+  loop: "{{ rule_check.results }}"
+
 
 - name: Show failed input rule adds
   debug:
