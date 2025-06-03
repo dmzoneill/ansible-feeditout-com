@@ -99,27 +99,31 @@
   changed_when: false
   failed_when: false
 
-
-- name: Prune unmanaged rules (IPv4/IPv6)
+- name: Prune unmanaged rules from ANSIBLE_INPUT and ANSIBLE_OUTPUT (IPv4/IPv6)
   shell: |
-    /sbin/{{ table }} -S {{ direction }} | \
-    grep "^-A {{ direction }}" | \
-    grep -v '{{ chain }}' | \
-    grep -v 'DOCKER' | \
-    grep -v 'f2b' | \
-    while read rule; do
-      /sbin/{{ table }} $(echo "$rule" | sed 's/^-A/-D/') || true
+    /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
+      rule_str=$(echo "$rule")
+      expected="{{ expected_rules | join('\n') }}"
+      if ! echo "$expected" | grep -Fxq "$rule_str"; then
+        echo "Removing: $rule_str"
+        echo /sbin/{{ table }} $(echo "$rule_str" | sed 's/^-A/-D/') || true
+      fi
     done
-  loop: "{{ iptables_cmds | product([['INPUT', 'ANSIBLE_INPUT'], ['OUTPUT', 'ANSIBLE_OUTPUT']]) | list }}"
+  loop:
+    - { table: iptables, chain: ANSIBLE_INPUT, expected_rules: "{{ expected_input_rule_lines }}" }
+    - { table: iptables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
+    - { table: ip6tables, chain: ANSIBLE_INPUT, expected_rules: "{{ expected_input_rule_lines }}" }
+    - { table: ip6tables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
   loop_control:
-    loop_var: combo_pair
+    loop_var: combo
+    label: "{{ combo.table }} {{ combo.chain }}"
   vars:
-    table: "{{ combo_pair[0] }}"
-    direction: "{{ combo_pair[1][0] }}"
-    chain: "{{ combo_pair[1][1] }}"
+    table: "{{ combo.table }}"
+    chain: "{{ combo.chain }}"
+    expected_rules: "{{ combo.expected_rules }}"
   args:
     executable: /bin/bash
-  changed_when: false
+  changed_when: true
   failed_when: false
 
 - name: Ensure logging rule exists in ANSIBLE_OUTPUT (IPv4)
