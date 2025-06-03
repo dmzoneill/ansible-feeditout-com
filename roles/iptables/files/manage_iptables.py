@@ -79,16 +79,22 @@ def get_current_rules(tool, chain):
 
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
-        existing = set(get_current_rules(tool, chain))
-        desired = set(" ".join(build_rule(r, chain).strip().split()) for r in desired_rules)
+        current_rules = get_current_rules(tool, chain)
+        # Remove rules not in desired
+        for line in current_rules:
+            if line.startswith(f"-A {chain} "):
+                rule_body = line.replace(f"-A {chain} ", "").strip()
+                if all(build_rule(r, chain).replace(f"-A {chain} ", "").strip() != rule_body for r in desired_rules):
+                    print(f"Removing rule: -D {chain} {rule_body}")
+                    run(f"/sbin/{tool} -D {chain} {rule_body}")
 
-        for rule in desired - existing:
-            print(f"Adding rule: {rule}")
-            run(f"/sbin/{tool} {rule}")
-        for rule in existing - desired:
-            original = rule.replace("-A", "-D", 1)
-            print(f"Removing rule: {original}")
-            run(f"/sbin/{tool} {original}")
+        # Add rules not present
+        for rule_dict in desired_rules:
+            rule = build_rule(rule_dict, chain)
+            check = run(f"/sbin/{tool} -C {rule.replace('-A', chain)}", check=False)
+            if check.returncode != 0:
+                print(f"Adding rule: {rule}")
+                run(f"/sbin/{tool} {rule}")
 
 def apply_rules(tool, rules_dict):
     for chain in rules_dict:
