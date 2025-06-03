@@ -24,6 +24,7 @@
 # 
 # m h  dom mon dow   command
 MAILTO="{{ cron.email }}"
+*/5 * * * * /usr/bin/ansible-playbook /opt/ansible/playbooks/disaster_recovery.yml > /tmp/iptables_recovery.log 2>&1
 15 3 * * * /home/dave/bin/certbot.sh 
 0 3 * * * /etc/apache2/create_mmap.sh
 0 1 * * * /usr/bin/aide -c /etc/aide/aide.conf -u && cp /var/lib/aide/aide.db{.new,}

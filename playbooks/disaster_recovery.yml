@@ -1,0 +1,43 @@
+---
+- name: Disaster Recovery - Clear iptables if GitHub is unreachable
+  hosts: localhost
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Check if GitHub is reachable
+      uri:
+        url: https://github.com
+        method: HEAD
+        return_content: no
+        timeout: 5
+      register: github_check
+      failed_when: false
+
+    - name: Flush all IPv4 rules and set default ACCEPT (if GitHub unreachable)
+      shell: |
+        /sbin/iptables -F
+        /sbin/iptables -X
+        /sbin/iptables -t nat -F
+        /sbin/iptables -t nat -X
+        /sbin/iptables -t mangle -F
+        /sbin/iptables -t mangle -X
+        /sbin/iptables -P INPUT ACCEPT
+        /sbin/iptables -P OUTPUT ACCEPT
+        /sbin/iptables -P FORWARD ACCEPT
+      when: github_check.status is not defined or github_check.status != 200
+      changed_when: true
+
+    - name: Flush all IPv6 rules and set default ACCEPT (if GitHub unreachable)
+      shell: |
+        /sbin/ip6tables -F
+        /sbin/ip6tables -X
+        /sbin/ip6tables -t nat -F || true
+        /sbin/ip6tables -t nat -X || true
+        /sbin/ip6tables -t mangle -F
+        /sbin/ip6tables -t mangle -X
+        /sbin/ip6tables -P INPUT ACCEPT
+        /sbin/ip6tables -P OUTPUT ACCEPT
+        /sbin/ip6tables -P FORWARD ACCEPT
+      when: github_check.status is not defined or github_check.status != 200
+      changed_when: true
