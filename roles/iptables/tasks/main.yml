@@ -217,39 +217,41 @@
 - name: Get current iptables policies (IPv4)
   command: iptables -S
   register: iptables_v4_policies
+  changed_when: false
 
 - name: Get current ip6tables policies (IPv6)
   command: ip6tables -S
-  register: iptables_v6_policies
+  register: ip6tables_v6_policies
+  changed_when: false
 
 - name: Set INPUT policy to DROP (iptables)
   command: iptables -P INPUT DROP
-  when: "'-P INPUT DROP' not in iptables_v4_policies.stdout_lines"
+  when: iptables_v4_policies is defined and "'-P INPUT DROP' not in iptables_v4_policies.stdout_lines"
   changed_when: true
 
 - name: Set FORWARD policy to DROP (iptables)
   command: iptables -P FORWARD DROP
-  when: "'-P FORWARD DROP' not in iptables_v4_policies.stdout_lines"
+  when: iptables_v4_policies is defined and "'-P FORWARD DROP' not in iptables_v4_policies.stdout_lines"
   changed_when: true
 
 - name: Set OUTPUT policy to ACCEPT (iptables)
   command: iptables -P OUTPUT ACCEPT
-  when: "'-P OUTPUT ACCEPT' not in iptables_v4_policies.stdout_lines"
+  when: iptables_v4_policies is defined and "'-P OUTPUT ACCEPT' not in iptables_v4_policies.stdout_lines"
   changed_when: true
 
 - name: Set INPUT policy to DROP (ip6tables)
   command: ip6tables -P INPUT DROP
-  when: "'-P INPUT DROP' not in ip6tables_v6_policies.stdout_lines"
+  when: ip6tables_v6_policies is defined and "'-P INPUT DROP' not in ip6tables_v6_policies.stdout_lines"
   changed_when: true
 
 - name: Set FORWARD policy to DROP (ip6tables)
   command: ip6tables -P FORWARD DROP
-  when: "'-P FORWARD DROP' not in ip6tables_v6_policies.stdout_lines"
+  when: ip6tables_v6_policies is defined and "'-P FORWARD DROP' not in ip6tables_v6_policies.stdout_lines"
   changed_when: true
 
 - name: Set OUTPUT policy to ACCEPT (ip6tables)
   command: ip6tables -P OUTPUT ACCEPT
-  when: "'-P OUTPUT ACCEPT' not in ip6tables_v6_policies.stdout_lines"
+  when: ip6tables_v6_policies is defined and "'-P OUTPUT ACCEPT' not in ip6tables_v6_policies.stdout_lines"
   changed_when: true
 
 - name: Get current iptables rules (IPv4)
