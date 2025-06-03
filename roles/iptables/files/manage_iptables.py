@@ -29,7 +29,7 @@ def ensure_jump(tool, parent_chain, target_chain):
         run(f"/sbin/{tool} -I {parent_chain} 1 -j {target_chain}")
 
 def build_rule(rule_dict, chain):
-    parts = [f"-A {chain}"]
+    parts = []
 
     proto = rule_dict.get("proto")
     if proto and proto != "all":
@@ -79,7 +79,7 @@ def get_current_rules(tool, chain):
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
         existing = set(get_current_rules(tool, chain))
-        desired = set(build_rule(r, chain) for r in desired_rules)
+        desired = set(f"-A {chain} {build_rule(r, chain)}" for r in desired_rules)
 
         for rule in desired - existing:
             print(f"Adding rule: {rule}")
