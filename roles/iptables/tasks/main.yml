@@ -117,7 +117,7 @@
       normalized_expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/-p all//g' | sed 's/--log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//')"
       if ! echo "$normalized_expected" | grep -Fxq "$normalized_rule"; then
         echo "Removing: $rule_str"
-        /sbin/{{ table }} $(echo "$rule_str" | sed 's/^-A/-D/')
+        echo /sbin/{{ table }} $(echo "$rule_str" | sed 's/^-A/-D/')
       fi
     done
   loop:
