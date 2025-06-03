@@ -56,3 +56,10 @@ def iptables_build_rule(rule, chain):
         parts.append(f"-j {jump}")
 
     return " ".join(parts)
+
+
+class FilterModule(object):
+    def filters(self):
+        return {
+            'iptables_build_rule': iptables_build_rule
+        }
