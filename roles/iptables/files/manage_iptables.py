@@ -29,7 +29,7 @@ def ensure_jump(tool, parent_chain, target_chain):
         run(f"/sbin/{tool} -I {parent_chain} 1 -j {target_chain}")
 
 def build_rule(rule_dict, chain):
-    parts = [f"-A {chain}"]
+    parts = []
 
     proto = rule_dict.get("proto")
     if proto and proto != "all":
@@ -61,7 +61,6 @@ def build_rule(rule_dict, chain):
         parts.append("-j LOG")
         if "log_prefix" in rule_dict:
             parts.append(f"--log-prefix \"{rule_dict['log_prefix']}\"")
-        # Intentionally omit log_level if not present to match system default
         if "log_level" in rule_dict:
             parts.append(f"--log-level {rule_dict['log_level']}")
     elif jump:
@@ -74,27 +73,21 @@ def get_current_rules(tool, chain):
     rules = []
     for line in result.stdout.splitlines():
         if line.startswith(f"-A {chain} "):
-            rules.append(" ".join(line.strip().split()))  # Normalize spacing only
+            rules.append(" ".join(line.strip().split()))
     return rules
 
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
-        current_rules = get_current_rules(tool, chain)
-        # Remove rules not in desired
-        for line in current_rules:
-            if line.startswith(f"-A {chain} "):
-                rule_body = line.replace(f"-A {chain} ", "").strip()
-                if all(build_rule(r, chain).replace(f"-A {chain} ", "").strip() != rule_body for r in desired_rules):
-                    print(f"Removing rule: -D {chain} {rule_body}")
-                    run(f"/sbin/{tool} -D {chain} {rule_body}")
+        existing = set(get_current_rules(tool, chain))
+        desired = set("-A " + chain + " " + " ".join(build_rule(r, chain).split()[1:]) for r in desired_rules)
 
-        # Add rules not present
-        for rule_dict in desired_rules:
-            rule = build_rule(rule_dict, chain)
-            check = run(f"/sbin/{tool} -C {rule.replace('-A', chain)}", check=False)
-            if check.returncode != 0:
-                print(f"Adding rule: {rule}")
-                run(f"/sbin/{tool} {rule}")
+        for rule in desired - existing:
+            print(f"Adding rule: {rule}")
+            run(f"/sbin/{tool} {rule}")
+        for rule in existing - desired:
+            original = rule.replace("-A", "-D", 1)
+            print(f"Removing rule: {original}")
+            run(f"/sbin/{tool} {original}")
 
 def apply_rules(tool, rules_dict):
     for chain in rules_dict:
