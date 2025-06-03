@@ -548,6 +548,15 @@ ansible_input_rules:
 
 ansible_output_rules:
 
+  - proto: all
+    match: conntrack
+    ctstate: RELATED,ESTABLISHED
+    jump: ACCEPT
+
+  - proto: all
+    out_interface: lo
+    jump: ACCEPT
+
   - proto: tcp
     dport: 53
     jump: ACCEPT
