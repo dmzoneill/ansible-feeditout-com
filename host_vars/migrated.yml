@@ -488,7 +488,6 @@ iptables:
   rules:
     ANSIBLE_INPUT:
       - proto: all
-        match: conntrack
         ctstate: RELATED,ESTABLISHED
         jump: ACCEPT
 
@@ -530,12 +529,10 @@ iptables:
 
     ANSIBLE_OUTPUT:
       - proto: all
-        match: conntrack
         ctstate: NEW,ESTABLISHED,RELATED
         jump: ACCEPT
 
       - proto: all
-        match: conntrack
         ctstate: NEW
         jump: LOG
         log_prefix: "IPT-OUTPUT: "
