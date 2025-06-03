@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import subprocess
 import yaml
 import os
@@ -30,10 +28,7 @@ def ensure_jump(tool, parent_chain, target_chain):
     if check.returncode != 0:
         run(f"/sbin/{tool} -I {parent_chain} 1 -j {target_chain}")
 
-import pprint
-
 def build_rule(rule_dict, chain):
-    # Print dictionary contents for debugging
     print("[DEBUG] Rule dictionary:")
     pprint.pprint(rule_dict)
 
@@ -49,7 +44,6 @@ def build_rule(rule_dict, chain):
     log_prefix = rule_dict.get("log_prefix")
     log_level = rule_dict.get("log_level")
 
-    # Collect rule parts in order, only appending if value is present
     parts = [f"-A {chain}"]
 
     if proto and proto != "all":
@@ -59,7 +53,6 @@ def build_rule(rule_dict, chain):
     if out_if:
         parts.append(f"-o {out_if}")
 
-    # Match modules first
     if ctstate:
         parts.append("-m conntrack")
     if match_module and match_module != "conntrack":
@@ -69,7 +62,6 @@ def build_rule(rule_dict, chain):
     if proto in ("tcp", "udp"):
         parts.append(f"-m {proto}")
 
-    # Match options
     if ctstate:
         parts.append(f"--ctstate {ctstate}")
     if state:
@@ -79,7 +71,6 @@ def build_rule(rule_dict, chain):
     if dport:
         parts.append(f"--dport {dport}")
 
-    # Jump and optional LOG params
     if jump == "LOG":
         parts.append("-j LOG")
         if log_prefix:
@@ -89,9 +80,8 @@ def build_rule(rule_dict, chain):
     elif jump:
         parts.append(f"-j {jump}")
 
-    pprint.pprint(parts)  # Debugging output to see the final rule parts
+    pprint.pprint(parts)
     return " ".join(parts)
-
 
 def get_current_rules(tool, chain):
     result = run(f"/sbin/{tool} -S {chain}", check=False)
@@ -127,28 +117,29 @@ def normalize_rule(rule_line):
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
         existing_raw = get_current_rules(tool, chain)
-        existing = set(normalize_rule(r) for r in existing_raw)
         desired_raw = [build_rule(r, chain) for r in desired_rules]
-        desired = set(normalize_rule(r) for r in desired_raw)
+
+        existing_set = set(normalize_rule(r) for r in existing_raw)
+        desired_set = set(normalize_rule(r) for r in desired_raw)
 
         print(f"\n=== Syncing {tool.upper()} {chain} ===")
         print("[DEBUG] Existing rules:")
-        for rule in sorted(existing):
+        for rule in existing_set:
             print(f"  {rule}")
 
         print("[DEBUG] Desired rules:")
-        for rule in sorted(desired):
+        for rule in desired_set:
             print(f"  {rule}")
 
-        to_add = desired - existing
-        to_remove = existing - desired
+        to_add = desired_set - existing_set
+        to_remove = existing_set - desired_set
 
         print("[DEBUG] Rules to add:")
-        for rule in sorted(to_add):
+        for rule in to_add:
             print(f"  {rule}")
 
         print("[DEBUG] Rules to remove:")
-        for rule in sorted(to_remove):
+        for rule in to_remove:
             print(f"  {rule}")
 
         for rule in to_add:
@@ -201,9 +192,8 @@ def main():
     rules = config.get("rules", {})
 
     for tool in ("iptables", "ip6tables"):
-        version = "ipv6" if tool == "ip6tables" else "ipv4"
         apply_rules(tool, rules)
-        apply_policies(tool, policies.get(version, {}))
+        apply_policies(tool, policies.get("ipv6" if tool == "ip6tables" else "ipv4", {}))
 
 if __name__ == "__main__":
     main()
