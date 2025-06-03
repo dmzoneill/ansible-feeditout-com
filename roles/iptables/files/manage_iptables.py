@@ -8,7 +8,12 @@ import urllib.request
 
 def run(cmd, check=False):
     print(f"[+] {cmd}")
-    return subprocess.run(cmd, shell=True, text=True, capture_output=True, check=check)
+    result = subprocess.run(cmd, shell=True, text=True, capture_output=True, check=check)
+    if result.stdout:
+        print(result.stdout.strip())
+    if result.stderr:
+        print(result.stderr.strip(), file=sys.stderr)
+    return result
 
 def chain_exists(tool, chain):
     result = run(f"/sbin/{tool} -L {chain} -n", check=False)
