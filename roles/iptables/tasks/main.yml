@@ -75,8 +75,8 @@
     echo "=== Checking {{ table }} {{ chain }} ==="
     /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
       rule_str=$(echo "$rule" | sed 's/  */ /g' | sed 's/ *$//g')
-      normalized_rule=$(echo "$rule_str" | sed 's/ -p all//')
-      expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/ -p all//g' | sed 's/  */ /g' | sed 's/ *$//g')"
+      normalized_rule=$(echo "$rule_str" | sed 's/ -p all//;s/ --log-level [0-9]*//g')
+      expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/ -p all//g' | sed 's/ --log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//g')"
       echo "Rule: $normalized_rule"
       if echo "$expected" | grep -Fxq "$normalized_rule"; then
         echo " → KEPT (matches expected)"
@@ -113,8 +113,8 @@
   shell: |
     /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
       rule_str=$(echo "$rule" | sed 's/  */ /g' | sed 's/ *$//g')
-      normalized_rule=$(echo "$rule_str" | sed 's/ -p all//')
-      expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/ -p all//g' | sed 's/  */ /g' | sed 's/ *$//g')"
+      normalized_rule=$(echo "$rule_str" | sed 's/ -p all//;s/ --log-level [0-9]*//g')
+      expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/ -p all//g' | sed 's/ --log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//g')"
       if ! echo "$expected" | grep -Fxq "$normalized_rule"; then
         echo "Removing: $rule_str"
         echo /sbin/{{ table }} $(echo "$rule_str" | sed 's/^-A/-D/')
@@ -127,6 +127,7 @@
     - { table: ip6tables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
   loop_control:
     loop_var: combo
+    label: "{{ combo.table }} {{ combo.chain }}"
   vars:
     table: "{{ combo.table }}"
     chain: "{{ combo.chain }}"
@@ -135,7 +136,6 @@
     executable: /bin/bash
   changed_when: true
   failed_when: false
-
 
 - name: Build policy list from host vars
   set_fact:
