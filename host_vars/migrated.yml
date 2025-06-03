@@ -477,10 +477,10 @@ logrotate_configs:
 # iptables
 
 ansible_policy_ipv4_input: "ACCEPT"
-ansible_policy_ipv4_ouput: "ACCEPT"
+ansible_policy_ipv4_output: "ACCEPT"
 ansible_policy_ipv4_forward: "ACCEPT"
 ansible_policy_ipv6_input: "ACCEPT"
-ansible_policy_ipv6_ouput: "ACCEPT"
+ansible_policy_ipv6_output: "ACCEPT"
 ansible_policy_ipv6_forward: "ACCEPT"
 
 ansible_input_rules:
