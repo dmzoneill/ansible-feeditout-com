@@ -61,6 +61,7 @@ def build_rule(rule_dict, chain):
         parts.append("-j LOG")
         if "log_prefix" in rule_dict:
             parts.append(f"--log-prefix \"{rule_dict['log_prefix']}\"")
+        # Intentionally omit log_level if not present to match system default
         if "log_level" in rule_dict:
             parts.append(f"--log-level {rule_dict['log_level']}")
     elif jump:
@@ -73,16 +74,13 @@ def get_current_rules(tool, chain):
     rules = []
     for line in result.stdout.splitlines():
         if line.startswith(f"-A {chain} "):
-            rules.append(line.strip())
+            rules.append(" ".join(line.strip().split()))  # Normalize spacing only
     return rules
-
-def clean_rule(rule):
-    return " ".join(rule.strip().split())
 
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
-        existing = set(clean_rule(r) for r in get_current_rules(tool, chain))
-        desired = set(clean_rule(build_rule(r, chain)) for r in desired_rules)
+        existing = set(get_current_rules(tool, chain))
+        desired = set(" ".join(build_rule(r, chain).strip().split()) for r in desired_rules)
 
         for rule in desired - existing:
             print(f"Adding rule: {rule}")
