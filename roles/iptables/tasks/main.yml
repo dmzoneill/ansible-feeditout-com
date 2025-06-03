@@ -78,18 +78,22 @@
 - name: Get current ANSIBLE_INPUT rules
   command: iptables -S ANSIBLE_INPUT
   register: current_ansible_input_rules
+  changed_when: false
 
 - name: Get current ANSIBLE_OUTPUT rules
   command: iptables -S ANSIBLE_OUTPUT
   register: current_ansible_output_rules
+  changed_when: false
 
 - name: Get current ANSIBLE_INPUT rules (IPv6)
   command: ip6tables -S ANSIBLE_INPUT
   register: current_ansible_input_v6_rules
+  changed_when: false
 
 - name: Get current ANSIBLE_OUTPUT rules (IPv6)
   command: ip6tables -S ANSIBLE_OUTPUT
   register: current_ansible_output_v6_rules
+  changed_when: false
 
 - name: Build expected INPUT rules
   set_fact:
