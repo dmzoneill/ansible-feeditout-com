@@ -131,17 +131,22 @@
   changed_when: false
   failed_when: false
 
-- name: Set default policies
-  shell: "/sbin/{{ policy_combo[0] }} -P {{ policy_combo[1] }} {{ policy_combo[2] }}"
-  loop:
-    - [iptables, INPUT, DROP]
-    - [iptables, FORWARD, DROP]
-    - [iptables, OUTPUT, ACCEPT]
-    - [ip6tables, INPUT, DROP]
-    - [ip6tables, FORWARD, DROP]
-    - [ip6tables, OUTPUT, ACCEPT]
+- name: Build policy list from host vars
+  set_fact:
+    iptables_policy_list:
+      - { tool: iptables, chain: INPUT,    policy: "{{ ansible_policy_ipv4_input }}" }
+      - { tool: iptables, chain: OUTPUT,   policy: "{{ ansible_policy_ipv4_output }}" }
+      - { tool: iptables, chain: FORWARD,  policy: "{{ ansible_policy_ipv4_forward }}" }
+      - { tool: ip6tables, chain: INPUT,   policy: "{{ ansible_policy_ipv6_input }}" }
+      - { tool: ip6tables, chain: OUTPUT,  policy: "{{ ansible_policy_ipv6_output }}" }
+      - { tool: ip6tables, chain: FORWARD, policy: "{{ ansible_policy_ipv6_forward }}" }
+
+- name: Set default policies (from host vars)
+  shell: "/sbin/{{ policy_combo.tool }} -P {{ policy_combo.chain }} {{ policy_combo.policy }}"
+  loop: "{{ iptables_policy_list }}"
   loop_control:
     loop_var: policy_combo
+    label: "{{ policy_combo.tool }} {{ policy_combo.chain }} → {{ policy_combo.policy }}"
   changed_when: false
 
 - name: Save iptables and ip6tables rules
