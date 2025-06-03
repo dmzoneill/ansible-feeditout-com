@@ -5,6 +5,7 @@ import yaml
 import os
 import sys
 import urllib.request
+import shlex
 
 def run(cmd, check=False):
     print(f"[+] {cmd}")
@@ -76,10 +77,20 @@ def get_current_rules(tool, chain):
             rules.append(" ".join(line.strip().split()))
     return rules
 
+def normalize_rule(rule_line):
+    tokens = shlex.split(rule_line)
+    if len(tokens) < 3:
+        return rule_line
+    prefix = " ".join(tokens[:2])
+    body = sorted(tokens[2:])
+    return f"{prefix} {' '.join(body)}"
+
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
-        existing = set(get_current_rules(tool, chain))
-        desired = set(f"-A {chain} {build_rule(r, chain)}" for r in desired_rules)
+        existing_raw = get_current_rules(tool, chain)
+        existing = set(normalize_rule(r) for r in existing_raw)
+        desired_raw = [f"-A {chain} {build_rule(r, chain)}" for r in desired_rules]
+        desired = set(normalize_rule(r) for r in desired_raw)
 
         print(f"\n=== Syncing {tool.upper()} {chain} ===")
         print("[DEBUG] Existing rules:")
