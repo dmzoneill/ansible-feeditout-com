@@ -99,6 +99,14 @@
   changed_when: false
   failed_when: false
 
+- name: Show summary of rules that would be pruned
+  debug:
+    msg: "{{ result.stdout_lines }}"
+  loop: "{{ prune_check_output.results }}"
+  loop_control:
+    loop_var: result
+    label: "{{ result.combo.table }} {{ result.combo.chain }}"
+
 - name: Prune unmanaged rules from ANSIBLE_INPUT and ANSIBLE_OUTPUT (IPv4/IPv6)
   shell: |
     /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
