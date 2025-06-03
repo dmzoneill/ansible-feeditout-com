@@ -227,32 +227,32 @@
 - name: Set INPUT policy to DROP (iptables)
   command: iptables -P INPUT DROP
   when: iptables_v4_policies is defined and "'-P INPUT DROP' not in iptables_v4_policies.stdout_lines"
-  changed_when: true
+  changed_when: false
 
 - name: Set FORWARD policy to DROP (iptables)
   command: iptables -P FORWARD DROP
   when: iptables_v4_policies is defined and "'-P FORWARD DROP' not in iptables_v4_policies.stdout_lines"
-  changed_when: true
+  changed_when: false
 
 - name: Set OUTPUT policy to ACCEPT (iptables)
   command: iptables -P OUTPUT ACCEPT
   when: iptables_v4_policies is defined and "'-P OUTPUT ACCEPT' not in iptables_v4_policies.stdout_lines"
-  changed_when: true
+  changed_when: false
 
 - name: Set INPUT policy to DROP (ip6tables)
   command: ip6tables -P INPUT DROP
   when: ip6tables_v6_policies is defined and "'-P INPUT DROP' not in ip6tables_v6_policies.stdout_lines"
-  changed_when: true
+  changed_when: false
 
 - name: Set FORWARD policy to DROP (ip6tables)
   command: ip6tables -P FORWARD DROP
   when: ip6tables_v6_policies is defined and "'-P FORWARD DROP' not in ip6tables_v6_policies.stdout_lines"
-  changed_when: true
+  changed_when: false
 
 - name: Set OUTPUT policy to ACCEPT (ip6tables)
   command: ip6tables -P OUTPUT ACCEPT
   when: ip6tables_v6_policies is defined and "'-P OUTPUT ACCEPT' not in ip6tables_v6_policies.stdout_lines"
-  changed_when: true
+  changed_when: false
 
 - name: Save iptables rules to /etc/iptables/rules.v4 if changed
   copy:
