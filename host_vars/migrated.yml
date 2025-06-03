@@ -497,7 +497,7 @@ iptables:
         jump: ACCEPT
 
       - proto: udp
-        dport: 53
+        sport: 53
         jump: ACCEPT
 
       - proto: tcp
@@ -539,7 +539,7 @@ iptables:
         jump: ACCEPT
 
       - proto: udp
-        sport: 53
+        dport: 53
         jump: ACCEPT
 
       - proto: udp
