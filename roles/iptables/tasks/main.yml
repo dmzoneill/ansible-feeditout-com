@@ -62,7 +62,10 @@
 
 - name: Add missing expected rules (IPv4)
   shell: "/sbin/{{ missing_rule.item[1] }} {{ missing_rule.item[0] }}"
-  when: missing_rule.rc != 0
+  when:
+    - missing_rule.rc is defined
+    - missing_rule.rc != 0
+    - missing_rule.item is defined
   loop: "{{ rule_check.results }}"
   loop_control:
     loop_var: missing_rule
