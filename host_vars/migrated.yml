@@ -492,22 +492,16 @@ iptables:
         ctstate: RELATED,ESTABLISHED
         jump: ACCEPT
 
-      - proto: tcp
-        sport: 53
-        match: conntrack
-        ctstate: ESTABLISHED,RELATED
-        jump: ACCEPT
-
       - proto: all
         in_interface: lo
         jump: ACCEPT
 
-      - proto: tcp
-        dport: 33
-        jump: ACCEPT
-
       - proto: udp
         dport: 53
+        jump: ACCEPT
+
+      - proto: tcp
+        dport: 33
         jump: ACCEPT
       
       - proto: tcp
