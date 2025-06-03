@@ -106,9 +106,9 @@
         ansible_input_rules | map('iptables_build_rule', 'ANSIBLE_INPUT') | list
       }}
 
-- name: Show raw ansible_input_rules
+- name: Show rendered expected_input_rule_lines
   debug:
-    var: ansible_input_rules
+    var: expected_input_rule_lines
 
 - name: Build expected OUTPUT rules
   set_fact:
