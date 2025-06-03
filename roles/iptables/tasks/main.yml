@@ -70,20 +70,23 @@
   loop_control:
     loop_var: missing_rule
 
-- name: DEBUG — Show which iptables rules would be pruned (IPv4 & IPv6)
+- name: Show which iptables rules would be pruned (normalized match)
+  vars:
+    expected_normalized: "{{ combo.expected_rules | map('normalize_iptables_rule') | list }}"
   shell: |
-    echo "=== Checking {{ table }} {{ chain }} ==="
-    /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
-      rule_str=$(echo "$rule" | sed 's/  */ /g' | sed 's/ *$//')
-      normalized_rule=$(echo "$rule_str" | sed 's/-p all//g' | sed 's/--log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//')
-      normalized_expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/-p all//g' | sed 's/--log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//')"
+    echo "=== Checking {{ combo.table }} {{ combo.chain }} ==="
+    /sbin/{{ combo.table }} -S {{ combo.chain }} | grep "^-A" | while read rule; do
+      rule_str=$(echo "$rule" | sed 's/  */ /g' | sed 's/ *$//g')
+      normalized_rule=$(echo "$rule_str" | sed 's/ --log-level [0-9]*//g' | sed 's/ -p all//g')
       echo "Rule: $normalized_rule"
-      if echo "$normalized_expected" | grep -Fxq "$normalized_rule"; then
+      if echo "{{ expected_normalized | join('\n') }}" | grep -Fxq "$normalized_rule"; then
         echo " → KEPT (matches expected)"
       else
         echo " → WOULD DELETE (not in expected list)"
       fi
     done
+  args:
+    executable: /bin/bash
   loop:
     - { table: iptables, chain: ANSIBLE_INPUT, expected_rules: "{{ expected_input_rule_lines }}" }
     - { table: iptables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
@@ -91,13 +94,6 @@
     - { table: ip6tables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
   loop_control:
     loop_var: combo
-  register: prune_check_output
-  vars:
-    table: "{{ combo.table }}"
-    chain: "{{ combo.chain }}"
-    expected_rules: "{{ combo.expected_rules }}"
-  args:
-    executable: /bin/bash
   changed_when: false
   failed_when: false
 
