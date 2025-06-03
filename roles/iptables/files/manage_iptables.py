@@ -30,44 +30,42 @@ def ensure_jump(tool, parent_chain, target_chain):
         run(f"/sbin/{tool} -I {parent_chain} 1 -j {target_chain}")
 
 def build_rule(rule_dict, chain):
-    parts = [f"-A {chain}"]
-
     proto = rule_dict.get("proto")
-    if proto and proto != "all":
-        parts.append(f"-p {proto}")
-        if proto in ("tcp", "udp"):
-            parts.append(f"-m {proto}")
-
-    if "in_interface" in rule_dict:
-        parts.append(f"-i {rule_dict['in_interface']}")
-    if "out_interface" in rule_dict:
-        parts.append(f"-o {rule_dict['out_interface']}")
-
-    if "ctstate" in rule_dict:
-        parts.append("-m conntrack")
-        parts.append(f"--ctstate {rule_dict['ctstate']}")
-    elif rule_dict.get("match") and rule_dict["match"] != "conntrack":
-        parts.append(f"-m {rule_dict['match']}")
-
-    if "state" in rule_dict:
-        parts.append("-m state")
-        parts.append(f"--state {rule_dict['state']}")
-    if "sport" in rule_dict:
-        parts.append(f"--sport {rule_dict['sport']}")
-    if "dport" in rule_dict:
-        parts.append(f"--dport {rule_dict['dport']}")
-
+    match_module = rule_dict.get("match")
+    ctstate = rule_dict.get("ctstate")
+    state = rule_dict.get("state")
+    sport = rule_dict.get("sport")
+    dport = rule_dict.get("dport")
+    in_if = rule_dict.get("in_interface")
+    out_if = rule_dict.get("out_interface")
     jump = rule_dict.get("jump")
-    if jump == "LOG":
-        parts.append("-j LOG")
-        if "log_prefix" in rule_dict:
-            parts.append(f"--log-prefix '{rule_dict['log_prefix']}'")
-        if "log_level" in rule_dict:
-            parts.append(f"--log-level {rule_dict['log_level']}")
-    elif jump:
-        parts.append(f"-j {jump}")
+    log_prefix = rule_dict.get("log_prefix")
+    log_level = rule_dict.get("log_level")
 
-    return " ".join(parts)
+    rule = f"-A {chain}"
+    rule += f" -p {proto}" if proto and proto != "all" else ""
+    rule += f" -i {in_if}" if in_if else ""
+    rule += f" -o {out_if}" if out_if else ""
+
+    # Match modules before dependent options
+    rule += " -m conntrack" if ctstate else ""
+    rule += f" -m {match_module}" if match_module and match_module != "conntrack" else ""
+    rule += " -m state" if state else ""
+    rule += f" -m {proto}" if proto in ("tcp", "udp") else ""
+
+    rule += f" --ctstate {ctstate}" if ctstate else ""
+    rule += f" --state {state}" if state else ""
+    rule += f" --sport {sport}" if sport else ""
+    rule += f" --dport {dport}" if dport else ""
+
+    if jump == "LOG":
+        rule += " -j LOG"
+        rule += f" --log-prefix '{log_prefix}'" if log_prefix else ""
+        rule += f" --log-level {log_level}" if log_level else ""
+    elif jump:
+        rule += f" -j {jump}"
+
+    return rule
 
 def get_current_rules(tool, chain):
     result = run(f"/sbin/{tool} -S {chain}", check=False)
