@@ -477,13 +477,13 @@ logrotate_configs:
 iptables:
   policies:
     ipv4:
-      INPUT: ACCEPT
+      INPUT: DROP
       OUTPUT: ACCEPT
-      FORWARD: ACCEPT
+      FORWARD: DROP
     ipv6:
-      INPUT: ACCEPT
+      INPUT: DROP
       OUTPUT: ACCEPT
-      FORWARD: ACCEPT
+      FORWARD: DROP
 
   rules:
     ANSIBLE_INPUT:
