@@ -67,6 +67,31 @@
   loop_control:
     loop_var: missing_rule
 
+- name: Prune unmanaged rules from ANSIBLE_INPUT and ANSIBLE_OUTPUT (IPv4 & IPv6)
+  shell: |
+    /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
+      rule_str=$(echo "$rule")
+      expected="{{ expected_rules | join('\n') }}"
+      if ! echo "$expected" | grep -Fxq "$rule_str"; then
+        /sbin/{{ table }} $(echo "$rule_str" | sed 's/^-A/-D/') || true
+      fi
+    done
+  loop:
+    - { table: iptables, chain: ANSIBLE_INPUT, expected_rules: "{{ expected_input_rule_lines }}" }
+    - { table: iptables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
+    - { table: ip6tables, chain: ANSIBLE_INPUT, expected_rules: "{{ expected_input_rule_lines }}" }
+    - { table: ip6tables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
+  loop_control:
+    loop_var: combo
+  vars:
+    table: "{{ combo.table }}"
+    chain: "{{ combo.chain }}"
+    expected_rules: "{{ combo.expected_rules }}"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  failed_when: false
+
 - name: Prune unmanaged rules (IPv4/IPv6)
   shell: |
     /sbin/{{ table }} -S {{ direction }} | \
