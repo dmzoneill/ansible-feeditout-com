@@ -70,20 +70,31 @@
   loop_control:
     loop_var: missing_rule
 
+- name: Flatten and normalize expected rules into one list
+  set_fact:
+    expected_normalized_lines: >-
+      {{
+        expected_input_rule_lines
+        + expected_output_rule_lines
+        | map('regex_replace', ' --log-level [0-9]+', '')
+        | map('regex_replace', ' -p all', '')
+        | list
+      }}
+
+- name: Write expected rules to a temp file
+  copy:
+    content: "{{ expected_normalized_lines | join('\n') }}"
+    dest: /tmp/expected_iptables_rules.txt
+    mode: '0600'
+
 - name: Show which iptables rules would be pruned (normalized match)
-  vars:
-    expected_normalized: >-
-      {{ combo.expected_rules
-         | map('regex_replace', ' --log-level [0-9]+', '')
-         | map('regex_replace', ' -p all', '')
-         | list }}
   shell: |
     echo "=== Checking {{ combo.table }} {{ combo.chain }} ==="
-    /sbin/{{ combo.table }} -S {{ combo.chain }} | grep "^-A" | while read rule; do
+    /sbin/{{ combo.table }} -S {{ combo.chain }} | grep "^-A" | while read -r rule; do
       rule_str=$(echo "$rule" | sed 's/  */ /g' | sed 's/ *$//g')
       normalized_rule=$(echo "$rule_str" | sed 's/ --log-level [0-9]*//g' | sed 's/ -p all//g')
       echo "Rule: $normalized_rule"
-      if echo "{{ expected_normalized | join('\n') }}" | grep -Fxq "$normalized_rule"; then
+      if grep -Fxq "$normalized_rule" /tmp/expected_iptables_rules.txt; then
         echo " → KEPT (matches expected)"
       else
         echo " → WOULD DELETE (not in expected list)"
@@ -92,10 +103,10 @@
   args:
     executable: /bin/bash
   loop:
-    - { table: iptables, chain: ANSIBLE_INPUT, expected_rules: "{{ expected_input_rule_lines }}" }
-    - { table: iptables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
-    - { table: ip6tables, chain: ANSIBLE_INPUT, expected_rules: "{{ expected_input_rule_lines }}" }
-    - { table: ip6tables, chain: ANSIBLE_OUTPUT, expected_rules: "{{ expected_output_rule_lines }}" }
+    - { table: iptables, chain: ANSIBLE_INPUT }
+    - { table: iptables, chain: ANSIBLE_OUTPUT }
+    - { table: ip6tables, chain: ANSIBLE_INPUT }
+    - { table: ip6tables, chain: ANSIBLE_OUTPUT }
   loop_control:
     loop_var: combo
   register: prune_check_output
