@@ -535,59 +535,6 @@ iptables:
         jump: ACCEPT
 
       - proto: all
-        out_interface: lo
-        jump: ACCEPT
-
-      - proto: udp
-        dport: 53
-        jump: ACCEPT
-
-      - proto: udp
-        sport: 123
-        dport: 123
-        jump: ACCEPT
-
-      - proto: tcp
-        dport: 25
-        state: NEW
-        jump: ACCEPT
-
-      - proto: tcp
-        dport: 80
-        state: NEW
-        jump: ACCEPT
-
-      - proto: tcp
-        dport: 443
-        state: NEW
-        jump: ACCEPT
-
-      - proto: tcp
-        dport: 8080
-        state: NEW
-        jump: ACCEPT
-
-      - proto: tcp
-        dport: 6443
-        state: NEW
-        jump: ACCEPT
-
-      - proto: tcp
-        dport: 9001
-        state: NEW
-        jump: ACCEPT
-
-      - proto: tcp
-        dport: 6697
-        state: NEW
-        jump: ACCEPT
-
-      - proto: tcp
-        dport: 6380
-        state: NEW
-        jump: ACCEPT
-
-      - proto: all
         match: conntrack
         ctstate: NEW
         jump: LOG
