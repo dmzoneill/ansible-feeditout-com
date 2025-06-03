@@ -474,146 +474,102 @@ logrotate_configs:
     path: /var/log/private/*.log
     options: [weekly, rotate 4, compress, missingok, notifempty]
 
-# iptables
+iptables:
+  policies:
+    ipv4:
+      INPUT: ACCEPT
+      OUTPUT: ACCEPT
+      FORWARD: ACCEPT
+    ipv6:
+      INPUT: ACCEPT
+      OUTPUT: ACCEPT
+      FORWARD: ACCEPT
 
-ansible_policy_ipv4_input: "ACCEPT"
-ansible_policy_ipv4_output: "ACCEPT"
-ansible_policy_ipv4_forward: "ACCEPT"
-ansible_policy_ipv6_input: "ACCEPT"
-ansible_policy_ipv6_output: "ACCEPT"
-ansible_policy_ipv6_forward: "ACCEPT"
+  rules:
+    ANSIBLE_INPUT:
+      - proto: all
+        match: conntrack
+        ctstate: RELATED,ESTABLISHED
+        jump: ACCEPT
+      - proto: all
+        in_interface: lo
+        jump: ACCEPT
+      - proto: tcp
+        dport: 33
+        jump: ACCEPT
+      - proto: tcp
+        dport: 80
+        jump: ACCEPT
+      - proto: tcp
+        dport: 443
+        jump: ACCEPT
+      - proto: tcp
+        dport: 25
+        jump: ACCEPT
+      - proto: tcp
+        dport: 465
+        jump: ACCEPT
+      - proto: tcp
+        dport: 587
+        jump: ACCEPT
+      - proto: tcp
+        dport: 6380
+        jump: ACCEPT
 
-ansible_input_rules:
-
-  - proto: all
-    match: conntrack
-    ctstate: RELATED,ESTABLISHED
-    jump: ACCEPT
-
-  - proto: all
-    in_interface: lo
-    jump: ACCEPT
-
-  # - proto: tcp
-  #   dport: 22
-  #   jump: ACCEPT
-
-  - proto: tcp
-    dport: 33
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 80
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 443
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 25
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 465
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 587
-    jump: ACCEPT
-
-  # - proto: tcp
-  #   dport: 993
-  #   jump: ACCEPT
-
-  # - proto: tcp
-  #   dport: 995
-  #   jump: ACCEPT
-
-  # - proto: tcp
-  #   dport: 9100
-  #   jump: ACCEPT
-
-  # - proto: tcp
-  #   dport: 9001
-  #   jump: ACCEPT
-
-  # - proto: udp
-  #   dport: 123
-  #   jump: ACCEPT
-
-  - proto: tcp
-    dport: 6380
-    jump: ACCEPT
-
-ansible_output_rules:
-
-  - proto: all
-    match: conntrack
-    ctstate: RELATED,ESTABLISHED
-    jump: ACCEPT
-
-  - proto: all
-    out_interface: lo
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 53
-    jump: ACCEPT
-
-  - proto: udp
-    dport: 53
-    jump: ACCEPT
-
-  - proto: udp
-    sport: 123
-    dport: 123
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 25
-    state: NEW
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 80
-    state: NEW
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 443
-    state: NEW
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 8080
-    state: NEW
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 6443
-    state: NEW
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 9001
-    state: NEW
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 6697
-    state: NEW
-    jump: ACCEPT
-
-  - proto: tcp
-    dport: 6380
-    state: NEW
-    jump: ACCEPT
-
-  - proto: all
-    match: conntrack
-    ctstate: NEW
-    jump: LOG
-    log_prefix: "IPT-OUTPUT: "
-    log_level: 4
+    ANSIBLE_OUTPUT:
+      - proto: all
+        match: conntrack
+        ctstate: RELATED,ESTABLISHED
+        jump: ACCEPT
+      - proto: all
+        out_interface: lo
+        jump: ACCEPT
+      - proto: tcp
+        dport: 53
+        jump: ACCEPT
+      - proto: udp
+        dport: 53
+        jump: ACCEPT
+      - proto: udp
+        sport: 123
+        dport: 123
+        jump: ACCEPT
+      - proto: tcp
+        dport: 25
+        state: NEW
+        jump: ACCEPT
+      - proto: tcp
+        dport: 80
+        state: NEW
+        jump: ACCEPT
+      - proto: tcp
+        dport: 443
+        state: NEW
+        jump: ACCEPT
+      - proto: tcp
+        dport: 8080
+        state: NEW
+        jump: ACCEPT
+      - proto: tcp
+        dport: 6443
+        state: NEW
+        jump: ACCEPT
+      - proto: tcp
+        dport: 9001
+        state: NEW
+        jump: ACCEPT
+      - proto: tcp
+        dport: 6697
+        state: NEW
+        jump: ACCEPT
+      - proto: tcp
+        dport: 6380
+        state: NEW
+        jump: ACCEPT
+      - proto: all
+        match: conntrack
+        ctstate: NEW
+        jump: LOG
+        log_prefix: "IPT-OUTPUT: "
+        log_level: 4
 
