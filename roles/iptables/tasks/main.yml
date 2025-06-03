@@ -13,9 +13,9 @@
 
 - name: Render iptables rules YAML from host_vars
   copy:
-    dest: /etc/iptables_rules.yaml
+    dest: /etc/ansible/iptables.yml
     content: "{{ iptables | to_nice_yaml(indent=2) }}"
     mode: '0640'
 
 - name: Execute iptables management script
-  command: /usr/bin/python3 /usr/local/bin/manage_iptables.py /etc/iptables_rules.yaml
+  command: /usr/bin/python3 /usr/local/bin/manage_iptables.py
