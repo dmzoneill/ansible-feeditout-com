@@ -106,29 +106,36 @@
       }}
 
 - name: Remove extra ANSIBLE_INPUT rules (iptables)
-  shell: "iptables {{ item.replace('-A', '-D') }}"
+  shell: "iptables {{ rule | regex_replace('^-A', '-D') }}"
   loop: "{{ current_ansible_input_rules.stdout_lines | difference(expected_input_rule_lines) }}"
-  when: item is search('-A ANSIBLE_INPUT')
+  loop_control:
+    loop_var: rule
+  when: rule is search('-A ANSIBLE_INPUT')
+  failed_when: false
 
 - name: Add missing ANSIBLE_INPUT rules (iptables)
-  shell: "iptables {{ item }}"
+  shell: "iptables {{ rule }}"
   loop: "{{ expected_input_rule_lines | difference(current_ansible_input_rules.stdout_lines) }}"
-  when: item is search('-A ANSIBLE_INPUT')
+  loop_control:
+    loop_var: rule
+  when: rule is search('-A ANSIBLE_INPUT')
+  failed_when: false
 
 - name: Remove extra ANSIBLE_INPUT rules (ip6tables)
-  shell: "ip6tables {{ item | regex_replace('^-A', '-D') }}"
+  shell: "ip6tables {{ rule | regex_replace('^-A', '-D') }}"
   loop: "{{ current_ansible_input_v6_rules.stdout_lines | difference(expected_input_rule_lines) }}"
   loop_control:
     loop_var: rule
   when: rule is search('-A ANSIBLE_INPUT')
   failed_when: false
-  register: remove_input_v6
+
 - name: Add missing ANSIBLE_INPUT rules (ip6tables)
   shell: "ip6tables {{ rule }}"
   loop: "{{ expected_input_rule_lines | difference(current_ansible_input_v6_rules.stdout_lines) }}"
   loop_control:
     loop_var: rule
   when: rule is search('-A ANSIBLE_INPUT')
+  failed_when: false
 
 - name: Remove extra ANSIBLE_OUTPUT rules (iptables)
   shell: "iptables {{ rule | regex_replace('^-A', '-D') }}"
@@ -201,31 +208,39 @@
   failed_when: false
 
 - name: Set INPUT policy to DROP (iptables)
-  command: iptables -P INPUT DROP
+  command: iptables -P INPUT {{ ansible_policy_ipv4_input | default('DROP') }}
   register: input_policy_v4
   changed_when: input_policy_v4.rc == 0
 
 - name: Set FORWARD policy to DROP (iptables)
-  command: iptables -P FORWARD DROP
+  command: iptables -P FORWARD {{ ansible_policy_ipv4_forward | default('DROP') }}
   register: forward_policy_v4
   changed_when: forward_policy_v4.rc == 0
 
 - name: Set OUTPUT policy to ACCEPT (iptables)
-  command: iptables -P OUTPUT ACCEPT
+  command: iptables -P OUTPUT {{ ansible_policy_ipv4_output | default('ACCEPT') }}
   register: output_policy_v4
   changed_when: output_policy_v4.rc == 0
 
 - name: Set INPUT policy to DROP (ip6tables)
-  command: ip6tables -P INPUT DROP
+  command: ip6tables -P INPUT {{ ansible_policy_ipv6_input | default('DROP') }}
   register: input_policy_v6
   changed_when: input_policy_v6.rc == 0
 
 - name: Set FORWARD policy to DROP (ip6tables)
-  command: ip6tables -P FORWARD DROP
+  command: ip6tables -P FORWARD {{ ansible_policy_ipv6_forward | default('DROP') }}
   register: forward_policy_v6
   changed_when: forward_policy_v6.rc == 0
 
 - name: Set OUTPUT policy to ACCEPT (ip6tables)
-  command: ip6tables -P OUTPUT ACCEPT
+  command: ip6tables -P OUTPUT {{ ansible_policy_ipv6_output | default('ACCEPT') }}
   register: output_policy_v6
   changed_when: output_policy_v6.rc == 0
+
+- name: Save iptables rules
+  command: iptables-save > /etc/iptables/rules.v4
+  when: create_ansible_input_v4.changed or create_ansible_output_v4.changed or input_policy_v4.changed or forward_policy_v4.changed or output_policy_v4.changed
+
+- name: Save ip6tables rules 
+  command: ip6tables-save > /etc/iptables/rules.v6
+  when: create_ansible_input_v6.changed or create_ansible_output_v6.changed or input_policy_v6.changed or forward_policy_v6.changed or output_policy_v6.changed

@@ -474,6 +474,15 @@ logrotate_configs:
     path: /var/log/private/*.log
     options: [weekly, rotate 4, compress, missingok, notifempty]
 
+# iptables
+
+ansible_policy_ipv4_input: "DROP"
+ansible_policy_ipv4_ouput: "ACCEPT"
+ansible_policy_ipv4_forward: "DROP"
+ansible_policy_ipv6_input: "DROP"
+ansible_policy_ipv6_ouput: "ACCEPT"
+ansible_policy_ipv6_forward: "DROP"
+
 ansible_input_rules:
 
   - proto: all
