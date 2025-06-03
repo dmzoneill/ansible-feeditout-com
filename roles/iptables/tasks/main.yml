@@ -297,3 +297,11 @@
     (input_policy_v6 is defined and input_policy_v6.changed) or
     (forward_policy_v6 is defined and forward_policy_v6.changed) or
     (output_policy_v6 is defined and output_policy_v6.changed)
+
+- name: Show difference between expected and actual INPUT rules
+  debug:
+    msg: "{{ expected_input_rule_lines | difference(current_ansible_input_rules.stdout_lines) }}"
+
+- name: Show difference between actual and expected INPUT rules
+  debug:
+    msg: "{{ current_ansible_input_rules.stdout_lines | difference(expected_input_rule_lines) }}"
