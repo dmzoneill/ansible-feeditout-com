@@ -74,11 +74,11 @@
   shell: |
     echo "=== Checking {{ table }} {{ chain }} ==="
     /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
-      rule_str=$(echo "$rule" | sed 's/  */ /g' | sed 's/ *$//g')
-      normalized_rule=$(echo "$rule_str" | sed 's/ -p all//;s/ --log-level [0-9]*//g')
-      expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/ -p all//g' | sed 's/ --log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//g')"
+      rule_str=$(echo "$rule" | sed 's/  */ /g' | sed 's/ *$//')
+      normalized_rule=$(echo "$rule_str" | sed 's/-p all//g' | sed 's/--log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//')
+      normalized_expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/-p all//g' | sed 's/--log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//')"
       echo "Rule: $normalized_rule"
-      if echo "$expected" | grep -Fxq "$normalized_rule"; then
+      if echo "$normalized_expected" | grep -Fxq "$normalized_rule"; then
         echo " → KEPT (matches expected)"
       else
         echo " → WOULD DELETE (not in expected list)"
@@ -112,12 +112,12 @@
 - name: Prune unmanaged rules from ANSIBLE_INPUT and ANSIBLE_OUTPUT (IPv4/IPv6)
   shell: |
     /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
-      rule_str=$(echo "$rule" | sed 's/  */ /g' | sed 's/ *$//g')
-      normalized_rule=$(echo "$rule_str" | sed 's/ -p all//;s/ --log-level [0-9]*//g')
-      expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/ -p all//g' | sed 's/ --log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//g')"
-      if ! echo "$expected" | grep -Fxq "$normalized_rule"; then
+      rule_str=$(echo "$rule" | sed 's/  */ /g' | sed 's/ *$//')
+      normalized_rule=$(echo "$rule_str" | sed 's/-p all//g' | sed 's/--log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//')
+      normalized_expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/-p all//g' | sed 's/--log-level [0-9]*//g' | sed 's/  */ /g' | sed 's/ *$//')"
+      if ! echo "$normalized_expected" | grep -Fxq "$normalized_rule"; then
         echo "Removing: $rule_str"
-        echo /sbin/{{ table }} $(echo "$rule_str" | sed 's/^-A/-D/')
+        /sbin/{{ table }} $(echo "$rule_str" | sed 's/^-A/-D/')
       fi
     done
   loop:
