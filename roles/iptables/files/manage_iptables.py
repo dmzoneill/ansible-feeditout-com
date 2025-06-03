@@ -75,7 +75,7 @@ def build_rule(rule_dict, chain):
     if jump == "LOG":
         parts.append("-j LOG")
         if log_prefix:
-            parts.append(f"--log-prefix '{log_prefix}'")
+            parts.append(f"--log-prefix {shlex.quote(log_prefix)}")
         if log_level:
             parts.append(f"--log-level {log_level}")
     elif jump:
@@ -120,8 +120,9 @@ def sync_ansible_chains(tool, rules_dict):
         existing_raw = get_current_rules(tool, chain)
         desired_raw = [build_rule(r, chain) for r in desired_rules]
 
-        existing_set = set(normalize_rule(r) for r in existing_raw)
-        desired_set = set(normalize_rule(r) for r in desired_raw)
+        # No normalization anymore: compare raw, exact strings
+        existing_set = set(existing_raw)
+        desired_set = set(desired_raw)
 
         print(f"\n=== Syncing {tool.upper()} {chain} ===")
         print("[DEBUG] Existing rules:")
