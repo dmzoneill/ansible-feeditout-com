@@ -12,10 +12,8 @@
       - ip6tables
 
 - name: Ensure ANSIBLE_INPUT and ANSIBLE_OUTPUT chains exist
-  shell: >
-    /sbin/{{ combo_table }} -N {{ combo_chain }} || true
-  loop: >
-    {{ iptables_cmds | product(['ANSIBLE_INPUT', 'ANSIBLE_OUTPUT']) | list }}
+  shell: "/sbin/{{ combo_table }} -N {{ combo_chain }} || true"
+  loop: "{{ iptables_cmds | product(['ANSIBLE_INPUT', 'ANSIBLE_OUTPUT']) | list }}"
   loop_control:
     loop_var: combo
   vars:
@@ -24,12 +22,11 @@
   changed_when: false
 
 - name: Ensure INPUT and OUTPUT jump rules exist
-  shell: >
+  shell: |
     if ! /sbin/{{ table }} -C {{ direction }} -j {{ chain }} 2>/dev/null; then
       /sbin/{{ table }} -I {{ direction }} 1 -j {{ chain }}
     fi
-  loop: >
-    {{ iptables_cmds | product([['INPUT', 'ANSIBLE_INPUT'], ['OUTPUT', 'ANSIBLE_OUTPUT']]) | list }}
+  loop: "{{ iptables_cmds | product([['INPUT', 'ANSIBLE_INPUT'], ['OUTPUT', 'ANSIBLE_OUTPUT']]) | list }}"
   loop_control:
     loop_var: combo
   vars:
@@ -38,48 +35,43 @@
     chain: "{{ combo[1][1] }}"
   changed_when: false
 
-- name: Get current ANSIBLE_INPUT and ANSIBLE_OUTPUT rules
-  shell: /sbin/{{ combo[0] }} -S {{ combo[1] }}
-  loop: >
-    {{ iptables_cmds | product(['ANSIBLE_INPUT', 'ANSIBLE_OUTPUT']) | list }}
-  loop_control:
-    loop_var: combo
-  register: current_rules
-  changed_when: false
-
-- name: Build expected rules
+- name: Build expected rule strings
   set_fact:
-    expected_input_rule_lines: >
+    expected_input_rule_lines: >-
       {{ ansible_input_rules | map('iptables_build_rule', 'ANSIBLE_INPUT') | list }}
-    expected_output_rule_lines: >
+    expected_output_rule_lines: >-
       {{ ansible_output_rules | map('iptables_build_rule', 'ANSIBLE_OUTPUT') | list }}
-    all_expected_rules: >
+    all_expected_rules: >-
       {{
-        (expected_input_rule_lines | zip(['iptables'] * expected_input_rule_lines | length)) +
-        (expected_output_rule_lines | zip(['iptables'] * expected_output_rule_lines | length))
+        (expected_input_rule_lines | zip(['iptables'] * (expected_input_rule_lines | length))) +
+        (expected_output_rule_lines | zip(['iptables'] * (expected_output_rule_lines | length)))
       }}
 
 - name: Check if each expected rule exists (IPv4)
-  shell: /sbin/{{ item[1] }} {{ item[0] | regex_replace('^-A', '-C') }}
+  shell: "/sbin/{{ item[1] }} {{ item[0] | regex_replace('^-A', '-C') }}"
   loop: "{{ all_expected_rules }}"
   register: rule_check
   changed_when: false
   failed_when: false
 
 - name: Add missing expected rules (IPv4)
-  shell: /sbin/{{ item.item[1] }} {{ item.item[0] }}
+  shell: "/sbin/{{ item.item[1] }} {{ item.item[0] }}"
   when: item.rc != 0
   loop: "{{ rule_check.results }}"
   loop_control:
     loop_var: item
 
 - name: Prune unmanaged rules (IPv4/IPv6)
-  shell: >
-    for rule in $(/sbin/{{ table }} -S {{ direction }} | grep "^-A {{ direction }}" | grep -v '{{ chain }}' | grep -v 'DOCKER' | grep -v 'f2b'); do
-      /sbin/{{ table }} $(echo "$rule" | sed 's/^-A/-D/') || true;
-    done
-  loop: >
-    {{ iptables_cmds | product([['INPUT', 'ANSIBLE_INPUT'], ['OUTPUT', 'ANSIBLE_OUTPUT']]) | list }}
+  shell: |
+    /sbin/{{ table }} -S {{ direction }} \
+      | grep "^-A {{ direction }}" \
+      | grep -v '{{ chain }}' \
+      | grep -v 'DOCKER' \
+      | grep -v 'f2b' \
+      | while read rule; do
+          /sbin/{{ table }} $(echo "$rule" | sed 's/^-A/-D/') || true
+        done
+  loop: "{{ iptables_cmds | product([['INPUT', 'ANSIBLE_INPUT'], ['OUTPUT', 'ANSIBLE_OUTPUT']]) | list }}"
   loop_control:
     loop_var: combo
   vars:
@@ -92,7 +84,7 @@
   failed_when: false
 
 - name: Ensure logging rule exists in ANSIBLE_OUTPUT (IPv4)
-  shell: >
+  shell: |
     /sbin/iptables -C ANSIBLE_OUTPUT -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4 || \
     /sbin/iptables -I ANSIBLE_OUTPUT 1 -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4
   args:
@@ -101,7 +93,7 @@
   failed_when: false
 
 - name: Set default policies
-  shell: /sbin/{{ item[0] }} -P {{ item[1] }} {{ item[2] }}
+  shell: "/sbin/{{ item[0] }} -P {{ item[1] }} {{ item[2] }}"
   loop:
     - [iptables, INPUT, DROP]
     - [iptables, FORWARD, DROP]
@@ -112,7 +104,6 @@
   changed_when: false
 
 - name: Save iptables and ip6tables rules
-  shell: >
-    /sbin/{{ item }}-save > /etc/iptables/rules.v{{ '6' if item == 'ip6tables' else '4' }}
+  shell: "/sbin/{{ item }}-save > /etc/iptables/rules.v{{ '6' if item == 'ip6tables' else '4' }}"
   loop: "{{ iptables_cmds }}"
   changed_when: false
