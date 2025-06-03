@@ -213,8 +213,6 @@
     executable: /bin/bash
   changed_when: false
   failed_when: false
-
-
 - name: Set INPUT policy to DROP (iptables)
   command: iptables -P INPUT {{ ansible_policy_ipv4_input | default('DROP') }}
   register: input_policy_v4
@@ -256,6 +254,7 @@
     owner: root
     group: root
     mode: '0644'
+  changed_when: false
   when: create_ansible_input_v4.changed or create_ansible_output_v4.changed or input_policy_v4.changed or forward_policy_v4.changed or output_policy_v4.changed
 
 - name: Get current ip6tables rules (IPv6)
@@ -269,4 +268,5 @@
     owner: root
     group: root
     mode: '0644'
+  changed_when: false
   when: create_ansible_input_v6.changed or create_ansible_output_v6.changed or input_policy_v6.changed or forward_policy_v6.changed or output_policy_v6.changed
