@@ -519,7 +519,7 @@ iptables:
     ANSIBLE_OUTPUT:
       - proto: all
         match: conntrack
-        ctstate: RELATED,ESTABLISHED
+        ctstate: NEW,ESTABLISHED,RELATED
         jump: ACCEPT
       - proto: all
         out_interface: lo
