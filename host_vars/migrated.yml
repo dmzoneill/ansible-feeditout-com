@@ -494,6 +494,7 @@ iptables:
 
       - proto: udp
         sport: 53
+        dport: 1024:65535
         match: conntrack
         ctstate: ESTABLISHED,RELATED
         jump: ACCEPT
@@ -546,11 +547,8 @@ iptables:
         out_interface: lo
         jump: ACCEPT
 
-      - proto: tcp
-        dport: 53
-        jump: ACCEPT
-
       - proto: udp
+        sport: 1024:65535
         dport: 53
         jump: ACCEPT
 
