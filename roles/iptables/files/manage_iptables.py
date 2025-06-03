@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import subprocess
 import yaml
 import os
@@ -76,8 +75,7 @@ def build_rule(rule_dict, chain):
         parts.append("-j LOG")
         if log_prefix:
             parts.append(f"--log-prefix {shlex.quote(log_prefix)}")
-        if log_level:
-            parts.append(f"--log-level {log_level}")
+        # Exclude log-level from rule string comparison (iptables -S omits it)
     elif jump:
         parts.append(f"-j {jump}")
 
@@ -98,31 +96,26 @@ def normalize_rule(rule_line):
     prefix = " ".join(tokens[:index + 1])
     args = tokens[index + 1:]
 
-    grouped = []
-    skip_next = False
+    filtered_args = []
+    skip = False
     for i, tok in enumerate(args):
-        if skip_next:
-            skip_next = False
+        if skip:
+            skip = False
             continue
-        if tok.startswith("-") and i + 1 < len(args) and not args[i + 1].startswith("-"):
-            grouped.append((tok, args[i + 1]))
-            skip_next = True
-        else:
-            grouped.append((tok,))
+        if tok == "--log-level":
+            skip = True
+            continue
+        filtered_args.append(tok)
 
-    sorted_grouped = sorted(grouped, key=lambda g: g[0])
-    flat = [" ".join(group) for group in sorted_grouped]
-
-    return f"{prefix} {' '.join(flat)}"
+    return f"{prefix} {' '.join(filtered_args)}"
 
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
         existing_raw = get_current_rules(tool, chain)
         desired_raw = [build_rule(r, chain) for r in desired_rules]
 
-        # No normalization anymore: compare raw, exact strings
-        existing_set = set(existing_raw)
-        desired_set = set(desired_raw)
+        existing_set = set(normalize_rule(r) for r in existing_raw)
+        desired_set = set(normalize_rule(r) for r in desired_raw)
 
         print(f"\n=== Syncing {tool.upper()} {chain} ===")
         print("[DEBUG] Existing rules:")
