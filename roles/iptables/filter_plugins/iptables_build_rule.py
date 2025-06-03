@@ -5,17 +5,24 @@ def iptables_build_rule(rule, chain):
     if proto:
         parts.append(f"-p {proto}")
 
-    # Module matches
-    if "match" in rule:
-        parts.append(f"-m {rule['match']}")
+    # Keep track of modules to avoid duplicates
+    modules = set()
 
+    # conntrack/state modules
     if "ctstate" in rule:
-        parts.append("-m conntrack")
+        modules.add("conntrack")
         parts.append(f"--ctstate {rule['ctstate']}")
 
     if "state" in rule:
-        parts.append("-m state")
+        modules.add("state")
         parts.append(f"--state {rule['state']}")
+
+    # Explicit match module
+    if "match" in rule:
+        modules.add(rule["match"])
+
+    for mod in sorted(modules):
+        parts.append(f"-m {mod}")
 
     # Interfaces
     if "in_interface" in rule:
