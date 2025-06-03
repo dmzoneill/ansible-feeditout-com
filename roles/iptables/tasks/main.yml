@@ -67,13 +67,17 @@
   loop_control:
     loop_var: missing_rule
 
-- name: Prune unmanaged rules from ANSIBLE_INPUT and ANSIBLE_OUTPUT (IPv4 & IPv6)
+- name: DEBUG — Show which iptables rules would be pruned (IPv4 & IPv6)
   shell: |
+    echo "=== Checking {{ table }} {{ chain }} ==="
     /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
       rule_str=$(echo "$rule")
       expected="{{ expected_rules | join('\n') }}"
-      if ! echo "$expected" | grep -Fxq "$rule_str"; then
-        /sbin/{{ table }} $(echo "$rule_str" | sed 's/^-A/-D/') || true
+      echo "Rule: $rule_str"
+      if echo "$expected" | grep -Fxq "$rule_str"; then
+        echo " → KEPT (matches expected)"
+      else
+        echo " → WOULD DELETE (not in expected list)"
       fi
     done
   loop:
@@ -91,6 +95,7 @@
     executable: /bin/bash
   changed_when: false
   failed_when: false
+
 
 - name: Prune unmanaged rules (IPv4/IPv6)
   shell: |
