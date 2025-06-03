@@ -509,10 +509,10 @@ iptables:
         in_interface: lo
         jump: ACCEPT
 
-      - proto: tcp
-        dport: 33
+      - proto: udp
+        dport: 53
         jump: ACCEPT
-
+      
       - proto: tcp
         dport: 80
         jump: ACCEPT
@@ -548,8 +548,7 @@ iptables:
         jump: ACCEPT
 
       - proto: udp
-        sport: 1024:65535
-        dport: 53
+        sport: 53
         jump: ACCEPT
 
       - proto: udp
