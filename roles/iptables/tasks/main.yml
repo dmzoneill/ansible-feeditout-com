@@ -74,8 +74,8 @@
   shell: |
     echo "=== Checking {{ table }} {{ chain }} ==="
     /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
-      rule_str=$(echo "$rule")
-      expected="{{ expected_rules | join('\n') }}"
+      rule_str=$(echo "$rule" | sed 's/ --log-level [0-9]*//g')
+      expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/ --log-level [0-9]*//g')"
       echo "Rule: $rule_str"
       if echo "$expected" | grep -Fxq "$rule_str"; then
         echo " → KEPT (matches expected)"
@@ -111,11 +111,11 @@
 - name: Prune unmanaged rules from ANSIBLE_INPUT and ANSIBLE_OUTPUT (IPv4/IPv6)
   shell: |
     /sbin/{{ table }} -S {{ chain }} | grep "^-A" | while read rule; do
-      rule_str=$(echo "$rule")
-      expected="{{ expected_rules | join('\n') }}"
+      rule_str=$(echo "$rule" | sed 's/ --log-level [0-9]*//g')
+      expected="$(echo "{{ expected_rules | join('\n') }}" | sed 's/ --log-level [0-9]*//g')"
       if ! echo "$expected" | grep -Fxq "$rule_str"; then
         echo "Removing: $rule_str"
-        echo /sbin/{{ table }} $(echo "$rule_str" | sed 's/^-A/-D/') || true
+        echo /sbin/{{ table }} $(echo "$rule" | sed 's/^-A/-D/') || true
       fi
     done
   loop:
@@ -134,15 +134,6 @@
     executable: /bin/bash
   changed_when: true
   failed_when: false
-
-# - name: Ensure logging rule exists in ANSIBLE_OUTPUT (IPv4)
-#   shell: |
-#     /sbin/iptables -C ANSIBLE_OUTPUT -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4 || \
-#     /sbin/iptables -I ANSIBLE_OUTPUT 1 -m conntrack --ctstate NEW -j LOG --log-prefix "IPT-OUTPUT: " --log-level 4
-#   args:
-#     executable: /bin/bash
-#   changed_when: false
-#   failed_when: false
 
 - name: Build policy list from host vars
   set_fact:
