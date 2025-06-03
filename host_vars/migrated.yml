@@ -602,7 +602,9 @@ ansible_output_rules:
     jump: ACCEPT
 
   - proto: all
+    match: conntrack
     ctstate: NEW
     jump: LOG
     log_prefix: "IPT-OUTPUT: "
     log_level: 4
+
