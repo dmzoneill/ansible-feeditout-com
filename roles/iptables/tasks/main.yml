@@ -12,27 +12,16 @@
       - ip6tables
 
 - name: Ensure ANSIBLE_INPUT and ANSIBLE_OUTPUT chains exist
-  shell: "/sbin/{{ combo_table }} -N {{ combo_chain }} || true"
+  shell: "/sbin/{{ combo[0] }} -N {{ combo[1] }} || true"
   loop: "{{ iptables_cmds | product(['ANSIBLE_INPUT', 'ANSIBLE_OUTPUT']) | list }}"
-  loop_control:
-    loop_var: combo
-  vars:
-    combo_table: "{{ combo[0] }}"
-    combo_chain: "{{ combo[1] }}"
   changed_when: false
 
 - name: Ensure INPUT and OUTPUT jump rules exist
   shell: |
-    if ! /sbin/{{ table }} -C {{ direction }} -j {{ chain }} 2>/dev/null; then
-      /sbin/{{ table }} -I {{ direction }} 1 -j {{ chain }}
+    if ! /sbin/{{ combo[0] }} -C {{ combo[1][0] }} -j {{ combo[1][1] }} 2>/dev/null; then
+      /sbin/{{ combo[0] }} -I {{ combo[1][0] }} 1 -j {{ combo[1][1] }}
     fi
   loop: "{{ iptables_cmds | product([['INPUT', 'ANSIBLE_INPUT'], ['OUTPUT', 'ANSIBLE_OUTPUT']]) | list }}"
-  loop_control:
-    loop_var: combo
-  vars:
-    table: "{{ combo[0] }}"
-    direction: "{{ combo[1][0] }}"
-    chain: "{{ combo[1][1] }}"
   changed_when: false
 
 - name: Debug rules before building strings
@@ -58,38 +47,32 @@
       }}
 
 - name: Check if each expected rule exists (IPv4)
-  shell: |
-    /sbin/{{ item[1] }} {{ item[0] | regex_replace('^-A', '-C') }}
+  shell: "/sbin/{{ all_expected_rules[ansible_loop.index0][1] }} {{ all_expected_rules[ansible_loop.index0][0] | regex_replace('^-A', '-C') }}"
   loop: "{{ all_expected_rules }}"
+  loop_control:
+    loop_var: dummy
   register: rule_check
   changed_when: false
   failed_when: false
 
 - name: Add missing expected rules (IPv4)
-  shell: |
-    /sbin/{{ item.item[1] }} {{ item.item[0] }}
-  when: item.rc != 0
+  shell: "/sbin/{{ rule_check.results[ansible_loop.index0].item[1] }} {{ rule_check.results[ansible_loop.index0].item[0] }}"
+  when: rule_check.results[ansible_loop.index0].rc != 0
   loop: "{{ rule_check.results }}"
   loop_control:
-    loop_var: item
+    loop_var: dummy
 
 - name: Prune unmanaged rules (IPv4/IPv6)
   shell: |
-    /sbin/{{ table }} -S {{ direction }} | \
-    grep "^-A {{ direction }}" | \
-    grep -v '{{ chain }}' | \
+    /sbin/{{ combo[0] }} -S {{ combo[1][0] }} | \
+    grep "^-A {{ combo[1][0] }}" | \
+    grep -v '{{ combo[1][1] }}' | \
     grep -v 'DOCKER' | \
     grep -v 'f2b' | \
     while read rule; do
-      /sbin/{{ table }} $(echo "$rule" | sed 's/^-A/-D/') || true
+      /sbin/{{ combo[0] }} $(echo "$rule" | sed 's/^-A/-D/') || true
     done
   loop: "{{ iptables_cmds | product([['INPUT', 'ANSIBLE_INPUT'], ['OUTPUT', 'ANSIBLE_OUTPUT']]) | list }}"
-  loop_control:
-    loop_var: combo
-  vars:
-    table: "{{ combo[0] }}"
-    direction: "{{ combo[1][0] }}"
-    chain: "{{ combo[1][1] }}"
   args:
     executable: /bin/bash
   changed_when: false
@@ -105,7 +88,7 @@
   failed_when: false
 
 - name: Set default policies
-  shell: "/sbin/{{ item[0] }} -P {{ item[1] }} {{ item[2] }}"
+  shell: "/sbin/{{ combo[0] }} -P {{ combo[1] }} {{ combo[2] }}"
   loop:
     - [iptables, INPUT, DROP]
     - [iptables, FORWARD, DROP]
@@ -113,6 +96,8 @@
     - [ip6tables, INPUT, DROP]
     - [ip6tables, FORWARD, DROP]
     - [ip6tables, OUTPUT, ACCEPT]
+  loop_control:
+    loop_var: combo
   changed_when: false
 
 - name: Save iptables and ip6tables rules
