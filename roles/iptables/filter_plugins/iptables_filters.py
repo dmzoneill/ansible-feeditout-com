@@ -1,25 +1,47 @@
-def iptables_build_rule(rule_dict, chain):
-    args = [f"-A {chain}"]
-    if 'in_interface' in rule_dict:
-        args.append(f"-i {rule_dict['in_interface']}")
-    if 'out_interface' in rule_dict:
-        args.append(f"-o {rule_dict['out_interface']}")
-    if 'proto' in rule_dict:
-        args.append(f"-p {rule_dict['proto']}")
-        args.append(f"-m {rule_dict['proto']}")
-    if 'match' in rule_dict:
-        args.append(f"-m {rule_dict['match']}")
-    if 'ctstate' in rule_dict:
-        args.append(f"--ctstate {rule_dict['ctstate']}")
-    if 'state' in rule_dict:
-        args.append(f"-m state --state {rule_dict['state']}")
-    if 'dport' in rule_dict:
-        args.append(f"--dport {rule_dict['dport']}")
-    if 'sport' in rule_dict:
-        args.append(f"--sport {rule_dict['sport']}")
-    if 'jump' in rule_dict:
-        args.append(f"-j {rule_dict['jump']}")
-    return ' '.join(args)
+def iptables_build_rule(rule, chain):
+    parts = [f"-A {chain}"]
+
+    proto = rule.get("proto")
+    if proto and proto != "all":
+        parts.append(f"-p {proto}")
+
+    # Use conntrack only once and only if ctstate is present
+    if "ctstate" in rule:
+        parts.append("-m conntrack")
+        parts.append(f"--ctstate {rule['ctstate']}")
+
+    # Optional legacy support
+    if "state" in rule:
+        parts.append("-m state")
+        parts.append(f"--state {rule['state']}")
+
+    if "match" in rule:
+        parts.append(f"-m {rule['match']}")
+
+    if "in_interface" in rule:
+        parts.append(f"-i {rule['in_interface']}")
+
+    if "out_interface" in rule:
+        parts.append(f"-o {rule['out_interface']}")
+
+    if "sport" in rule:
+        parts.append(f"--sport {rule['sport']}")
+
+    if "dport" in rule:
+        parts.append(f"--dport {rule['dport']}")
+
+    jump = rule.get("jump")
+    if jump == "LOG":
+        parts.append("-j LOG")
+        if "log_prefix" in rule:
+            parts.append(f"--log-prefix \"{rule['log_prefix']}\"")
+        if "log_level" in rule:
+            parts.append(f"--log-level {rule['log_level']}")
+    elif jump:
+        parts.append(f"-j {jump}")
+
+    return " ".join(parts)
+
 
 class FilterModule(object):
     def filters(self):
