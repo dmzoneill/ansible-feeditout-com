@@ -529,7 +529,7 @@ iptables:
 
     ANSIBLE_OUTPUT:
       - proto: all
-        ctstate: NEW,ESTABLISHED,RELATED
+        ctstate: NEW,RELATED,ESTABLISHED
         jump: ACCEPT
 
       - proto: all
