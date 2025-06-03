@@ -32,7 +32,7 @@ def build_rule(rule_dict, chain):
     parts = [f"-A {chain}"]
 
     proto = rule_dict.get("proto")
-    if proto:
+    if proto and proto != "all":
         parts.append(f"-p {proto}")
         if proto in ("tcp", "udp"):
             parts.append(f"-m {proto}")
@@ -42,16 +42,15 @@ def build_rule(rule_dict, chain):
     if "out_interface" in rule_dict:
         parts.append(f"-o {rule_dict['out_interface']}")
 
-    match = rule_dict.get("match")
-    if match:
-        parts.append(f"-m {match}")
     if "ctstate" in rule_dict:
         parts.append("-m conntrack")
         parts.append(f"--ctstate {rule_dict['ctstate']}")
+    elif rule_dict.get("match") and rule_dict["match"] != "conntrack":
+        parts.append(f"-m {rule_dict['match']}")
+
     if "state" in rule_dict:
         parts.append("-m state")
         parts.append(f"--state {rule_dict['state']}")
-
     if "sport" in rule_dict:
         parts.append(f"--sport {rule_dict['sport']}")
     if "dport" in rule_dict:
@@ -77,15 +76,19 @@ def get_current_rules(tool, chain):
             rules.append(line.strip())
     return rules
 
+def normalize_rule(rule):
+    return " ".join(sorted(rule.strip().split()))
+
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
-        existing = set(get_current_rules(tool, chain))
-        desired = set(build_rule(r, chain) for r in desired_rules)
+        existing = set(normalize_rule(r) for r in get_current_rules(tool, chain))
+        desired = set(normalize_rule(build_rule(r, chain)) for r in desired_rules)
 
         for rule in desired - existing:
             run(f"/sbin/{tool} {rule}")
         for rule in existing - desired:
-            del_rule = rule.replace("-A", "-D", 1)
+            original = " ".join(rule.split())
+            del_rule = original.replace("-A", "-D", 1)
             run(f"/sbin/{tool} {del_rule}")
 
 def apply_rules(tool, rules_dict):
