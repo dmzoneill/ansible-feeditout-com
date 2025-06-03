@@ -49,8 +49,6 @@ def iptables_build_rule(rule, chain):
         if "log_prefix" in rule:
             prefix = rule["log_prefix"].replace('"', r'\"')
             parts.append(f'--log-prefix "{prefix}"')
-        if "log_level" in rule:
-            parts.append(f"--log-level {rule['log_level']}")
     elif jump:
         parts.append(f"-j {jump}")
 
