@@ -35,12 +35,6 @@
     chain: "{{ combo_pair[1][1] }}"
   changed_when: false
 
-- name: Debug rules before building strings
-  debug:
-    msg:
-      - "INPUT rules: {{ ansible_input_rules | length }} items"
-      - "OUTPUT rules: {{ ansible_output_rules | length }} items"
-
 - name: Build expected rule strings for INPUT
   set_fact:
     expected_input_rule_lines: "{{ ansible_input_rules | map('iptables_build_rule', 'ANSIBLE_INPUT') | list }}"

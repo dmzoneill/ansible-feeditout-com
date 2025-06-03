@@ -275,7 +275,7 @@ domains:
       - name: pma.fio.ie
         document_root: phpmyadmin
         enabled: true
-    loglevel: debug
+    loglevel: warn
     enabled: true
 
   - domain: feeditout.xyz
@@ -284,7 +284,7 @@ domains:
       - name: www.feeditout.xyz
         document_root: feeditout.xyz
         enabled: true
-    loglevel: debug
+    loglevel: warn
     enabled: true
 
   - domain: feeditout.site
@@ -293,7 +293,7 @@ domains:
       - name: www.feeditout.site
         document_root: feeditout.site
         enabled: true
-    loglevel: debug
+    loglevel: warn
     enabled: true
 
   - domain: feeditout.com
@@ -314,7 +314,7 @@ domains:
       - name: pma.feeditout.com
         document_root: phpmyadmin
         enabled: true
-    loglevel: debug
+    loglevel: warn
     enabled: true
 
   - domain: ecu-emr.com
@@ -324,7 +324,7 @@ domains:
         document_root: ecu-emr.com
         enabled: true
     custom_config: true
-    loglevel: debug
+    loglevel: warn
     enabled: true
 
   - domain: ashtangayoga.ie
@@ -333,7 +333,7 @@ domains:
       - name: www.ashtangayoga.ie
         document_root: ashtangayoga.ie
         enabled: true
-    loglevel: debug
+    loglevel: warn
     enabled: true
 
 # logrotate
@@ -522,25 +522,25 @@ ansible_input_rules:
     dport: 587
     jump: ACCEPT
 
-  - proto: tcp
-    dport: 993
-    jump: ACCEPT
+  # - proto: tcp
+  #   dport: 993
+  #   jump: ACCEPT
 
-  - proto: tcp
-    dport: 995
-    jump: ACCEPT
+  # - proto: tcp
+  #   dport: 995
+  #   jump: ACCEPT
 
-  - proto: tcp
-    dport: 9100
-    jump: ACCEPT
+  # - proto: tcp
+  #   dport: 9100
+  #   jump: ACCEPT
 
-  - proto: tcp
-    dport: 9001
-    jump: ACCEPT
+  # - proto: tcp
+  #   dport: 9001
+  #   jump: ACCEPT
 
-  - proto: udp
-    dport: 123
-    jump: ACCEPT
+  # - proto: udp
+  #   dport: 123
+  #   jump: ACCEPT
 
   - proto: tcp
     dport: 6380
