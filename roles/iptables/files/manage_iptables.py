@@ -30,6 +30,8 @@ def ensure_jump(tool, parent_chain, target_chain):
     if check.returncode != 0:
         run(f"/sbin/{tool} -I {parent_chain} 1 -j {target_chain}")
 
+import pprint
+
 def build_rule(rule_dict, chain):
     # Print dictionary contents for debugging
     print("[DEBUG] Rule dictionary:")
@@ -47,30 +49,49 @@ def build_rule(rule_dict, chain):
     log_prefix = rule_dict.get("log_prefix")
     log_level = rule_dict.get("log_level")
 
-    rule = f"-A {chain}"
-    rule += f" -p {proto}" if proto and proto != "all" else ""
-    rule += f" -i {in_if}" if in_if else ""
-    rule += f" -o {out_if}" if out_if else ""
+    # Collect rule parts in order, only appending if value is present
+    parts = [f"-A {chain}"]
 
-    # Match modules before dependent options
-    rule += " -m conntrack" if ctstate else ""
-    rule += f" -m {match_module}" if match_module and match_module != "conntrack" else ""
-    rule += " -m state" if state else ""
-    rule += f" -m {proto}" if proto in ("tcp", "udp") else ""
+    if proto and proto != "all":
+        parts.append(f"-p {proto}")
+    if in_if:
+        parts.append(f"-i {in_if}")
+    if out_if:
+        parts.append(f"-o {out_if}")
 
-    rule += f" --ctstate {ctstate}" if ctstate else ""
-    rule += f" --state {state}" if state else ""
-    rule += f" --sport {sport}" if sport else ""
-    rule += f" --dport {dport}" if dport else ""
+    # Match modules first
+    if ctstate:
+        parts.append("-m conntrack")
+    if match_module and match_module != "conntrack":
+        parts.append(f"-m {match_module}")
+    if state:
+        parts.append("-m state")
+    if proto in ("tcp", "udp"):
+        parts.append(f"-m {proto}")
 
+    # Match options
+    if ctstate:
+        parts.append(f"--ctstate {ctstate}")
+    if state:
+        parts.append(f"--state {state}")
+    if sport:
+        parts.append(f"--sport {sport}")
+    if dport:
+        parts.append(f"--dport {dport}")
+
+    # Jump and optional LOG params
     if jump == "LOG":
-        rule += " -j LOG"
-        rule += f" --log-prefix '{log_prefix}'" if log_prefix else ""
-        rule += f" --log-level {log_level}" if log_level else ""
+        parts.append("-j LOG")
+        if log_prefix:
+            parts.append(f"--log-prefix '{log_prefix}'")
+        if log_level:
+            parts.append(f"--log-level {log_level}")
     elif jump:
-        rule += f" -j {jump}"
+        parts.append(f"-j {jump}")
 
-    return rule
+    pprint.pprint(parts)  # Debugging output to see the final rule parts
+    return " ".join(parts)
+
 
 def get_current_rules(tool, chain):
     result = run(f"/sbin/{tool} -S {chain}", check=False)
