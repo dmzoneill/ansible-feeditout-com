@@ -131,8 +131,8 @@ def main():
 
     for tool in ("iptables", "ip6tables"):
         version = "ipv6" if tool == "ip6tables" else "ipv4"
-        apply_policies(tool, policies.get(version, {}))
         apply_rules(tool, rules)
+        apply_policies(tool, policies.get(version, {}))
 
 
 if __name__ == "__main__":
