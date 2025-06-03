@@ -535,6 +535,6 @@ iptables:
       - proto: all
         ctstate: NEW
         jump: LOG
-        log_prefix: "\"IPT-OUTPUT: \""
+        log_prefix: IPT
         log_level: 4
 
