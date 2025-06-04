@@ -41,7 +41,7 @@
   lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX='
-    line: 'GRUB_CMDLINE_LINUX="{{ updated_cmdline }}"'
+    line: "GRUB_CMDLINE_LINUX=\"{{ updated_cmdline | replace('\"', '\\\"') }}\""
     backup: true
   register: grub_line
 
