@@ -7,7 +7,7 @@
 
 - name: Get existing GRUB_CMDLINE_LINUX value
   shell: |
-    grep '^GRUB_CMDLINE_LINUX=' /etc/default/grub | sed -E 's/^GRUB_CMDLINE_LINUX=["'\''](.*)["'\'']/\1/'
+    grep '^GRUB_CMDLINE_LINUX=' /etc/default/grub | sed -E 's/^GRUB_CMDLINE_LINUX=["'\''"]?(.*?)["'\''"]?$/\1/'
   register: grub_cmdline_raw
   changed_when: false
   failed_when: false
@@ -21,12 +21,21 @@
     updated_cmdline: >-
       {{
         (
-          grub_cmdline.split()
-          | difference(['console=ttyS0', 'console=ttyS0,115200', 'quiet'])
-          | union(['console=tty0', 'console=ttyS0,115200'])
-          | unique
-        ) | join(' ')
+          (grub_cmdline + ' ')
+          .replace('quiet ', '')
+          .replace('console=ttyS0,115200 ', '')
+          .replace('console=ttyS0 ', '')
+          .replace('console=tty0 ', '')
+          .strip()
+          .split()
+          + ['console=tty0', 'console=ttyS0,115200']
+        ) | unique | join(' ')
       }}
+
+- name: Add kernel flag to make random non-blocking (if not present)
+  set_fact:
+    updated_cmdline: "{{ updated_cmdline + ' random.trust_cpu=on' }}"
+  when: "'random.trust_cpu=on' not in updated_cmdline"
 
 - name: Update GRUB_CMDLINE_LINUX in /etc/default/grub
   lineinfile:
@@ -36,12 +45,20 @@
     backup: true
   register: grub_line
 
+- name: Ensure GRUB_TIMEOUT is set to 120 seconds
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_TIMEOUT='
+    line: 'GRUB_TIMEOUT=120'
+    create: yes
+  register: grub_timeout_line
+
 - name: Run update-grub to apply changes
   command: update-grub
-  when: grub_line.changed
+  when: grub_line.changed or grub_timeout_line.changed
 
 - name: Reboot system if grub was updated
   reboot:
-    msg: "Rebooting to apply GRUB_CMDLINE_LINUX changes"
+    msg: "Rebooting to apply GRUB changes"
     pre_reboot_delay: 5
-  when: grub_line.changed
+  when: grub_line.changed or grub_timeout_line.changed
