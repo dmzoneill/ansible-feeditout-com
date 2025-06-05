@@ -69,7 +69,29 @@
     mode: '0644'
   notify: Restart Prometheus
 
-- name: Ensure Prometheus rules directory exists
+- name: Ensure local Prometheus alert rules directory exists
+  ansible.builtin.file:
+    path: "{{ alerts_download_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Download alert rules archive only if not present
+  ansible.builtin.get_url:
+    url: "https://github.com/samber/awesome-prometheus-alerts/archive/refs/tags/{{ alerts_release_version }}.tar.gz"
+    dest: "{{ alerts_archive_path }}"
+    mode: '0644'
+  when: alerts_archive_path is not file
+
+- name: Extract alert rules if not already extracted
+  ansible.builtin.unarchive:
+    src: "{{ alerts_archive_path }}"
+    dest: "{{ alerts_download_dir }}"
+    remote_src: true
+    creates: "{{ alerts_extract_path }}/dist/rules"
+
+- name: Ensure Prometheus rule directory exists
   ansible.builtin.file:
     path: /etc/prometheus/rules
     state: directory
@@ -77,49 +99,26 @@
     group: prometheus
     mode: '0755'
 
-- name: Create temporary directory for alert rules
-  ansible.builtin.tempfile:
-    state: directory
-    suffix: awesome_alerts
-  register: temp_rules_dir
-
-- name: Download awesome-prometheus-alerts release archive
-  ansible.builtin.get_url:
-    url: https://github.com/samber/awesome-prometheus-alerts/archive/refs/tags/2025-04-17.1.tar.gz
-    dest: "{{ temp_rules_dir.path }}/awesome-prometheus-alerts.tar.gz"
-    mode: '0644'
-
-- name: Extract alert rules archive
-  ansible.builtin.unarchive:
-    src: "{{ temp_rules_dir.path }}/awesome-prometheus-alerts.tar.gz"
-    dest: "{{ temp_rules_dir.path }}"
-    remote_src: true
-
-- name: Find alert rule files
+- name: Find all alert rule files in the extracted archive
   ansible.builtin.find:
-    paths: "{{ temp_rules_dir.path }}/awesome-prometheus-alerts-2025-04-17.1/dist/rules"
+    paths: "{{ alerts_extract_path }}/dist/rules"
     patterns: "*.yml"
     recurse: true
-  register: found_rule_files
+  register: discovered_rule_files
 
 - name: Copy alert rule files to /etc/prometheus/rules
   ansible.builtin.copy:
-    src: "{{ rule_file.path }}"
-    dest: "/etc/prometheus/rules/{{ rule_file.path | basename }}"
+    src: "{{ discovered_rule.path }}"
+    dest: "/etc/prometheus/rules/{{ discovered_rule.path | basename }}"
     owner: prometheus
     group: prometheus
     mode: '0644'
     remote_src: true
-  loop: "{{ found_rule_files.files }}"
+  loop: "{{ discovered_rule_files.files }}"
   loop_control:
-    loop_var: rule_file
-    label: "{{ rule_file.path | basename }}"
+    loop_var: discovered_rule
+    label: "{{ discovered_rule.path | basename }}"
   tags: prometheus, alert_rules
-
-- name: Remove temporary directory
-  ansible.builtin.file:
-    path: "{{ temp_rules_dir.path }}"
-    state: absent
 
 # - name: Create cert directory for Prometheus TLS
 #   ansible.builtin.file:
