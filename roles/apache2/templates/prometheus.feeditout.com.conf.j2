@@ -1,7 +1,7 @@
 <Location />
     AuthType Basic
     AuthName "Restricted Access"
-    AuthUserFile /home/{{ user }}/www/{{ vhost.domain_alias | default(vhost.domain) }}/.htpasswd
+    AuthUserFile /home/{{ user }}/www/{{ vhost.document_root }}/.htpasswd
     Require valid-user
 
     ProxyPass http://localhost:9090/
