@@ -4,9 +4,12 @@
   ansible.builtin.set_fact:
     alertmanager_tarball: "alertmanager-{{ alertmanager_version }}.{{ alertmanager_arch }}.tar.gz"
 
-- name: Define Alertmanager paths and download URL
+- name: Define Alertmanager archive name
   ansible.builtin.set_fact:
-    alertmanager_archive_name: "{{ alertmanager_tarball | regex_replace('.tar.gz$', '') }}"
+    alertmanager_archive_name: "{{ alertmanager_tarball | regex_replace('\\.tar\\.gz$', '') }}"
+
+- name: Define Alertmanager extract path and download URL
+  ansible.builtin.set_fact:
     alertmanager_extract_path: "/opt/{{ alertmanager_archive_name }}"
     alertmanager_download_url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/{{ alertmanager_tarball }}"
 
