@@ -79,7 +79,7 @@
 
 - name: Deploy system alert rules for Prometheus
   ansible.builtin.template:
-    src: system.yaml.j2
+    src: system.yml.j2
     dest: /etc/prometheus/rules/system_alert_rules.yml
     mode: '0644'
     owner: prometheus
@@ -89,7 +89,7 @@
 
 - name: Deploy systemd alert rules for Prometheus
   ansible.builtin.template:
-    src: services.yaml.j2
+    src: services.yml.j2
     dest: /etc/prometheus/rules/systemd_alert_rules.yml
     mode: '0644'
     owner: prometheus
@@ -99,7 +99,7 @@
 
 - name: Deploy ports alert rules for Prometheus
   ansible.builtin.template:
-    src: ports.yaml.j2
+    src: ports.yml.j2
     dest: /etc/prometheus/rules/ports_alert_rules.yml
     mode: '0644'
     owner: prometheus
