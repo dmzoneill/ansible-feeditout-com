@@ -1,10 +1,13 @@
 ---
 
-- name: Define Alertmanager facts
+- name: Define Alertmanager tarball name
   ansible.builtin.set_fact:
-    alertmanager_archive_name: "alertmanager-{{ alertmanager_version }}.{{ alertmanager_arch }}"
-    alertmanager_extract_path: "/opt/alertmanager-{{ alertmanager_version }}.{{ alertmanager_arch }}"
     alertmanager_tarball: "alertmanager-{{ alertmanager_version }}.{{ alertmanager_arch }}.tar.gz"
+
+- name: Define Alertmanager paths and download URL
+  ansible.builtin.set_fact:
+    alertmanager_archive_name: "{{ alertmanager_tarball | regex_replace('.tar.gz$', '') }}"
+    alertmanager_extract_path: "/opt/{{ alertmanager_archive_name }}"
     alertmanager_download_url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/{{ alertmanager_tarball }}"
 
 - name: Ensure alertmanager group exists
