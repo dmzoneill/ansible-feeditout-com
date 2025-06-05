@@ -80,7 +80,7 @@
 - name: Copy Prometheus alert rules from awesome-prometheus-alerts
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/samber/awesome-prometheus-alerts/master/dist/rules/{{ rule }}/embedded-exporter.yml"
-    dest: "/etc/prometheus/rules/{{ rule_file }}.rules.yml"
+    dest: "/etc/prometheus/rules/{{ rule }}.rules.yml"
     mode: '0644'
     owner: prometheus
     group: prometheus
