@@ -278,9 +278,11 @@ domains:
       - name: prometheus.fio.ie
         document_root: prometheus
         enabled: true
+        custom_config: true
       - name: alertmanager.fio.ie
         document_root: alertmanager
         enabled: true
+        custom_config: true
     loglevel: warn
     enabled: true
 
@@ -323,9 +325,11 @@ domains:
       - name: prometheus.feeditout.com
         document_root: prometheus
         enabled: true
+        custom_config: true
       - name: alertmanager.feeditout.com
         document_root: alertmanager
         enabled: true
+        custom_config: true
     loglevel: warn
     enabled: true
 
