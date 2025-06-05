@@ -89,7 +89,7 @@
 
 - name: Deploy systemd alert rules for Prometheus
   ansible.builtin.template:
-    src: systemd.yaml.j2
+    src: services.yaml.j2
     dest: /etc/prometheus/rules/systemd_alert_rules.yml
     mode: '0644'
     owner: prometheus
