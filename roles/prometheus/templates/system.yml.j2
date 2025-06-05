@@ -9,8 +9,10 @@ groups:
       labels:
         severity: warning
       annotations:
+        {% raw %}
         summary: 'High CPU usage on {{ $labels.instance }}'
         description: 'CPU usage has been above 95% for 2 minutes.'
+        {% endraw %}
 
     # Memory usage > 95% for 2m
     - alert: HighMemoryUsage
@@ -19,8 +21,10 @@ groups:
       labels:
         severity: warning
       annotations:
+        {% raw %}
         summary: 'High memory usage on {{ $labels.instance }}'
         description: 'Memory usage has been above 95% for 2 minutes.'
+        {% endraw %}
 
     # Disk I/O > 75% for 2m
     - alert: HighDiskIO
@@ -29,8 +33,10 @@ groups:
       labels:
         severity: warning
       annotations:
+        {% raw %}
         summary: 'High disk I/O on {{ $labels.device }}'
         description: 'Disk I/O time is above 75% for more than 2 minutes.'
+        {% endraw %}
 
     # Disk free space < 5%
     - alert: LowDiskSpace
@@ -39,8 +45,10 @@ groups:
       labels:
         severity: critical
       annotations:
+        {% raw %}
         summary: 'Low disk space on {{ $labels.mountpoint }}'
         description: 'Disk {{ $labels.mountpoint }} has less than 5% free space.'
+        {% endraw %}
 
     # Disk < 500MB
     - alert: DiskAlmostFull
@@ -49,8 +57,10 @@ groups:
       labels:
         severity: critical
       annotations:
+        {% raw %}
         summary: 'Disk almost full on {{ $labels.mountpoint }}'
         description: 'Disk {{ $labels.mountpoint }} has less than 500MB available.'
+        {% endraw %}
 
     # Network receive errors
     - alert: NetworkReceiveErrors
@@ -59,8 +69,10 @@ groups:
       labels:
         severity: warning
       annotations:
+        {% raw %}
         summary: 'Network receive errors on {{ $labels.device }}'
         description: 'Interface {{ $labels.device }} is receiving errors.'
+        {% endraw %}
 
     # Network transmit errors
     - alert: NetworkTransmitErrors
@@ -69,8 +81,10 @@ groups:
       labels:
         severity: warning
       annotations:
+        {% raw %}
         summary: 'Network transmit errors on {{ $labels.device }}'
         description: 'Interface {{ $labels.device }} is transmitting errors.'
+        {% endraw %}
 
     # System rebooted (within 2 mins)
     - alert: NodeRebooted
@@ -79,8 +93,10 @@ groups:
       labels:
         severity: info
       annotations:
+        {% raw %}
         summary: 'Node {{ $labels.instance }} was recently rebooted'
         description: 'Uptime is less than 2 minutes.'
+        {% endraw %}
 
     # Swap > 60%
     - alert: HighSwapUsage
@@ -89,8 +105,10 @@ groups:
       labels:
         severity: warning
       annotations:
+        {% raw %}
         summary: 'High swap usage on {{ $labels.instance }}'
         description: 'Swap usage above 60%. Consider closing unused applications.'
+        {% endraw %}
 
     # High load avg (1m > CPU count * 1.5)
     - alert: HighLoadAverage
@@ -99,5 +117,7 @@ groups:
       labels:
         severity: warning
       annotations:
+        {% raw %}
         summary: 'High system load on {{ $labels.instance }}'
         description: 'System load is significantly above CPU count.'
+        {% endraw %}
