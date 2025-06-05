@@ -77,79 +77,48 @@
     group: prometheus
     mode: '0755'
 
-- name: Copy Prometheus alert rules from awesome-prometheus-alerts
+- name: Create temporary directory for alert rules
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: awesome_alerts
+  register: temp_rules_dir
+
+- name: Download awesome-prometheus-alerts release archive
   ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/samber/awesome-prometheus-alerts/master/dist/rules/{{ rule }}/embedded-exporter.yml"
-    dest: "/etc/prometheus/rules/{{ rule }}.rules.yml"
+    url: https://github.com/samber/awesome-prometheus-alerts/archive/refs/tags/2025-04-17.1.tar.gz
+    dest: "{{ temp_rules_dir.path }}/awesome-prometheus-alerts.tar.gz"
     mode: '0644'
+
+- name: Extract alert rules archive
+  ansible.builtin.unarchive:
+    src: "{{ temp_rules_dir.path }}/awesome-prometheus-alerts.tar.gz"
+    dest: "{{ temp_rules_dir.path }}"
+    remote_src: true
+
+- name: Copy alert rule files to /etc/prometheus/rules
+  ansible.builtin.find:
+    paths: "{{ temp_rules_dir.path }}/awesome-prometheus-alerts-2025-04-17.1/dist/rules"
+    patterns: "*.yml"
+    recurse: yes
+  register: found_alert_rule_files
+
+- name: Install alert rule files
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "/etc/prometheus/rules/{{ item.path | basename }}"
     owner: prometheus
     group: prometheus
-  loop:
-    - apache
-    - apc-ups
-    - argocd
-    - blackbox
-    - caddy
-    - cassandra
-    - ceph
-    - clickhouse
-    - cloudflare
-    - consul
-    - coredns
-    - cortex
-    - docker-containers
-    - elasticsearch
-    - etcd
-    - fluxcd
-    - freeswitch
-    - grafana-alloy
-    - graph-node
-    - hadoop
-    - haproxy
-    - hashicorp-vault
-    - host-and-hardware
-    - istio
-    - jenkins
-    - juniper
-    - jvm
-    - kafka
-    - kubernetes
-    - linkerd
-    - loki
-    - meilisearch
-    - minio
-    - mongodb
-    - mysql
-    - nats
-    - netdata
-    - nginx
-    - nomad
-    - openebs
-    - patroni
-    - pgbouncer
-    - php-fpm
-    - postgresql
-    - prometheus-self-monitoring
-    - promtail
-    - pulsar
-    - rabbitmq
-    - redis
-    - s.m.a.r.t-device-monitoring
-    - sidekiq
-    - solr
-    - speedtest
-    - sql-server
-    - ssl/tls
-    - thanos
-    - traefik
-    - vmware
-    - windows-server
-    - zfs
-    - zookeeper
+    mode: '0644'
+    remote_src: true
+  loop: "{{ found_alert_rule_files.files }}"
   loop_control:
-    loop_var: rule
+    label: "{{ item.path | basename }}"
   tags: prometheus, alert_rules
 
+- name: Remove temporary directory
+  ansible.builtin.file:
+    path: "{{ temp_rules_dir.path }}"
+    state: absent
 
 # - name: Create cert directory for Prometheus TLS
 #   ansible.builtin.file:
