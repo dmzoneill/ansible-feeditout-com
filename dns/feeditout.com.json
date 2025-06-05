@@ -19,6 +19,20 @@
         "IsActive": "true"
     },
     {
+        "Name": "prometheus",
+        "Type": "CNAME",
+        "Address": "feeditout.com.",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
+        "Name": "alertmanager",
+        "Type": "CNAME",
+        "Address": "feeditout.com.",
+        "TTL": "1799",
+        "IsActive": "true"
+    },
+    {
         "Name": "mta-sts",
         "Type": "CNAME",
         "Address": "feeditout.com.",

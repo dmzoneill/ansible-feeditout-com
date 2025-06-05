@@ -275,6 +275,12 @@ domains:
       - name: pma.fio.ie
         document_root: phpmyadmin
         enabled: true
+      - name: prometheus.fio.ie
+        document_root: prometheus
+        enabled: true
+      - name: alertmanager.fio.ie
+        document_root: alertmanager
+        enabled: true
     loglevel: warn
     enabled: true
 
@@ -313,6 +319,12 @@ domains:
         enabled: true
       - name: pma.feeditout.com
         document_root: phpmyadmin
+        enabled: true
+      - name: prometheus.feeditout.com
+        document_root: prometheus
+        enabled: true
+      - name: alertmanager.feeditout.com
+        document_root: alertmanager
         enabled: true
     loglevel: warn
     enabled: true

@@ -1,0 +1,9 @@
+<Location />
+    AuthType Basic
+    AuthName "Restricted Alerts"
+    AuthUserFile /etc/apache2/.htpasswd
+    Require valid-user
+
+    ProxyPass http://localhost:9093/
+    ProxyPassReverse http://localhost:9093/
+</Location>
