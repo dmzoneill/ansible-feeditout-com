@@ -69,90 +69,120 @@
     mode: '0644'
   notify: Restart Prometheus
 
-- name: Ensure local Prometheus alert rules directory exists
-  ansible.builtin.file:
-    path: "{{ alerts_download_dir }}"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-
-- name: Download alert rules archive only if not present
-  ansible.builtin.get_url:
-    url: "https://github.com/samber/awesome-prometheus-alerts/archive/refs/tags/{{ alerts_release_version }}.tar.gz"
-    dest: "{{ alerts_archive_path }}"
-    mode: '0644'
-  when: alerts_archive_path is not file
-
-- name: Extract alert rules if not already extracted
-  ansible.builtin.unarchive:
-    src: "{{ alerts_archive_path }}"
-    dest: "{{ alerts_download_dir }}"
-    remote_src: true
-    creates: "{{ alerts_extract_path }}/dist/rules"
-
-- name: Ensure Prometheus rule directory exists
+- name: Ensure Prometheus rules directory exists
   ansible.builtin.file:
     path: /etc/prometheus/rules
     state: directory
-    owner: prometheus
-    group: prometheus
     mode: '0755'
-
-- name: Find all alert rule files in the extracted archive
-  ansible.builtin.find:
-    paths: "{{ alerts_extract_path }}/dist/rules"
-    patterns: "*.yml"
-    recurse: true
-  register: discovered_rule_files
-
-- name: Copy alert rule files to /etc/prometheus/rules
-  ansible.builtin.copy:
-    src: "{{ discovered_rule.path }}"
-    dest: "/etc/prometheus/rules/{{ discovered_rule.path | basename }}"
     owner: prometheus
     group: prometheus
-    mode: '0644'
-    remote_src: true
-  loop: "{{ discovered_rule_files.files }}"
-  loop_control:
-    loop_var: discovered_rule
-    label: "{{ discovered_rule.path | basename }}"
-  tags: prometheus, alert_rules
 
-# - name: Create cert directory for Prometheus TLS
+- name: Deploy system alert rules for Prometheus
+  ansible.builtin.template:
+    src: system.yaml.j2
+    dest: /etc/prometheus/rules/system_alert_rules.yml
+    mode: '0644'
+    owner: prometheus
+    group: prometheus
+    validate: 'promtool check rules %s'
+  notify: Restart Prometheus
+
+- name: Deploy systemd alert rules for Prometheus
+  ansible.builtin.template:
+    src: systemd.yaml.j2
+    dest: /etc/prometheus/rules/systemd_alert_rules.yml
+    mode: '0644'
+    owner: prometheus
+    group: prometheus
+    validate: 'promtool check rules %s'
+  notify: Restart Prometheus
+
+- name: Deploy ports alert rules for Prometheus
+  ansible.builtin.template:
+    src: ports.yaml.j2
+    dest: /etc/prometheus/rules/ports_alert_rules.yml
+    mode: '0644'
+    owner: prometheus
+    group: prometheus
+    validate: 'promtool check rules %s'
+  notify: Restart Prometheus
+
+# - name: Download alert rules archive only if not present
+#   ansible.builtin.get_url:
+#     url: "https://github.com/samber/awesome-prometheus-alerts/archive/refs/tags/{{ alerts_release_version }}.tar.gz"
+#     dest: "{{ alerts_archive_path }}"
+#     mode: '0644'
+#   when: alerts_archive_path is not file
+
+# - name: Extract alert rules if not already extracted
+#   ansible.builtin.unarchive:
+#     src: "{{ alerts_archive_path }}"
+#     dest: "{{ alerts_download_dir }}"
+#     remote_src: true
+#     creates: "{{ alerts_extract_path }}/dist/rules"
+
+# - name: Ensure Prometheus rule directory exists
 #   ansible.builtin.file:
-#     path: /etc/prometheus/certs
+#     path: /etc/prometheus/rules
 #     state: directory
 #     owner: prometheus
 #     group: prometheus
 #     mode: '0755'
-#   when: prometheus_tls_enabled
 
-# - name: Copy TLS certs for Prometheus
+# - name: Find all alert rule files in the extracted archive
+#   ansible.builtin.find:
+#     paths: "{{ alerts_extract_path }}/dist/rules"
+#     patterns: "*.yml"
+#     recurse: true
+#   register: discovered_rule_files
+
+# - name: Copy alert rule files to /etc/prometheus/rules
 #   ansible.builtin.copy:
-#     src: "/etc/letsencrypt/live/{{ fqdn }}/{{ cert_file }}"
-#     dest: "/etc/prometheus/certs/{{ cert_file }}"
-#     remote_src: yes
+#     src: "{{ discovered_rule.path }}"
+#     dest: "/etc/prometheus/rules/{{ discovered_rule.path | basename }}"
 #     owner: prometheus
 #     group: prometheus
-#     mode: '0600'
-#   loop:
-#     - fullchain.pem
-#     - privkey.pem
+#     mode: '0644'
+#     remote_src: true
+#   loop: "{{ discovered_rule_files.files }}"
 #   loop_control:
-#     loop_var: cert_file
-#   when: prometheus_tls_enabled
-#   notify: Restart Prometheus
+#     loop_var: discovered_rule
+#     label: "{{ discovered_rule.path | basename }}"
+#   tags: prometheus, alert_rules
 
-- name: Copy Prometheus config
-  ansible.builtin.template:
-    src: prometheus.yml.j2
-    dest: /etc/prometheus/prometheus.yml
-    owner: prometheus
-    group: prometheus
-    mode: '0644'
-  notify: Restart Prometheus
+# # - name: Create cert directory for Prometheus TLS
+# #   ansible.builtin.file:
+# #     path: /etc/prometheus/certs
+# #     state: directory
+# #     owner: prometheus
+# #     group: prometheus
+# #     mode: '0755'
+# #   when: prometheus_tls_enabled
+
+# # - name: Copy TLS certs for Prometheus
+# #   ansible.builtin.copy:
+# #     src: "/etc/letsencrypt/live/{{ fqdn }}/{{ cert_file }}"
+# #     dest: "/etc/prometheus/certs/{{ cert_file }}"
+# #     remote_src: yes
+# #     owner: prometheus
+# #     group: prometheus
+# #     mode: '0600'
+# #   loop:
+# #     - fullchain.pem
+# #     - privkey.pem
+# #   loop_control:
+# #     loop_var: cert_file
+# #   when: prometheus_tls_enabled
+# #   notify: Restart Prometheus
+
+# - name: Copy Prometheus config
+#   ansible.builtin.template:
+#     src: prometheus.yml.j2
+#     dest: /etc/prometheus/prometheus.yml
+#     owner: prometheus
+#     group: prometheus
+#     mode: '0644'
+#   notify: Restart Prometheus
 
 # - name: Configure Prometheus TLS web_config.yml
 #   ansible.builtin.template:

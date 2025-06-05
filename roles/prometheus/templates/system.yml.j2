@@ -1,0 +1,103 @@
+---
+groups:
+- name: personal-system-health.rules
+  rules:
+    # CPU usage > 95% for 2m
+    - alert: HighCpuUsage
+      expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 95
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'High CPU usage on {{ $labels.instance }}'
+        description: 'CPU usage has been above 95% for 2 minutes.'
+
+    # Memory usage > 95% for 2m
+    - alert: HighMemoryUsage
+      expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'High memory usage on {{ $labels.instance }}'
+        description: 'Memory usage has been above 95% for 2 minutes.'
+
+    # Disk I/O > 75% for 2m
+    - alert: HighDiskIO
+      expr: rate(node_disk_io_time_seconds_total[2m]) > 0.75
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'High disk I/O on {{ $labels.device }}'
+        description: 'Disk I/O time is above 75% for more than 2 minutes.'
+
+    # Disk free space < 5%
+    - alert: LowDiskSpace
+      expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 < 5
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'Low disk space on {{ $labels.mountpoint }}'
+        description: 'Disk {{ $labels.mountpoint }} has less than 5% free space.'
+
+    # Disk < 500MB
+    - alert: DiskAlmostFull
+      expr: node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} < 5e+08
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'Disk almost full on {{ $labels.mountpoint }}'
+        description: 'Disk {{ $labels.mountpoint }} has less than 500MB available.'
+
+    # Network receive errors
+    - alert: NetworkReceiveErrors
+      expr: rate(node_network_receive_errs_total[2m]) > 0
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Network receive errors on {{ $labels.device }}'
+        description: 'Interface {{ $labels.device }} is receiving errors.'
+
+    # Network transmit errors
+    - alert: NetworkTransmitErrors
+      expr: rate(node_network_transmit_errs_total[2m]) > 0
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'Network transmit errors on {{ $labels.device }}'
+        description: 'Interface {{ $labels.device }} is transmitting errors.'
+
+    # System rebooted (within 2 mins)
+    - alert: NodeRebooted
+      expr: time() - node_boot_time_seconds < 120
+      for: 0m
+      labels:
+        severity: info
+      annotations:
+        summary: 'Node {{ $labels.instance }} was recently rebooted'
+        description: 'Uptime is less than 2 minutes.'
+
+    # Swap > 60%
+    - alert: HighSwapUsage
+      expr: (node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / node_memory_SwapTotal_bytes * 100 > 60
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'High swap usage on {{ $labels.instance }}'
+        description: 'Swap usage above 60%. Consider closing unused applications.'
+
+    # High load avg (1m > CPU count * 1.5)
+    - alert: HighLoadAverage
+      expr: node_load1 > count(count(node_cpu_seconds_total{mode="idle"}) by (cpu)) * 1.5
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: 'High system load on {{ $labels.instance }}'
+        description: 'System load is significantly above CPU count.'

@@ -1,0 +1,138 @@
+---
+groups:
+- name: tcp-listening.rules
+  rules:
+    - alert: chromiumPort44395Down
+      expr: node_netstat_Tcp_Listening{local_port='44395'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'chromium is not listening on port 44395'
+        description: 'Expected chromium to be listening on TCP port 44395 but it is not.'
+
+    - alert: chromiumPort52642Down
+      expr: node_netstat_Tcp_Listening{local_port='52642'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'chromium is not listening on port 52642'
+        description: 'Expected chromium to be listening on TCP port 52642 but it is not.'
+
+    - alert: docker_proxyPort9100Down
+      expr: node_netstat_Tcp_Listening{local_port='9100'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'docker-proxy is not listening on port 9100'
+        description: 'Expected docker-proxy to be listening on TCP port 9100 but it is not.'
+
+    - alert: docker_proxyPort57530Down
+      expr: node_netstat_Tcp_Listening{local_port='57530'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'docker-proxy is not listening on port 57530'
+        description: 'Expected docker-proxy to be listening on TCP port 57530 but it is not.'
+
+    - alert: mariadbdPort3306Down
+      expr: node_netstat_Tcp_Listening{local_port='3306'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'mariadbd is not listening on port 3306'
+        description: 'Expected mariadbd to be listening on TCP port 3306 but it is not.'
+
+    - alert: nodePort41848Down
+      expr: node_netstat_Tcp_Listening{local_port='41848'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'node is not listening on port 41848'
+        description: 'Expected node to be listening on TCP port 41848 but it is not.'
+
+    - alert: prometheusPort41204Down
+      expr: node_netstat_Tcp_Listening{local_port='41204'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'prometheus is not listening on port 41204'
+        description: 'Expected prometheus to be listening on TCP port 41204 but it is not.'
+
+    - alert: python3Port36428Down
+      expr: node_netstat_Tcp_Listening{local_port='36428'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'python3 is not listening on port 36428'
+        description: 'Expected python3 to be listening on TCP port 36428 but it is not.'
+
+    - alert: python3Port55972Down
+      expr: node_netstat_Tcp_Listening{local_port='55972'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'python3 is not listening on port 55972'
+        description: 'Expected python3 to be listening on TCP port 55972 but it is not.'
+
+    - alert: redis_serverPort6379Down
+      expr: node_netstat_Tcp_Listening{local_port='6379'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'redis-server is not listening on port 6379'
+        description: 'Expected redis-server to be listening on TCP port 6379 but it is not.'
+
+    - alert: sshdPort33Down
+      expr: node_netstat_Tcp_Listening{local_port='33'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'sshd is not listening on port 33'
+        description: 'Expected sshd to be listening on TCP port 33 but it is not.'
+
+    - alert: webdisPort34052Down
+      expr: node_netstat_Tcp_Listening{local_port='34052'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'webdis is not listening on port 34052'
+        description: 'Expected webdis to be listening on TCP port 34052 but it is not.'
+
+    - alert: webdisPort34064Down
+      expr: node_netstat_Tcp_Listening{local_port='34064'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'webdis is not listening on port 34064'
+        description: 'Expected webdis to be listening on TCP port 34064 but it is not.'
+
+    - alert: webdisPort34080Down
+      expr: node_netstat_Tcp_Listening{local_port='34080'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'webdis is not listening on port 34080'
+        description: 'Expected webdis to be listening on TCP port 34080 but it is not.'
+
+    - alert: webdisPort34088Down
+      expr: node_netstat_Tcp_Listening{local_port='34088'} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: 'webdis is not listening on port 34088'
+        description: 'Expected webdis to be listening on TCP port 34088 but it is not.'

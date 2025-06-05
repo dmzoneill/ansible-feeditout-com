@@ -1,0 +1,644 @@
+---
+groups:
+- name: systemd-services.rules
+  rules:
+    - alert: Alert_WebhookDown
+      expr: node_systemd_unit_state{name="alert_webhook.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "alert_webhook.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: AlertmanagerDown
+      expr: node_systemd_unit_state{name="alertmanager.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "alertmanager.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: Apache2Down
+      expr: node_systemd_unit_state{name="apache2.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "apache2.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: ApparmorDown
+      expr: node_systemd_unit_state{name="apparmor.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "apparmor.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: AuditdDown
+      expr: node_systemd_unit_state{name="auditd.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "auditd.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: AvahiDaemonDown
+      expr: node_systemd_unit_state{name="avahi-daemon.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "avahi-daemon.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: BinfmtSupportDown
+      expr: node_systemd_unit_state{name="binfmt-support.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "binfmt-support.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: ChronyDown
+      expr: node_systemd_unit_state{name="chrony.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "chrony.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: ChuckbotDown
+      expr: node_systemd_unit_state{name="chuckbot.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "chuckbot.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: ClamavDaemonDown
+      expr: node_systemd_unit_state{name="clamav-daemon.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "clamav-daemon.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: ClamavFreshclamDown
+      expr: node_systemd_unit_state{name="clamav-freshclam.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "clamav-freshclam.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: ClamavMilterDown
+      expr: node_systemd_unit_state{name="clamav-milter.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "clamav-milter.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: ConsoleSetupDown
+      expr: node_systemd_unit_state{name="console-setup.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "console-setup.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: ContainerdDown
+      expr: node_systemd_unit_state{name="containerd.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "containerd.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: CronDown
+      expr: node_systemd_unit_state{name="cron.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "cron.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: DbusDown
+      expr: node_systemd_unit_state{name="dbus.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "dbus.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: DockerDown
+      expr: node_systemd_unit_state{name="docker.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "docker.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: Fail2BanDown
+      expr: node_systemd_unit_state{name="fail2ban.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "fail2ban.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: Fail2CounterDown
+      expr: node_systemd_unit_state{name="fail2counter.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "fail2counter.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: GettyTty1Down
+      expr: node_systemd_unit_state{name="getty@tty1.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "getty@tty1.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: GldDown
+      expr: node_systemd_unit_state{name="gld.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "gld.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: HavegedDown
+      expr: node_systemd_unit_state{name="haveged.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "haveged.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: JitterentropyDown
+      expr: node_systemd_unit_state{name="jitterentropy.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "jitterentropy.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: KeyboardSetupDown
+      expr: node_systemd_unit_state{name="keyboard-setup.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "keyboard-setup.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: KmodStaticNodesDown
+      expr: node_systemd_unit_state{name="kmod-static-nodes.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "kmod-static-nodes.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: MariadbDown
+      expr: node_systemd_unit_state{name="mariadb.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "mariadb.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: MemcachedDown
+      expr: node_systemd_unit_state{name="memcached.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "memcached.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: ModemmanagerDown
+      expr: node_systemd_unit_state{name="ModemManager.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "ModemManager.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: MultipathdDown
+      expr: node_systemd_unit_state{name="multipathd.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "multipathd.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: NetfilterPersistentDown
+      expr: node_systemd_unit_state{name="netfilter-persistent.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "netfilter-persistent.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: NetworkmanagerWaitOnlineDown
+      expr: node_systemd_unit_state{name="NetworkManager-wait-online.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "NetworkManager-wait-online.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: NetworkmanagerDown
+      expr: node_systemd_unit_state{name="NetworkManager.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "NetworkManager.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: NftablesDown
+      expr: node_systemd_unit_state{name="nftables.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "nftables.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: OpendkimDown
+      expr: node_systemd_unit_state{name="opendkim.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "opendkim.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: OpendmarcDown
+      expr: node_systemd_unit_state{name="opendmarc.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "opendmarc.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PerlbalDown
+      expr: node_systemd_unit_state{name="perlbal.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "perlbal.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: Php82FpmDown
+      expr: node_systemd_unit_state{name="php8.2-fpm.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "php8.2-fpm.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PlymouthQuitWaitDown
+      expr: node_systemd_unit_state{name="plymouth-quit-wait.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "plymouth-quit-wait.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PlymouthQuitDown
+      expr: node_systemd_unit_state{name="plymouth-quit.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "plymouth-quit.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PlymouthReadWriteDown
+      expr: node_systemd_unit_state{name="plymouth-read-write.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "plymouth-read-write.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PlymouthStartDown
+      expr: node_systemd_unit_state{name="plymouth-start.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "plymouth-start.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PolkitDown
+      expr: node_systemd_unit_state{name="polkit.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "polkit.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PostfixDown
+      expr: node_systemd_unit_state{name="postfix.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "postfix.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PostfixDown
+      expr: node_systemd_unit_state{name="postfix@-.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "postfix@-.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PostgresqlDown
+      expr: node_systemd_unit_state{name="postgresql.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "postgresql.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: Postgresql15MainDown
+      expr: node_systemd_unit_state{name="postgresql@15-main.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "postgresql@15-main.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PostsrsdDown
+      expr: node_systemd_unit_state{name="postsrsd.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "postsrsd.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PrivoxyDown
+      expr: node_systemd_unit_state{name="privoxy.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "privoxy.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: PrometheusDown
+      expr: node_systemd_unit_state{name="prometheus.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "prometheus.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: QemuGuestAgentDown
+      expr: node_systemd_unit_state{name="qemu-guest-agent.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "qemu-guest-agent.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: RedisServerDown
+      expr: node_systemd_unit_state{name="redis-server.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "redis-server.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: RngToolsDebianDown
+      expr: node_systemd_unit_state{name="rng-tools-debian.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "rng-tools-debian.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: RpcbindDown
+      expr: node_systemd_unit_state{name="rpcbind.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "rpcbind.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: RsyslogDown
+      expr: node_systemd_unit_state{name="rsyslog.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "rsyslog.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SaslauthdDown
+      expr: node_systemd_unit_state{name="saslauthd.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "saslauthd.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SpamdDown
+      expr: node_systemd_unit_state{name="spamd.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "spamd.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SshDown
+      expr: node_systemd_unit_state{name="ssh.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "ssh.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SysstatDown
+      expr: node_systemd_unit_state{name="sysstat.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "sysstat.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdBinfmtDown
+      expr: node_systemd_unit_state{name="systemd-binfmt.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-binfmt.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdJournalFlushDown
+      expr: node_systemd_unit_state{name="systemd-journal-flush.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-journal-flush.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdJournaldDown
+      expr: node_systemd_unit_state{name="systemd-journald.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-journald.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdLogindDown
+      expr: node_systemd_unit_state{name="systemd-logind.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-logind.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdModulesLoadDown
+      expr: node_systemd_unit_state{name="systemd-modules-load.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-modules-load.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdRandomSeedDown
+      expr: node_systemd_unit_state{name="systemd-random-seed.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-random-seed.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdRemountFsDown
+      expr: node_systemd_unit_state{name="systemd-remount-fs.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-remount-fs.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdSysctlDown
+      expr: node_systemd_unit_state{name="systemd-sysctl.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-sysctl.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdSysusersDown
+      expr: node_systemd_unit_state{name="systemd-sysusers.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-sysusers.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdTmpfilesSetupDevDown
+      expr: node_systemd_unit_state{name="systemd-tmpfiles-setup-dev.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-tmpfiles-setup-dev.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdTmpfilesSetupDown
+      expr: node_systemd_unit_state{name="systemd-tmpfiles-setup.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-tmpfiles-setup.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdUdevTriggerDown
+      expr: node_systemd_unit_state{name="systemd-udev-trigger.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-udev-trigger.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdUdevdDown
+      expr: node_systemd_unit_state{name="systemd-udevd.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-udevd.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdUpdateUtmpDown
+      expr: node_systemd_unit_state{name="systemd-update-utmp.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-update-utmp.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: SystemdUserSessionsDown
+      expr: node_systemd_unit_state{name="systemd-user-sessions.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "systemd-user-sessions.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: UnattendedUpgradesDown
+      expr: node_systemd_unit_state{name="unattended-upgrades.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "unattended-upgrades.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: UpowerDown
+      expr: node_systemd_unit_state{name="upower.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "upower.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: UsbguardDbusDown
+      expr: node_systemd_unit_state{name="usbguard-dbus.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "usbguard-dbus.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: UsbguardDown
+      expr: node_systemd_unit_state{name="usbguard.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "usbguard.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: UserRuntimeDir1000Down
+      expr: node_systemd_unit_state{name="user-runtime-dir@1000.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "user-runtime-dir@1000.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: User1000Down
+      expr: node_systemd_unit_state{name="user@1000.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "user@1000.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
+    - alert: WebdisDown
+      expr: node_systemd_unit_state{name="webdis.service", state="active"} != 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "webdis.service is not running"
+        description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
