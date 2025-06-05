@@ -95,24 +95,25 @@
     dest: "{{ temp_rules_dir.path }}"
     remote_src: true
 
-- name: Copy alert rule files to /etc/prometheus/rules
+- name: Find alert rule files
   ansible.builtin.find:
     paths: "{{ temp_rules_dir.path }}/awesome-prometheus-alerts-2025-04-17.1/dist/rules"
     patterns: "*.yml"
-    recurse: yes
-  register: found_alert_rule_files
+    recurse: true
+  register: found_rule_files
 
-- name: Install alert rule files
+- name: Copy alert rule files to /etc/prometheus/rules
   ansible.builtin.copy:
-    src: "{{ item.path }}"
-    dest: "/etc/prometheus/rules/{{ item.path | basename }}"
+    src: "{{ rule_file.path }}"
+    dest: "/etc/prometheus/rules/{{ rule_file.path | basename }}"
     owner: prometheus
     group: prometheus
     mode: '0644'
     remote_src: true
-  loop: "{{ found_alert_rule_files.files }}"
+  loop: "{{ found_rule_files.files }}"
   loop_control:
-    label: "{{ item.path | basename }}"
+    loop_var: rule_file
+    label: "{{ rule_file.path | basename }}"
   tags: prometheus, alert_rules
 
 - name: Remove temporary directory
