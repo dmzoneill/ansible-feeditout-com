@@ -65,6 +65,29 @@
     mode: '0644'
   notify: Restart Prometheus
 
+- name: Create cert directory for Prometheus TLS
+  ansible.builtin.file:
+    path: /etc/prometheus/certs
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  when: prometheus_tls_enabled
+
+- name: Copy TLS certs for Prometheus
+  ansible.builtin.copy:
+    src: "/etc/letsencrypt/live/{{ fqdn }}/{{ item }}"
+    dest: "/etc/prometheus/certs/{{ item }}"
+    remote_src: yes
+    owner: prometheus
+    group: prometheus
+    mode: '0600'
+  loop:
+    - fullchain.pem
+    - privkey.pem
+  when: prometheus_tls_enabled
+  notify: Restart Prometheus
+
 - name: Copy Prometheus config
   ansible.builtin.template:
     src: prometheus.yml.j2
