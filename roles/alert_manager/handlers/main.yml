@@ -3,3 +3,8 @@
   ansible.builtin.systemd:
     name: alertmanager
     state: restarted
+
+- name: Restart Alert Webhook
+  ansible.builtin.systemd:
+    name: alert_webhook
+    state: restarted
