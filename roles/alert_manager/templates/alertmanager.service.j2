@@ -9,7 +9,11 @@ Group=alertmanager
 Type=simple
 ExecStart=/usr/local/bin/alertmanager \
   --config.file=/etc/alertmanager/alertmanager.yml \
-  --storage.path=/var/lib/alertmanager
+  --storage.path=/var/lib/alertmanager \
+  --web.listen-address=:9093 \
+  --web.external-url=https://{{ fqdn }} \
+  --web.cert-file=/etc/letsencrypt/live/{{ fqdn }}/cert.pem \
+  --web.key-file=/etc/letsencrypt/live/{{ fqdn }}/privkey.pem
 
 Restart=on-failure
 

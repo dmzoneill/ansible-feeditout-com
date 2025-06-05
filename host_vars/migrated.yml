@@ -544,6 +544,9 @@ prometheus_download_url: "https://github.com/prometheus/prometheus/releases/down
 prometheus_alertmanager_enabled: true
 prometheus_alertmanager_targets:
   - "localhost:9093"
+prometheus_tls_enabled: true
+prometheus_tls_cert_file: /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem
+prometheus_tls_key_file: /etc/letsencrypt/live/{{ fqdn }}/privkey.pem
 
 alertmanager_email_enabled: true
 alertmanager_version: "0.27.0"

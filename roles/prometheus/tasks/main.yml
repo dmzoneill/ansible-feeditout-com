@@ -74,6 +74,16 @@
     mode: '0644'
   notify: Restart Prometheus
 
+- name: Configure Prometheus TLS web_config.yml
+  ansible.builtin.template:
+    src: web_config.yml.j2
+    dest: /etc/prometheus/web_config.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  when: prometheus_tls_enabled
+  notify: Restart Prometheus
+
 - name: Reload systemd daemon
   ansible.builtin.systemd:
     daemon_reload: yes
