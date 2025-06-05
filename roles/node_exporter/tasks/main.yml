@@ -11,22 +11,25 @@
     state: started
     enabled: true
 
-- name: Run Node Exporter container
-  docker_container:
+- name: Run Node Exporter container with systemd collector support
+  community.docker.docker_container:
     name: node_exporter
     image: prom/node-exporter:latest
     restart_policy: always
     state: started
-    ports:
-      - "9100:9100"
+    network_mode: host
+    pid_mode: host
+    privileged: true
     volumes:
       - "/proc:/host/proc:ro"
       - "/sys:/host/sys:ro"
       - "/:/rootfs:ro"
+      - "/run/systemd:/run/systemd:ro"
+      - "/run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro"
     command: >
       --path.procfs=/host/proc
       --path.sysfs=/host/sys
       --path.rootfs=/rootfs
-      --collector.systemd 
-      --collector.processes 
+      --collector.systemd
+      --collector.processes
       --collector.netstat
