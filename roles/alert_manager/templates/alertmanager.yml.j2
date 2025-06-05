@@ -9,14 +9,14 @@ route:
 
 receivers:
   - name: default
-    {% if alertmanager_email_enabled %}
+{% if alertmanager_email_enabled %}
     email_configs:
       - to: "{{ alertmanager_email_to }}"
         from: "{{ alertmanager_email_from }}"
         send_resolved: true
         headers:
           Subject: '[Alert] {{ "{{ .CommonLabels.alertname }}" }}'
-    {% else %}
+{% else %}
     webhook_configs:
       - url: "http://localhost:5001/webhook"
-    {% endif %}
+{% endif %}
