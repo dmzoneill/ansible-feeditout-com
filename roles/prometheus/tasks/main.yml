@@ -36,20 +36,21 @@
 - name: Extract Prometheus
   ansible.builtin.unarchive:
     src: "/tmp/prometheus.tar.gz"
-    dest: "/opt"
+    dest: /opt
     remote_src: yes
-    creates: "/opt/prometheus-{{ prometheus_version }}"
+    creates: "/opt/{{ prometheus_extracted_dir }}"
   tags: prometheus
 
 - name: Create symlink to /opt/prometheus
   ansible.builtin.file:
-    src: "/opt/prometheus-{{ prometheus_version }}"
+    src: "/opt/{{ prometheus_extracted_dir }}"
     dest: /opt/prometheus
     state: link
+    force: true
 
 - name: Copy Prometheus binaries
   ansible.builtin.copy:
-    src: "/opt/prometheus-{{ prometheus_version }}/{{ item }}"
+    src: "/opt/{{ prometheus_extracted_dir }}/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     remote_src: yes
     mode: '0755'

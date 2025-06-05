@@ -543,7 +543,9 @@ prometheus_download_url: "https://github.com/prometheus/prometheus/releases/down
 prometheus_alertmanager_enabled: true
 prometheus_alertmanager_targets:
   - "localhost:9093"
-  
+prometheus_extracted_dir: "prometheus-{{ prometheus_version }}.linux-amd64"
+
+
 alertmanager_email_enabled: true
 alertmanager_version: "0.27.0"
 alertmanager_download_url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
