@@ -3,9 +3,9 @@ alerting:
   alertmanagers:
     - scheme: https
       tls_config:
-        {% if prometheus_alertmanager_skip_verify|default(true) %}
+{% if prometheus_alertmanager_skip_verify|default(true) %}
         insecure_skip_verify: true
-        {% endif %}
+{% endif %}
       static_configs:
         - targets:
 {% for target in prometheus_alertmanager_targets %}
