@@ -18,6 +18,8 @@
         - ntp
         - aide
         - sudo
+        - prometheus
+        - alert_manager
         - entropy
         - certbot
         - logwatch

@@ -1,0 +1,15 @@
+[Unit]
+Description=Alertmanager Redis Webhook
+After=network.target
+
+[Service]
+User=root
+ExecStart=/usr/bin/env python3 /opt/alert_webhook/alert_webhook.py
+Environment=REDIS_HOST={{ redis_host }}
+Environment=REDIS_PORT={{ redis_port }}
+Environment=REDIS_AUTH={{ redis_auth }}
+Environment=REDIS_CHANNEL=prometheus
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

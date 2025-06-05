@@ -1,0 +1,119 @@
+---
+- name: Ensure alertmanager group exists
+  ansible.builtin.group:
+    name: alertmanager
+    state: present
+
+- name: Ensure alertmanager user exists
+  ansible.builtin.user:
+    name: alertmanager
+    group: alertmanager
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Create alertmanager directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+  loop:
+    - /etc/alertmanager
+    - /var/lib/alertmanager
+    - /opt/alert_webhook
+
+- name: Download Alertmanager tarball
+  ansible.builtin.get_url:
+    url: "{{ alertmanager_download_url }}"
+    dest: "/tmp/alertmanager.tar.gz"
+    mode: '0644'
+
+- name: Extract Alertmanager
+  ansible.builtin.unarchive:
+    src: /tmp/alertmanager.tar.gz
+    dest: /opt
+    remote_src: yes
+    creates: "/opt/alertmanager-{{ alertmanager_version }}"
+
+- name: Create symlink for alertmanager
+  ansible.builtin.file:
+    src: "/opt/alertmanager-{{ alertmanager_version }}"
+    dest: /opt/alertmanager
+    state: link
+
+- name: Copy Alertmanager binaries
+  ansible.builtin.copy:
+    src: "/opt/alertmanager-{{ alertmanager_version }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    remote_src: yes
+    mode: '0755'
+  loop:
+    - alertmanager
+    - amtool
+
+- name: Deploy alertmanager config
+  ansible.builtin.template:
+    src: alertmanager.yml.j2
+    dest: /etc/alertmanager/alertmanager.yml
+    owner: alertmanager
+    group: alertmanager
+    mode: '0644'
+  notify: Restart Alertmanager
+
+- name: Deploy systemd unit for Alertmanager
+  ansible.builtin.template:
+    src: alertmanager.service.j2
+    dest: /etc/systemd/system/alertmanager.service
+    mode: '0644'
+  notify: Restart Alertmanager
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable and start Alertmanager
+  ansible.builtin.systemd:
+    name: alertmanager
+    enabled: yes
+    state: started
+
+# Webhook Relay Setup
+- name: Ensure python3 and pip are installed
+  ansible.builtin.apt:
+    name:
+      - python3
+      - python3-pip
+    state: present
+  tags: webhook
+
+- name: Install Python modules for webhook
+  ansible.builtin.pip:
+    name:
+      - flask
+      - redis
+  tags: webhook
+
+- name: Deploy alert webhook script
+  ansible.builtin.copy:
+    src: alert_webhook.py
+    dest: /opt/alert_webhook/alert_webhook.py
+    mode: '0755'
+
+- name: Deploy systemd unit for webhook
+  ansible.builtin.template:
+    src: alert_webhook.service.j2
+    dest: /etc/systemd/system/alert_webhook.service
+    mode: '0644'
+  notify: Restart Alert Webhook
+
+- name: Reload systemd for webhook
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable and start alert_webhook
+  ansible.builtin.systemd:
+    name: alert_webhook
+    enabled: true
+    state: started

@@ -1,0 +1,84 @@
+---
+- name: Ensure prometheus group exists
+  ansible.builtin.group:
+    name: prometheus
+    state: present
+
+- name: Ensure prometheus user exists
+  ansible.builtin.user:
+    name: prometheus
+    group: prometheus
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+- name: Create required directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  loop:
+    - /etc/prometheus
+    - /var/lib/prometheus
+    - /etc/prometheus/rules
+    - /etc/prometheus/file_sd
+
+- name: Download Prometheus tarball
+  ansible.builtin.get_url:
+    url: "{{ prometheus_download_url }}"
+    dest: "/tmp/prometheus.tar.gz"
+    mode: '0644'
+  register: prometheus_download
+  tags: prometheus
+
+- name: Extract Prometheus
+  ansible.builtin.unarchive:
+    src: "/tmp/prometheus.tar.gz"
+    dest: "/opt"
+    remote_src: yes
+    creates: "/opt/prometheus-{{ prometheus_version }}"
+  tags: prometheus
+
+- name: Create symlink to /opt/prometheus
+  ansible.builtin.file:
+    src: "/opt/prometheus-{{ prometheus_version }}"
+    dest: /opt/prometheus
+    state: link
+
+- name: Copy Prometheus binaries
+  ansible.builtin.copy:
+    src: "/opt/prometheus-{{ prometheus_version }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    remote_src: yes
+    mode: '0755'
+  loop:
+    - prometheus
+    - promtool
+
+- name: Install systemd service
+  ansible.builtin.template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+    mode: '0644'
+  notify: Restart Prometheus
+
+- name: Copy Prometheus config
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  notify: Restart Prometheus
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable and start Prometheus
+  ansible.builtin.systemd:
+    name: prometheus
+    enabled: yes
+    state: started
