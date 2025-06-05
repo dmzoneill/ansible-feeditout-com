@@ -69,30 +69,30 @@
     mode: '0644'
   notify: Restart Prometheus
 
-- name: Create cert directory for Prometheus TLS
-  ansible.builtin.file:
-    path: /etc/prometheus/certs
-    state: directory
-    owner: prometheus
-    group: prometheus
-    mode: '0755'
-  when: prometheus_tls_enabled
+# - name: Create cert directory for Prometheus TLS
+#   ansible.builtin.file:
+#     path: /etc/prometheus/certs
+#     state: directory
+#     owner: prometheus
+#     group: prometheus
+#     mode: '0755'
+#   when: prometheus_tls_enabled
 
-- name: Copy TLS certs for Prometheus
-  ansible.builtin.copy:
-    src: "/etc/letsencrypt/live/{{ fqdn }}/{{ cert_file }}"
-    dest: "/etc/prometheus/certs/{{ cert_file }}"
-    remote_src: yes
-    owner: prometheus
-    group: prometheus
-    mode: '0600'
-  loop:
-    - fullchain.pem
-    - privkey.pem
-  loop_control:
-    loop_var: cert_file
-  when: prometheus_tls_enabled
-  notify: Restart Prometheus
+# - name: Copy TLS certs for Prometheus
+#   ansible.builtin.copy:
+#     src: "/etc/letsencrypt/live/{{ fqdn }}/{{ cert_file }}"
+#     dest: "/etc/prometheus/certs/{{ cert_file }}"
+#     remote_src: yes
+#     owner: prometheus
+#     group: prometheus
+#     mode: '0600'
+#   loop:
+#     - fullchain.pem
+#     - privkey.pem
+#   loop_control:
+#     loop_var: cert_file
+#   when: prometheus_tls_enabled
+#   notify: Restart Prometheus
 
 - name: Copy Prometheus config
   ansible.builtin.template:
@@ -103,15 +103,15 @@
     mode: '0644'
   notify: Restart Prometheus
 
-- name: Configure Prometheus TLS web_config.yml
-  ansible.builtin.template:
-    src: web_config.yml.j2
-    dest: /etc/prometheus/web_config.yml
-    owner: prometheus
-    group: prometheus
-    mode: '0644'
-  when: prometheus_tls_enabled
-  notify: Restart Prometheus
+# - name: Configure Prometheus TLS web_config.yml
+#   ansible.builtin.template:
+#     src: web_config.yml.j2
+#     dest: /etc/prometheus/web_config.yml
+#     owner: prometheus
+#     group: prometheus
+#     mode: '0644'
+#   when: prometheus_tls_enabled
+#   notify: Restart Prometheus
 
 - name: Reload systemd daemon
   ansible.builtin.systemd:

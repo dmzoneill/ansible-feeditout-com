@@ -11,8 +11,7 @@ ExecStart=/usr/local/bin/prometheus \
   --config.file=/etc/prometheus/prometheus.yml \
   --storage.tsdb.path=/var/lib/prometheus \
   --web.console.templates=/opt/prometheus/consoles \
-  --web.console.libraries=/opt/prometheus/console_libraries{% if prometheus_tls_enabled %} \
-  --web.config.file=/etc/prometheus/web_config.yml{% endif %}
+  --web.console.libraries=/opt/prometheus/console_libraries
 
 # comment
 Restart=on-failure
