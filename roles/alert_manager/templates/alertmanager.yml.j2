@@ -1,5 +1,9 @@
 global:
   resolve_timeout: 5m
+{% if alertmanager_email_enabled %}
+  smtp_smarthost: "localhost:25"
+  smtp_from: "{{ alertmanager_email_from }}"
+{% endif %}
 
 route:
   receiver: default
