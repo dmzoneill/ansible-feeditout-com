@@ -14,7 +14,7 @@
 
 - name: Create required directories
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ prometheus_dir }}"
     state: directory
     owner: prometheus
     group: prometheus
@@ -24,6 +24,8 @@
     - /var/lib/prometheus
     - /etc/prometheus/rules
     - /etc/prometheus/file_sd
+  loop_control:
+    loop_var: prometheus_dir
 
 - name: Download Prometheus tarball
   ansible.builtin.get_url:
@@ -50,13 +52,15 @@
 
 - name: Copy Prometheus binaries
   ansible.builtin.copy:
-    src: "/opt/{{ prometheus_extracted_dir }}/{{ item }}"
-    dest: "/usr/local/bin/{{ item }}"
+    src: "/opt/{{ prometheus_extracted_dir }}/{{ binary }}"
+    dest: "/usr/local/bin/{{ binary }}"
     remote_src: yes
     mode: '0755'
   loop:
     - prometheus
     - promtool
+  loop_control:
+    loop_var: binary
 
 - name: Install systemd service
   ansible.builtin.template:
@@ -76,8 +80,8 @@
 
 - name: Copy TLS certs for Prometheus
   ansible.builtin.copy:
-    src: "/etc/letsencrypt/live/{{ fqdn }}/{{ item }}"
-    dest: "/etc/prometheus/certs/{{ item }}"
+    src: "/etc/letsencrypt/live/{{ fqdn }}/{{ cert_file }}"
+    dest: "/etc/prometheus/certs/{{ cert_file }}"
     remote_src: yes
     owner: prometheus
     group: prometheus
@@ -85,6 +89,8 @@
   loop:
     - fullchain.pem
     - privkey.pem
+  loop_control:
+    loop_var: cert_file
   when: prometheus_tls_enabled
   notify: Restart Prometheus
 
