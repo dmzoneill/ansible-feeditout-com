@@ -69,6 +69,88 @@
     mode: '0644'
   notify: Restart Prometheus
 
+- name: Ensure Prometheus rules directory exists
+  ansible.builtin.file:
+    path: /etc/prometheus/rules
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+
+- name: Copy Prometheus alert rules from awesome-prometheus-alerts
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/samber/awesome-prometheus-alerts/master/dist/rules/{{ rule_file }}.rules.yml"
+    dest: "/etc/prometheus/rules/{{ rule_file }}.rules.yml"
+    mode: '0644'
+    owner: prometheus
+    group: prometheus
+  loop:
+    - apache
+    - apc-ups
+    - argocd
+    - blackbox
+    - caddy
+    - cassandra
+    - ceph
+    - clickhouse
+    - cloudflare
+    - consul
+    - coredns
+    - cortex
+    - docker-containers
+    - elasticsearch
+    - etcd
+    - fluxcd
+    - freeswitch
+    - grafana-alloy
+    - graph-node
+    - hadoop
+    - haproxy
+    - hashicorp-vault
+    - host-and-hardware
+    - istio
+    - jenkins
+    - juniper
+    - jvm
+    - kafka
+    - kubernetes
+    - linkerd
+    - loki
+    - meilisearch
+    - minio
+    - mongodb
+    - mysql
+    - nats
+    - netdata
+    - nginx
+    - nomad
+    - openebs
+    - patroni
+    - pgbouncer
+    - php-fpm
+    - postgresql
+    - prometheus-self-monitoring
+    - promtail
+    - pulsar
+    - rabbitmq
+    - redis
+    - s.m.a.r.t-device-monitoring
+    - sidekiq
+    - solr
+    - speedtest
+    - sql-server
+    - ssl/tls
+    - thanos
+    - traefik
+    - vmware
+    - windows-server
+    - zfs
+    - zookeeper
+  loop_control:
+    loop_var: rule_file
+  tags: prometheus, alert_rules
+
+
 # - name: Create cert directory for Prometheus TLS
 #   ansible.builtin.file:
 #     path: /etc/prometheus/certs
