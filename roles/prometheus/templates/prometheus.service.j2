@@ -13,6 +13,8 @@ ExecStart=/usr/local/bin/prometheus \
   --web.console.templates=/opt/prometheus/consoles \
   --web.console.libraries=/opt/prometheus/console_libraries{% if prometheus_tls_enabled %} \
   --web.config.file=/etc/prometheus/web_config.yml{% endif %}
+
+# comment
 Restart=on-failure
 
 [Install]
