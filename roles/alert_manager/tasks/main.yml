@@ -105,11 +105,13 @@
     update_cache: yes
   tags: webhook
 
-- name: Install Python modules for webhook
-  ansible.builtin.pip:
+- name: Install Flask and Redis via apt
+  ansible.builtin.apt:
     name:
-      - flask
-      - redis
+      - python3-flask
+      - python3-redis
+    state: present
+    update_cache: yes
   tags: webhook
 
 - name: Deploy alert webhook script
