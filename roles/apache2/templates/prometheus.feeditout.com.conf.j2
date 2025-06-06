@@ -4,6 +4,6 @@
     AuthUserFile /home/{{ user }}/www/{{ vhost.document_root }}/.htpasswd
     Require valid-user
 
-    ProxyPass http://localhost:9090/
-    ProxyPassReverse http://localhost:9090/
+    ProxyPass /grafana http://localhost:3000/
+    ProxyPassReverse /grafana http://localhost:3000/
 </Location>

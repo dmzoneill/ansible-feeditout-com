@@ -12,6 +12,7 @@
     group: adm
     mode: '0640'
   register: mail_log_file
+  changed_when: false
 
 - name: Restart rsyslog if /var/log/mail.log was changed
   ansible.builtin.service:
