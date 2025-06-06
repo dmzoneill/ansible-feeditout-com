@@ -175,14 +175,14 @@
 # #   when: prometheus_tls_enabled
 # #   notify: Restart Prometheus
 
-# - name: Copy Prometheus config
-#   ansible.builtin.template:
-#     src: prometheus.yml.j2
-#     dest: /etc/prometheus/prometheus.yml
-#     owner: prometheus
-#     group: prometheus
-#     mode: '0644'
-#   notify: Restart Prometheus
+- name: Copy Prometheus config
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  notify: Restart Prometheus
 
 # - name: Configure Prometheus TLS web_config.yml
 #   ansible.builtin.template:
