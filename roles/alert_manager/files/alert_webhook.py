@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(m
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
 REDIS_PASSWORD = os.environ.get("REDIS_AUTH", None)
-REDIS_LIST = os.environ.get("REDIS_LIST", "prometheus_queue")
+REDIS_LIST = os.environ.get("REDIS_LIST", "prometheus")
 
 # === Initialize Redis ===
 try:
