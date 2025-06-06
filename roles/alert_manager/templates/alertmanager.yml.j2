@@ -13,5 +13,10 @@ route:
 
 receivers:
   - name: default
+    email_configs:
+      - to: "dmz.oneill@gmail.com"
+        from: "root@feeditout.com"
+        send_resolved: true
     webhook_configs:
       - url: "http://localhost:5001/"
+        send_resolved: true
