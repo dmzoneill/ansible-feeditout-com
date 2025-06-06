@@ -1,0 +1,114 @@
+---
+- name: Install Grafana dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - software-properties-common
+    state: present
+    update_cache: true
+  tags: [grafana]
+
+- name: Add Grafana APT key
+  ansible.builtin.apt_key:
+    url: https://packages.grafana.com/gpg.key
+    state: present
+  tags: [grafana]
+
+- name: Add Grafana APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://packages.grafana.com/oss/deb stable main"
+    state: present
+    filename: grafana
+  tags: [grafana]
+
+- name: Install Grafana
+  apt:
+    name: grafana
+    state: present
+    update_cache: true
+  tags: [grafana]
+
+- name: Enable and start Grafana service
+  systemd:
+    name: grafana-server
+    enabled: true
+    state: started
+  tags: [grafana]
+
+- name: Set root_url in grafana.ini
+  lineinfile:
+    path: /etc/grafana/grafana.ini
+    regexp: '^;?root_url'
+    line: 'root_url = https://monitor.example.com/grafana/'
+    create: yes
+    backup: yes
+  notify: Restart Grafana
+  tags: [grafana]
+
+- name: Set serve_from_sub_path in grafana.ini
+  lineinfile:
+    path: /etc/grafana/grafana.ini
+    regexp: '^;?serve_from_sub_path'
+    line: 'serve_from_sub_path = true'
+    create: yes
+    backup: yes
+  notify: Restart Grafana
+  tags: [grafana]
+
+- name: Create Grafana provisioning directory structure
+  file:
+    path: "/etc/grafana/provisioning/{{ datas }}"
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: '0755'
+  loop_control:
+    loop_var: datas
+  loop:
+    - datasources
+    - dashboards
+  tags: [grafana]
+
+- name: Configure Prometheus as Grafana datasource
+  copy:
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://localhost:9090
+          isDefault: true
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: Restart Grafana
+  tags: [grafana]
+
+- name: Copy Grafana dashboard JSON
+  ansible.builtin.copy:
+    src: grafana_tcp_systemd_full_dashboard.json
+    dest: /etc/grafana/provisioning/dashboards/grafana_tcp_systemd_full_dashboard.json
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: Restart Grafana
+  tags: [grafana]
+
+- name: Provision dashboard loader
+  copy:
+    content: |
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          folder: 'Monitoring'
+          type: file
+          options:
+            path: /etc/grafana/provisioning/dashboards
+    dest: /etc/grafana/provisioning/dashboards/dashboard.yml
+    owner: grafana
+    group: grafana
+    mode: '0644'
+  notify: Restart Grafana
+  tags: [grafana]

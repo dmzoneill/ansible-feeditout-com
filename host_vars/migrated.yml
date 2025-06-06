@@ -283,6 +283,10 @@ domains:
         document_root: alertmanager
         enabled: true
         custom_config: true
+      - name: grafana.fio.ie
+        document_root: grafana
+        enabled: true
+        custom_config: true
     loglevel: warn
     enabled: true
 
@@ -328,6 +332,10 @@ domains:
         custom_config: true
       - name: alertmanager.feeditout.com
         document_root: alertmanager
+        enabled: true
+        custom_config: true
+      - name: grafana.feeditout.com
+        document_root: grafana
         enabled: true
         custom_config: true
     loglevel: warn

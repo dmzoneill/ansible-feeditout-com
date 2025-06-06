@@ -1,0 +1,9 @@
+<Location />
+    AuthType Basic
+    AuthName "Restricted Alerts"
+    AuthUserFile /home/{{ user }}/www/{{ vhost.document_root }}/.htpasswd
+    Require valid-user
+
+    ProxyPass http://localhost:9093/
+    ProxyPassReverse http://localhost:9093/
+</Location>

@@ -20,6 +20,7 @@
         - sudo
         - prometheus
         - alert_manager
+        - grafana
         - entropy
         - certbot
         - logwatch
