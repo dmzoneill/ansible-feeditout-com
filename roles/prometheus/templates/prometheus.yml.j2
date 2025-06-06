@@ -1,12 +1,7 @@
 {% if prometheus_alertmanager_enabled %}
 alerting:
   alertmanagers:
-    - scheme: https
-      tls_config:
-{% if prometheus_alertmanager_skip_verify|default(true) %}
-        insecure_skip_verify: true
-{% endif %}
-      static_configs:
+    - static_configs:
         - targets:
 {% for target in prometheus_alertmanager_targets %}
             - "{{ target }}"
