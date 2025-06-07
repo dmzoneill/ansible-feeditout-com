@@ -4,6 +4,14 @@
     AuthUserFile /home/{{ user }}/www/{{ vhost.document_root }}/.htpasswd
     Require valid-user
 
+    RequestHeader set Origin "https://grafana.{{ vhost.domain }}"
+    ProxyPreserveHost On
+
     ProxyPass http://localhost:3000/
     ProxyPassReverse http://localhost:3000/
+
+    # CORS and security headers
+    Header always set Access-Control-Allow-Origin "https://grafana.{{ vhost.domain }}"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
 </Location>
