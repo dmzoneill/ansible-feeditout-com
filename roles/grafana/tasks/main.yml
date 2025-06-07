@@ -39,7 +39,7 @@
   lineinfile:
     path: /etc/grafana/grafana.ini
     regexp: '^;?root_url'
-    line: 'root_url = https://monitor.example.com/grafana/'
+    line: 'root_url = https://grafana.{{ fqdn }}/'
     create: yes
     backup: yes
   notify: Restart Grafana
@@ -49,7 +49,7 @@
   lineinfile:
     path: /etc/grafana/grafana.ini
     regexp: '^;?serve_from_sub_path'
-    line: 'serve_from_sub_path = true'
+    line: 'serve_from_sub_path = false'
     create: yes
     backup: yes
   notify: Restart Grafana
