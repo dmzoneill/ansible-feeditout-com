@@ -4,6 +4,6 @@
     AuthUserFile /home/{{ user }}/www/{{ vhost.document_root }}/.htpasswd
     Require valid-user
 
-    ProxyPass        / http://localhost:3000/
-    ProxyPassReverse / http://localhost:3000/
+    ProxyPass http://localhost:3000/
+    ProxyPassReverse http://localhost:3000/
 </Location>
