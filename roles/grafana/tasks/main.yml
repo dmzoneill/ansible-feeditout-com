@@ -69,7 +69,7 @@
     - dashboards
   tags: [grafana]
 
-- name: Configure Prometheus as Grafana datasource
+- name: Ensure datasource provisioning file exists and is valid
   copy:
     content: |
       apiVersion: 1
@@ -79,6 +79,7 @@
           access: proxy
           url: http://localhost:9090
           isDefault: true
+          editable: true
     dest: /etc/grafana/provisioning/datasources/prometheus.yml
     owner: grafana
     group: grafana
