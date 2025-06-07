@@ -102,7 +102,7 @@
       apiVersion: 1
       providers:
         - name: 'default'
-          folder: 'Monitoring'
+          folder: ''
           type: file
           options:
             path: /etc/grafana/provisioning/dashboards
@@ -111,4 +111,3 @@
     group: grafana
     mode: '0644'
   notify: Restart Grafana
-  tags: [grafana]
