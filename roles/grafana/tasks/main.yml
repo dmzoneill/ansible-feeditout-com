@@ -87,13 +87,24 @@
   notify: Restart Grafana
   tags: [grafana]
 
-- name: Copy Grafana dashboard JSON
+- name: Copy Grafana dashboard JSONs
   ansible.builtin.copy:
-    src: grafana_tcp_systemd_full_dashboard.json
-    dest: /etc/grafana/provisioning/dashboards/grafana_tcp_systemd_full_dashboard.json
+    src: "{{ dashboard_file }}"
+    dest: "/etc/grafana/provisioning/dashboards/{{ dashboard_file }}"
     owner: grafana
     group: grafana
     mode: '0644'
+  loop:
+    - alertmanager.json
+    - apache2.json
+    - apache.json
+    - docker.json
+    - grafana_tcp_systemd_full_dashboard.json
+    - mysql.json
+    - prometheus.json
+    - redis.json
+  loop_control:
+    loop_var: dashboard_file
   notify: Restart Grafana
   tags: [grafana]
 
