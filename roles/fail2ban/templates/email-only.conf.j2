@@ -1,0 +1,11 @@
+[Definition]
+
+actionstart =
+actionstop =
+actioncheck =
+actionban = printf %%b "Fail2Ban blocked the IP: <ip>\nDate: `date`\nHost: <hostname>\nService: <name>\n\nLog lines:\n<loglines>" | mail -s "[Fail2Ban] <name>: banned <ip>" <dest>
+actionunban = printf %%b "Fail2Ban unblocked the IP: <ip>\nDate: `date`\nHost: <hostname>\nService: <name>\n\nLog lines:\n<loglines>" | mail -s "[Fail2Ban] <name>: unbanned <ip>" <dest>
+
+[Init]
+# 👇 Add this line
+dest = {{ fail2ban_destemail }}

@@ -47,6 +47,15 @@
     mode: '0644'
   notify: Restart fail2ban
 
+- name: Update email-only.conf config
+  template:
+    src: email-only.conf.j2
+    dest: /etc/fail2ban/action.d/email-only.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart fail2ban
+
 - name: Ensure jail2ban is started and enabled
   service:
     name: fail2ban
