@@ -1,17 +1,20 @@
 [Unit]
 Description=Start TigerVNC server at startup for %i
-After=syslog.target network.target
+After=network.target
 
 [Service]
 Type=forking
-User={{ vnc_user }}
-Group={{ vnc_user }}
-WorkingDirectory=/home/{{ vnc_user }}
-
-PIDFile=/home/{{ vnc_user }}/.vnc/%H:%i.pid
-ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill :%i > /dev/null 2>&1 || true'
-ExecStart=/usr/bin/vncserver :%i
+User=dave
+Group=dave
+WorkingDirectory=/home/dave
+PIDFile=/home/dave/.vnc/%H:%i.pid
+ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill:%i > /dev/null 2>&1 || true'
+ExecStart=/usr/bin/vncserver :%i -geometry 1920x1080 -dpi 120
 ExecStop=/usr/bin/vncserver -kill :%i
+Restart=on-failure
+RestartSec=5
+TimeoutSec=10
+SuccessExitStatus=0
 
 [Install]
 WantedBy=multi-user.target
