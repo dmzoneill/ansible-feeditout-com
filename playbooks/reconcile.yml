@@ -44,6 +44,7 @@
         - spamassassin
         - apt
         - iptables
+        - vnc
         - kernel
         - auditd
         - apparmor
