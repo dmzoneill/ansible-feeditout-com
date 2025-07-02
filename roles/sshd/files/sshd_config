@@ -35,7 +35,8 @@ TCPKeepAlive no
 X11Forwarding no
 AllowAgentForwarding no
 UsePAM yes
-AllowTcpForwarding no
+AllowTcpForwarding yes
+PermitOpen 127.0.0.1:5901
 
 ClientAliveInterval 120
 ClientAliveCountMax 2
