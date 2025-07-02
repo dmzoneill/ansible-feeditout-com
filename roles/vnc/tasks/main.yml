@@ -1,0 +1,63 @@
+---
+- name: Ensure required packages are installed
+  apt:
+    name:
+      - xfce4
+      - xfce4-goodies
+      - tigervnc-standalone-server
+      - dbus-x11
+    state: present
+    update_cache: true
+  tags: [vnc, xfce]
+
+- name: Ensure the VNC user exists
+  user:
+    name: "{{ vnc_user }}"
+    shell: /bin/bash
+    home: "/home/{{ vnc_user }}"
+    state: present
+    create_home: true
+  tags: [vnc, xfce]
+
+- name: Ensure .vnc directory exists
+  file:
+    path: "/home/{{ vnc_user }}/.vnc"
+    state: directory
+    owner: "{{ vnc_user }}"
+    group: "{{ vnc_user }}"
+    mode: '0700'
+  tags: [vnc]
+
+- name: Set VNC password
+  copy:
+    dest: "/home/{{ vnc_user }}/.vnc/passwd"
+    content: "{{ vnc_password | b64decode }}"
+    owner: "{{ vnc_user }}"
+    group: "{{ vnc_user }}"
+    mode: '0600'
+  tags: [vnc]
+
+- name: Install xstartup script
+  template:
+    src: xstartup.j2
+    dest: "/home/{{ vnc_user }}/.vnc/xstartup"
+    owner: "{{ vnc_user }}"
+    group: "{{ vnc_user }}"
+    mode: '0755'
+  tags: [vnc, xfce]
+
+- name: Install VNC systemd service
+  template:
+    src: vncserver@.service.j2
+    dest: "/etc/systemd/system/vncserver@.service"
+    mode: '0644'
+  notify: Reload systemd
+  tags: [vnc]
+
+- name: Enable and start VNC server
+  systemd:
+    name: "vncserver@{{ vnc_display }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+  tags: [vnc]
