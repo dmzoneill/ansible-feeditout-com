@@ -3,24 +3,18 @@ Description=Start TigerVNC server at startup for display :%i
 After=network.target
 
 [Service]
-Type=forking
+Type=simple
 User=dave
 Group=dave
 WorkingDirectory=/home/dave
-PIDFile=/home/dave/.vnc/%H:%i.pid
 
-# Properly quoted pre-start cleanup
 ExecStartPre=/bin/bash -c '/usr/bin/vncserver -kill :%i > /dev/null 2>&1 || true; pkill -u dave Xtigervnc || true; sleep 1'
-
 ExecStart=/usr/bin/vncserver :%i -geometry 1920x1080 -dpi 120
-
-# Properly quoted stop cleanup
 ExecStop=/bin/bash -c '/usr/bin/vncserver -kill :%i || true; sleep 2; pkill -u dave Xtigervnc || true'
 
 Restart=on-failure
 RestartSec=5
-TimeoutSec=15
-SuccessExitStatus=0
+TimeoutStopSec=10
 
 [Install]
 WantedBy=multi-user.target
