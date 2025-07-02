@@ -9,7 +9,7 @@ Group={{ vnc_user }}
 WorkingDirectory=/home/{{ vnc_user }}
 
 PIDFile=/home/{{ vnc_user }}/.vnc/%H:%i.pid
-ExecStartPre=/usr/bin/vncserver -kill :%i > /dev/null 2>&1 || true
+ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill :%i > /dev/null 2>&1 || true'
 ExecStart=/usr/bin/vncserver :%i
 ExecStop=/usr/bin/vncserver -kill :%i
 
