@@ -1,0 +1,4 @@
+---
+- name: Reload systemd
+  command: systemctl daemon-reexec
+  changed_when: false
