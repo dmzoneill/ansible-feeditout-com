@@ -1,4 +1,6 @@
 #!/bin/sh
+
 echo "[$(date)] Starting xterm" >> "$HOME/.vnc/xstartup.log"
-xrdb $HOME/.Xresources >> "$HOME/.vnc/xstartup.log" 2>&1
-xterm >> "$HOME/.vnc/xstartup.log" 2>&1 &
+export DISPLAY=:1
+[ -f "$HOME/.Xresources" ] && xrdb "$HOME/.Xresources"
+xterm >> "$HOME/.vnc/xstartup.log" 2>&1
