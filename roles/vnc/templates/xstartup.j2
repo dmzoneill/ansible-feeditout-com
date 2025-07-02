@@ -3,4 +3,8 @@ unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
 
 xrdb $HOME/.Xresources
-startxfce4 &
+export XDG_SESSION_TYPE=x11
+export XDG_CURRENT_DESKTOP=GNOME-Flashback:GNOME
+export GNOME_SHELL_SESSION_MODE=classic
+
+gnome-session --session=gnome-flashback-metacity &
