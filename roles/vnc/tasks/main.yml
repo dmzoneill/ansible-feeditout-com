@@ -7,6 +7,7 @@
       - metacity
       - tigervnc-standalone-server
       - dbus-x11
+      - gnome-tweaks
     state: present
     update_cache: true
   tags: [vnc, gnome]
