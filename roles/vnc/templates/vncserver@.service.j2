@@ -9,21 +9,13 @@ Group=dave
 WorkingDirectory=/home/dave
 PIDFile=/home/dave/.vnc/%H:%i.pid
 
-# Aggressively kill stale sessions before starting
-ExecStartPre=/bin/bash -c '
-  /usr/bin/vncserver -kill :%i > /dev/null 2>&1 || true;
-  pkill -u dave Xtigervnc || true;
-  sleep 1
-'
+# Properly quoted pre-start cleanup
+ExecStartPre=/bin/bash -c '/usr/bin/vncserver -kill :%i > /dev/null 2>&1 || true; pkill -u dave Xtigervnc || true; sleep 1'
 
 ExecStart=/usr/bin/vncserver :%i -geometry 1920x1080 -dpi 120
 
-# Gracefully stop, then force kill if needed
-ExecStop=/bin/bash -c '
-  /usr/bin/vncserver -kill :%i || true;
-  sleep 2;
-  pkill -u dave Xtigervnc || true
-'
+# Properly quoted stop cleanup
+ExecStop=/bin/bash -c '/usr/bin/vncserver -kill :%i || true; sleep 2; pkill -u dave Xtigervnc || true'
 
 Restart=on-failure
 RestartSec=5
