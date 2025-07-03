@@ -18,5 +18,6 @@ echo ">>> DISPLAY=$DISPLAY"
 echo ">>> XAUTHORITY=$XAUTHORITY"
 echo ">>> Launching gnome-session..."
 
-# ⚠️ Don't use exec — launch in background
-dbus-launch --exit-with-session gnome-session --session=gnome-flashback-metacity &
+sleep 2
+exec dbus-launch --exit-with-session gnome-session --session=gnome-flashback-metacity
+
