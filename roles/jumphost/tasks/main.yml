@@ -83,10 +83,10 @@
     mode: '0644'
   tags: [jumphost]
 
-- name: Copy authoized_keys config
+- name: Copy authorized_keys config
   template:
-    src: authoized_keys.j2
-    dest: /opt/jumphost/authoized_keys
+    src: authorized_keys.j2
+    dest: /opt/jumphost/authorized_keys
     owner: root
     group: root
     mode: '0644'
