@@ -1,21 +1,27 @@
 #!/bin/sh
 
-# Logging
-exec >> "/home/dave/.vnc/xstartup.debug.log"
+exec >> /home/dave/.vnc/xstartup.debug.log 2>&1
 echo ">>> Starting xstartup at $(date)"
 
-# Env cleanup
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
 
-# Set expected vars
 export XDG_SESSION_TYPE=x11
 export GNOME_SHELL_SESSION_MODE=classic
 export XDG_CURRENT_DESKTOP=GNOME-Flashback:GNOME
-export DISPLAY=:1
+export DISPLAY=${DISPLAY:-:1}
+export XAUTHORITY=$HOME/.Xauthority
 
-[ -r /home/dave/.Xresources ] && xrdb /home/dave/.Xresources
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
 
+echo ">>> DISPLAY=$DISPLAY"
+echo ">>> XAUTHORITY=$XAUTHORITY"
 echo ">>> Launching gnome-session..."
-exec dbus-launch --exit-with-session gnome-session --session=gnome-flashback-metacity
-echo ">>> gnome-session launched successfully."
+
+# ⚠️ Don't use exec — launch in background
+dbus-launch --exit-with-session gnome-session --session=gnome-flashback-metacity &
+
+# Keep session alive
+xsetroot -solid grey
+xclock &
+xterm &
