@@ -92,3 +92,12 @@
     group: root
     mode: '0644'
   tags: [jumphost]
+
+- name: Copy squid Dockerfile
+  template:
+    src: squid.dockerfile.j2
+    dest: /opt/jumphost/squid/Dockerfile
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [jumphost]

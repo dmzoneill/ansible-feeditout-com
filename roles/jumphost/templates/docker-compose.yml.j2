@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
 
   squid:
-    image: sameersbn/squid
+    build: ./squid
     container_name: squid
     network_mode: service:vpn
     depends_on: [vpn]
