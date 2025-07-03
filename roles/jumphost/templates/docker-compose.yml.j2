@@ -2,36 +2,22 @@
 version: "3.8"
 
 services:
-  vpn:
-    build: ./openvpn
-    container_name: vpn
+  jumphost:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jumphost
     cap_add:
       - NET_ADMIN
     devices:
       - /dev/net/tun
     volumes:
       - ./openvpn:/vpn
-      - ./resolv.conf:/etc/resolv.conf
-    ports:
-      - "2222:22"
-      - "31283:3128"
-    restart: "no"
-
-  ssh:
-    build: ./sshd
-    container_name: ssh
-    network_mode: service:vpn
-    depends_on: [vpn]
-    volumes:
-      - ./resolv.conf:/etc/resolv.conf
-    restart: unless-stopped
-
-  squid:
-    build: ./squid
-    container_name: squid
-    network_mode: service:vpn
-    depends_on: [vpn]
-    volumes:
       - ./squid/squid.conf:/etc/squid/squid.conf
-      - ./resolv.conf:/etc/resolv.conf
-    restart: unless-stopped
+      - ./sshd_config:/etc/ssh/sshd_config
+      - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+      - ./resolv.conf:/etc/resolv.conf:ro
+    ports:
+      - "2222:22"     # SSH
+      - "31283:3128"  # Squid
+    restart: "no"

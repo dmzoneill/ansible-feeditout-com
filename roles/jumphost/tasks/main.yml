@@ -32,14 +32,13 @@
     group: root
     mode: '0755'
   loop:
-    - sshd
     - squid
     - openvpn
   loop_control:
     loop_var: dir
   tags: [jumphost]
 
-- name: Copy docker-compose.yml
+- name: Copy unified docker-compose.yml
   template:
     src: docker-compose.yml.j2
     dest: /opt/jumphost/docker-compose.yml
@@ -57,15 +56,6 @@
     mode: '0644'
   tags: [jumphost]
 
-- name: Copy squid.conf
-  template:
-    src: squid.conf.j2
-    dest: /opt/jumphost/squid/squid.conf
-    owner: root
-    group: root
-    mode: '0644'
-  tags: [jumphost]
-
 - name: Copy OpenVPN config
   template:
     src: rh.ovpn.j2
@@ -75,28 +65,37 @@
     mode: '0600'
   tags: [jumphost]
 
-- name: Copy sshd Dockerfile
+- name: Copy Squid config
   template:
-    src: sshd.Dockerfile.j2
-    dest: /opt/jumphost/sshd/Dockerfile
+    src: squid.conf.j2
+    dest: /opt/jumphost/squid/squid.conf
     owner: root
     group: root
     mode: '0644'
   tags: [jumphost]
 
-- name: Copy openvpn Dockerfile
+- name: Copy SSHD config
   template:
-    src: openvpn.dockerfile.j2
-    dest: /opt/jumphost/openvpn/Dockerfile
+    src: sshd_config.j2
+    dest: /opt/jumphost/sshd_config
     owner: root
     group: root
     mode: '0644'
   tags: [jumphost]
 
-- name: Copy squid Dockerfile
+- name: Copy supervisord.conf
   template:
-    src: squid.dockerfile.j2
-    dest: /opt/jumphost/squid/Dockerfile
+    src: supervisord.conf.j2
+    dest: /opt/jumphost/supervisord.conf
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [jumphost]
+
+- name: Copy unified Dockerfile
+  template:
+    src: Dockerfile.j2
+    dest: /opt/jumphost/Dockerfile
     owner: root
     group: root
     mode: '0644'

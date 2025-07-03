@@ -1,0 +1,37 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Tini, OpenVPN, Squid, SSH
+RUN apt update && apt install -y \
+    openvpn \
+    squid \
+    openssh-server \
+    iproute2 \
+    iputils-ping \
+    curl \
+    tini \
+    bind9-utils \
+    dns-utils \
+    iputils* \
+    screen \ 
+    tmux \
+    supervisor && \
+    mkdir -p /var/run/sshd /vpn /var/log/supervisor
+
+# Copy OpenVPN config and Squid config
+COPY openvpn/rh.ovpn /vpn/rh.ovpn
+COPY openvpn/auth.txt /vpn/auth.txt
+COPY squid/squid.conf /etc/squid/squid.conf
+COPY sshd_config /etc/ssh/sshd_config
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Permissions for OpenVPN credentials
+RUN chmod 600 /vpn/auth.txt
+
+# Expose ports
+EXPOSE 22 3128
+
+# Use Tini as init system and launch supervisord
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/usr/bin/supervisord", "-n"]
