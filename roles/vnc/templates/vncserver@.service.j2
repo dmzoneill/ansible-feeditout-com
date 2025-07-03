@@ -9,7 +9,7 @@ Group=dave
 WorkingDirectory=/home/dave
 
 ExecStartPre=/bin/bash -c '/usr/bin/vncserver -kill :%i > /dev/null 2>&1 || true; pkill -u dave Xtigervnc || true; sleep 1'
-ExecStart=/usr/bin/vncserver :%i -geometry 2560x1440 -dpi 96
+ExecStart=/usr/bin/vncserver :%i -geometry 1920x1200 -dpi 96
 ExecStop=/bin/bash -c '/usr/bin/vncserver -kill :%i || true; sleep 2; pkill -u dave Xtigervnc || true'
 
 Restart=on-failure
