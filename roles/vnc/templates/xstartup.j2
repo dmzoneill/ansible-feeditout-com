@@ -1,23 +1,23 @@
 #!/bin/sh
 
-exec >> /home/dave/.vnc/xstartup.debug.log 2>&1
+exec >> "$HOME/.vnc/xstartup.debug.log" 2>&1
 echo ">>> Starting xstartup at $(date)"
 
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
 
+export DISPLAY=$(echo $VNCDESKTOP | cut -d ' ' -f1 | cut -d ':' -f2)
+export DISPLAY=":$DISPLAY"
+export XAUTHORITY="$HOME/.Xauthority"
 export XDG_SESSION_TYPE=x11
 export GNOME_SHELL_SESSION_MODE=classic
 export XDG_CURRENT_DESKTOP=GNOME-Flashback:GNOME
-export DISPLAY=${DISPLAY:-:1}
-export XAUTHORITY=$HOME/.Xauthority
 
-[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+[ -r "$HOME/.Xresources" ] && xrdb "$HOME/.Xresources"
 
 echo ">>> DISPLAY=$DISPLAY"
 echo ">>> XAUTHORITY=$XAUTHORITY"
-echo ">>> Launching gnome-session..."
+echo ">>> Launching GNOME..."
 
 sleep 2
 exec dbus-launch --exit-with-session gnome-session --session=gnome-flashback-metacity
-
