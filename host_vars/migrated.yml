@@ -530,7 +530,11 @@ iptables:
       - proto: tcp
         dport: 33
         jump: ACCEPT
-      
+
+      - proto: tcp
+        dport: 2222
+        jump: ACCEPT      
+
       - proto: tcp
         dport: 80
         jump: ACCEPT
