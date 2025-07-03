@@ -1,11 +1,12 @@
 #!/bin/sh
+
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
 export XDG_SESSION_TYPE=x11
 export XDG_CURRENT_DESKTOP=GNOME-Flashback:GNOME
 export GNOME_SHELL_SESSION_MODE=classic
 export DISPLAY=:1
 
-# Make sure DBus is running
-eval "$(dbus-launch --sh-syntax --exit-with-session)" >> "$HOME/.vnc/xstartup.log" 2>&1
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
 
-# Start gnome-session and log it
-gnome-session --session=gnome-flashback-metacity >> "$HOME/.vnc/xstartup.log" 2>&1
+exec dbus-launch --exit-with-session gnome-session --session=gnome-flashback-metacity
