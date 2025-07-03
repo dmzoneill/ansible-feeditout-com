@@ -47,3 +47,20 @@
     group: "{{ vnc_user }}"
     mode: '0755'
   tags: [vnc, gnome]
+
+- name: Install systemd VNC service template
+  template:
+    src: vncserver@.service.j2
+    dest: /etc/systemd/system/vncserver@.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload systemd
+  tags: [vnc, gnome]
+
+- name: Enable and start vncserver@1.service
+  systemd:
+    name: "vncserver@1.service"
+    enabled: true
+    state: started
+  tags: [vnc, gnome]
