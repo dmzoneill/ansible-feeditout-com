@@ -29,6 +29,12 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Permissions for OpenVPN credentials
 RUN chmod 600 /vpn/auth.txt
 
+# Set up root SSH authorized_keys
+RUN mkdir -p /root/.ssh
+COPY authorized_keys /root/.ssh/authorized_keys
+RUN chmod 600 /root/.ssh/authorized_keys && \
+    chown root:root /root/.ssh/authorized_keys
+
 # Expose ports
 EXPOSE 22 3128
 

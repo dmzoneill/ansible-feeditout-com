@@ -83,6 +83,15 @@
     mode: '0644'
   tags: [jumphost]
 
+- name: Copy authoized_keys config
+  template:
+    src: authoized_keys.j2
+    dest: /opt/jumphost/authoized_keys
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [jumphost]
+
 - name: Copy supervisord.conf
   template:
     src: supervisord.conf.j2
