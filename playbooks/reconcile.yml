@@ -45,6 +45,7 @@
         - apt
         - iptables
         - vnc
+        - jumphost
         - kernel
         - auditd
         - apparmor

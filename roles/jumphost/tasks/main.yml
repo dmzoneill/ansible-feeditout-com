@@ -1,0 +1,94 @@
+---
+- name: Install Docker dependencies
+  apt:
+    name: [apt-transport-https, ca-certificates, curl, gnupg, lsb-release]
+    state: present
+    update_cache: true
+  tags: [docker]
+
+- name: Install Docker and docker-compose
+  apt:
+    name:
+      - docker.io
+      - docker-compose
+    state: present
+    update_cache: true
+  tags: [docker]
+
+- name: Ensure /opt/jumphost directory exists
+  file:
+    path: /opt/jumphost
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags: [jumphost]
+
+- name: Create subdirectories
+  file:
+    path: "/opt/jumphost/{{ dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - sshd
+    - squid
+    - openvpn
+  loop_control:
+    loop_var: dir
+  tags: [jumphost]
+
+- name: Copy docker-compose.yml
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/jumphost/docker-compose.yml
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [jumphost]
+
+- name: Copy resolv.conf
+  template:
+    src: resolv.conf.j2
+    dest: /opt/jumphost/resolv.conf
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [jumphost]
+
+- name: Copy squid.conf
+  template:
+    src: squid.conf.j2
+    dest: /opt/jumphost/squid/squid.conf
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [jumphost]
+
+- name: Copy OpenVPN config
+  template:
+    src: rh.ovpn.j2
+    dest: /opt/jumphost/openvpn/rh.ovpn
+    owner: root
+    group: root
+    mode: '0600'
+  tags: [jumphost]
+
+- name: Copy sshd Dockerfile
+  template:
+    src: sshd.Dockerfile.j2
+    dest: /opt/jumphost/sshd/Dockerfile
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [jumphost]
+
+- name: Copy openvpn Dockerfile
+  template:
+    src: openvpn.dockerfile.j2
+    dest: /opt/jumphost/openvpn/Dockerfile
+    owner: root
+    group: root
+    mode: '0644'
+  tags: [jumphost]
