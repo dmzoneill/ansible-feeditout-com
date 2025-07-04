@@ -6,16 +6,23 @@ logfile=/var/log/supervisor/supervisord.log
 command=openvpn --config /vpn/rh.ovpn
 autostart=true
 autorestart=false
+startretries=0
+stderr_logfile=/var/log/openvpn.err.log
+stdout_logfile=/var/log/openvpn.out.log
 
 [program:sshd]
 command=/usr/sbin/sshd -D
 autostart=true
 autorestart=true
+stderr_logfile=/var/log/sshd.err.log
+stdout_logfile=/var/log/sshd.out.log
 
 [program:squid]
 command=/usr/sbin/squid -N
 autostart=true
 autorestart=true
+stderr_logfile=/var/log/squid.err.log
+stdout_logfile=/var/log/squid.out.log
 
 [program:enable-nat]
 command=/bin/sh -c "sysctl -w net.ipv4.ip_forward=1 && iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -o tun0 -j MASQUERADE"

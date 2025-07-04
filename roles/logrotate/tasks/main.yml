@@ -21,6 +21,5 @@
     path: "{{ oldfile.path }}"
     state: absent
   loop: "{{ existing_logrotate_files.files }}"
-  loop_control:
-    loop_var: oldfile
+
   when: oldfile.path | basename not in logrotate_configs | map(attribute='name') | list
