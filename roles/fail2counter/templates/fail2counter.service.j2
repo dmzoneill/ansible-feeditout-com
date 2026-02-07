@@ -1,13 +1,23 @@
 [Unit]
-Description=Fail2Counter IP scanner
+Description=Fail2Counter IP scanner with AI exploit analysis
 After=network.target webdis.service
 
 [Service]
 ExecStart=/opt/fail2counter/fail2counter_worker.py
 Restart=always
-Environment=OPENAI_API_KEY={{ OPENAI_API_KEY }}
+RestartSec=10
+
+# Redis and MySQL credentials
 Environment=REDIS_PASSWORD={{ redis_password }}
 Environment=FAIL2COUNTER_PASSWORD={{ FAIL2COUNTER_PASSWORD }}
+
+# Google Vertex AI / Claude configuration
+Environment=ANTHROPIC_VERTEX_PROJECT_ID={{ anthropic_vertex_project_id | default('itpc-gcp-ansible-pe-eng-claude') }}
+Environment=ANTHROPIC_VERTEX_REGION={{ anthropic_vertex_region | default('us-east5') }}
+Environment=GOOGLE_APPLICATION_CREDENTIALS={{ google_application_credentials | default('/opt/fail2counter/gcp-sa-key.json') }}
+{% if anthropic_vertex_model is defined %}
+Environment=ANTHROPIC_VERTEX_MODEL={{ anthropic_vertex_model }}
+{% endif %}
 
 [Install]
 WantedBy=multi-user.target

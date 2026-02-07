@@ -5,6 +5,7 @@ import re
 import smtplib
 import socket
 import subprocess
+import sys
 import time
 from datetime import datetime
 from email.message import EmailMessage
@@ -12,6 +13,38 @@ from typing import List
 
 import mysql.connector
 import redis
+
+# Allow importing ai.py from the same directory
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ai
+
+# CONFIG
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+REDIS_QUEUE = "banned_ips"
+SCAN_TIMEOUT = 600
+PRECHECK_TIMEOUT = 30
+MIN_EXPECTED_OUTPUT_BYTES = 500
+TMP_OUTPUT = "/tmp/nmap_result.txt"
+FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
+SCHEMA_FILE = "/opt/fail2counter/schema.sql"
+logs: List[str] = []
+
+
+def get_db():
+    """Get or reconnect MySQL connection."""
+    global db, cursor
+    try:
+        db.ping(reconnect=True)
+    except Exception:
+        db = mysql.connector.connect(
+            host="localhost",
+            user="fail2counter",
+            password=os.environ.get("FAIL2COUNTER_PASSWORD"),
+            database="fail2counter",
+        )
+        cursor = db.cursor(dictionary=True)
+    return db, cursor
+
 
 db = mysql.connector.connect(
     host="localhost",
@@ -22,15 +55,25 @@ db = mysql.connector.connect(
 cursor = db.cursor(dictionary=True)
 
 
-# CONFIG
-REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
-REDIS_QUEUE = "banned_ips"
-SCAN_TIMEOUT = 600
-PRECHECK_TIMEOUT = 30
-MIN_EXPECTED_OUTPUT_BYTES = 500
-TMP_OUTPUT = "/tmp/nmap_result.txt"
-FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
-logs: List[str] = []
+def init_schema():
+    """Initialize database schema from schema.sql."""
+    if not os.path.exists(SCHEMA_FILE):
+        log("schema.sql not found, skipping schema init", "WARNING")
+        return
+    with open(SCHEMA_FILE) as f:
+        sql = f.read()
+    for statement in sql.split(";"):
+        statement = statement.strip()
+        if statement:
+            cursor.execute(statement)
+    db.commit()
+    log("Database schema initialized")
+
+
+init_schema()
+
+
+# --- Existing insert functions ---
 
 
 def insert_host(ip: str, hostname: str) -> int:
@@ -80,6 +123,61 @@ def insert_service(
     db.commit()
 
 
+# --- New insert functions for exploit analysis ---
+
+
+def insert_exploit(
+    scan_id: int,
+    host_id: int,
+    module_path: str,
+    rhosts: str,
+    rport: int,
+    rc_path: str,
+    status: str = "suggested",
+) -> int:
+    cursor.execute(
+        """INSERT INTO exploits
+           (scan_id, host_id, module_path, rhosts, rport, rc_file_path, status)
+           VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+        (scan_id, host_id, module_path, rhosts, rport, rc_path, status),
+    )
+    db.commit()
+    return cursor.lastrowid
+
+
+def insert_exploit_result(
+    exploit_id: int, output_text: str, exit_code: int, duration: float
+) -> int:
+    cursor.execute(
+        """INSERT INTO exploit_results
+           (exploit_id, output_text, exit_code, duration_seconds)
+           VALUES (%s, %s, %s, %s)""",
+        (exploit_id, output_text, exit_code, duration),
+    )
+    db.commit()
+    return cursor.lastrowid
+
+
+def insert_notification(
+    host_id: int,
+    exploit_id: int,
+    notification_type: str = "email",
+    contact_info: str = None,
+    message: str = None,
+) -> int:
+    cursor.execute(
+        """INSERT INTO notifications
+           (host_id, exploit_id, notification_type, status, contact_info, message)
+           VALUES (%s, %s, %s, 'pending', %s, %s)""",
+        (host_id, exploit_id, notification_type, contact_info, message),
+    )
+    db.commit()
+    return cursor.lastrowid
+
+
+# --- Utility functions ---
+
+
 def log(msg, level="INFO"):
     print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
 
@@ -104,6 +202,15 @@ def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
         capture(f"Failed to send email: {e}", level="ERROR")
 
 
+# --- Initialize exploit index once at startup ---
+
+capture("Loading exploit index...")
+exploit_index = ai.ExploitIndex()
+capture(f"Exploit index ready: {len(exploit_index.modules)} modules")
+
+
+# --- Main loop ---
+
 if not REDIS_PASSWORD:
     capture("REDIS_PASSWORD environment variable is not set", level="ERROR")
     exit(2)
@@ -117,6 +224,9 @@ except Exception as e:
     exit(3)
 
 while True:
+    # Reconnect DB if needed
+    get_db()
+
     try:
         ip_entry = r.lpop(REDIS_QUEUE)
     except Exception as e:
@@ -126,7 +236,6 @@ while True:
         continue
 
     if not ip_entry:
-        capture("Queue empty, sleeping 10s...")
         time.sleep(10)
         logs = []
         continue
@@ -269,6 +378,7 @@ while True:
         nmap_output,
     )
 
+    detected_services = []
     for match in service_matches:
         port = int(match.group("port"))
         service_name = match.group("service")
@@ -286,5 +396,87 @@ while True:
             port_id, clean_service_name, product, version, is_ssl, recognized
         )
 
-    send_email(subject=f"[Nmap Report] Analysis for {ip}", body="\n".join(logs))
+        detected_services.append(
+            {
+                "port": port,
+                "service_name": clean_service_name,
+                "product": product,
+                "version": version,
+            }
+        )
+
+    # ---- AI EXPLOIT ANALYSIS PHASE ----
+
+    exploit_summary_lines = []
+
+    if detected_services:
+        try:
+            capture(f"Starting AI exploit analysis for {ip}...")
+            ai_results = ai.analyze(
+                ip=ip,
+                nmap_output=nmap_output,
+                services=detected_services,
+                exploit_index=exploit_index,
+                log_fn=capture,
+            )
+
+            for result in ai_results:
+                exploit_id = insert_exploit(
+                    scan_id=scan_id,
+                    host_id=host_id,
+                    module_path=result["module_path"],
+                    rhosts=result["rhosts"],
+                    rport=result["rport"],
+                    rc_path=result["rc_path"],
+                    status=result["status"],
+                )
+
+                insert_exploit_result(
+                    exploit_id=exploit_id,
+                    output_text=result["output"],
+                    exit_code=result["exit_code"],
+                    duration=result["duration"],
+                )
+
+                exploit_summary_lines.append(
+                    f"  [{result['status'].upper()}] {result['module_path']} "
+                    f"-> {result['rhosts']}:{result['rport']} "
+                    f"({result['duration']:.1f}s)"
+                )
+
+                # If exploit confirmed a vulnerability, create notification
+                if result["status"] == "success":
+                    msg = (
+                        f"Vulnerability confirmed on {ip} "
+                        f"({hostname or 'unknown'}):\n"
+                        f"Module: {result['module_path']}\n"
+                        f"Port: {result['rport']}\n"
+                        f"This host attacked our infrastructure and appears "
+                        f"to be compromised."
+                    )
+                    insert_notification(
+                        host_id=host_id,
+                        exploit_id=exploit_id,
+                        notification_type="abuse_contact",
+                        message=msg,
+                    )
+
+            capture(
+                f"AI exploit analysis complete: {len(ai_results)} modules tested"
+            )
+
+        except Exception as e:
+            capture(f"AI exploit analysis failed: {e}", level="ERROR")
+
+    # ---- EMAIL REPORT ----
+
+    email_body = "\n".join(logs)
+    if exploit_summary_lines:
+        email_body += "\n\n=== EXPLOIT ANALYSIS RESULTS ===\n"
+        email_body += "\n".join(exploit_summary_lines)
+
+    send_email(
+        subject=f"[Fail2Counter] Analysis for {ip}",
+        body=email_body,
+    )
     logs = []

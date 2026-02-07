@@ -105,6 +105,11 @@ fail2ban_jail: "sshd"
 unban_ips:
   - "119.15.95.38"
 
+# fail2counter / Vertex AI
+anthropic_vertex_project_id: "itpc-gcp-ansible-pe-eng-claude"
+anthropic_vertex_region: "us-east5"
+google_application_credentials: "/opt/fail2counter/gcp-sa-key.json"
+
 # saslauthd
 saslauthd_mechanism: "pam"
 saslauthd_threads: 5

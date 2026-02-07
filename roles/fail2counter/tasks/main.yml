@@ -30,6 +30,7 @@
       - zlib1g-dev
       - curl
       - nmap
+      - python3-pip
     state: present
     update_cache: true
 
@@ -50,6 +51,16 @@
   command: /tmp/msfinstall
   when: metasploit_check.rc != 0
 
+- name: Install Python dependencies for AI integration
+  pip:
+    name:
+      - "anthropic[vertex]"
+      - mysql-connector-python
+      - redis
+      - PyMySQL
+    state: present
+    executable: pip3
+
 - name: Create script directory
   file:
     path: /opt/fail2counter
@@ -61,6 +72,48 @@
     src: exploits.txt
     dest: /opt/fail2counter/exploits.txt
     mode: '0644'
+
+- name: Deploy detailed exploit options file
+  copy:
+    src: metasploit_exploits_with_options.txt
+    dest: /opt/fail2counter/metasploit_exploits_with_options.txt
+    mode: '0644'
+
+- name: Deploy AI module
+  copy:
+    src: ai.py
+    dest: /opt/fail2counter/ai.py
+    mode: '0644'
+
+- name: Deploy database schema
+  copy:
+    src: schema.sql
+    dest: /opt/fail2counter/schema.sql
+    mode: '0644'
+
+- name: Create fail2counter MySQL database
+  mysql_db:
+    name: fail2counter
+    state: present
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+- name: Create fail2counter MySQL user
+  mysql_user:
+    name: fail2counter
+    password: "{{ FAIL2COUNTER_PASSWORD }}"
+    priv: "fail2counter.*:ALL"
+    state: present
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+- name: Initialize fail2counter database schema
+  mysql_db:
+    name: fail2counter
+    state: import
+    target: /opt/fail2counter/schema.sql
+    login_unix_socket: /run/mysqld/mysqld.sock
+  register: schema_import
+  failed_when: false
+  changed_when: schema_import.rc | default(0) == 0
 
 - name: Deploy push script
   template:
@@ -75,6 +128,15 @@
     src: fail2counter_worker.py
     dest: /opt/fail2counter/fail2counter_worker.py
     mode: '0755'
+
+- name: Deploy GCP service account credentials
+  copy:
+    src: "{{ gcp_sa_key_file }}"
+    dest: /opt/fail2counter/gcp-sa-key.json
+    owner: root
+    group: root
+    mode: '0600'
+  when: gcp_sa_key_file is defined
 
 - name: Deploy systemd service
   template:
