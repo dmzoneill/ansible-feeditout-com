@@ -32,7 +32,6 @@
       - nmap
       - python3-pip
     state: present
-    update_cache: true
 
 - name: Check if Metasploit is installed
   command: which msfconsole

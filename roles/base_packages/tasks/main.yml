@@ -14,11 +14,6 @@
     content: "#!/bin/sh\nexit 0"
     mode: '0755'
 
-- name: Ensure apt cache is up to date
-  apt:
-    update_cache: true
-    cache_valid_time: 3600
-
 - name: Install each batch (ignoring missing packages)
   become: true
   shell: |

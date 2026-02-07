@@ -7,6 +7,19 @@
     - ../host_vars/migrated.yml
     - ../host_vars/migrated_secrets.yml
   pre_tasks:
+    - name: Update apt cache (best effort, ignore third-party repo errors)
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      register: apt_update_result
+      failed_when: false
+      changed_when: false
+
+    - name: Warn if apt cache update had issues
+      debug:
+        msg: "Apt cache update had warnings (likely third-party repos) but continuing"
+      when: apt_update_result is failed
+
     - name: Detect PHP version for this Debian release
       set_fact:
         php_version: "{{ '8.4' if ansible_distribution_major_version | int >= 13 else '8.2' }}"
@@ -31,6 +44,7 @@
       include_role:
         name: "{{ item }}"
       loop:
+        - apt_repos
         - root_password
         - keyboard
         - dns

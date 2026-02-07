@@ -3,7 +3,6 @@
   apt:
     name: logwatch
     state: present
-    update_cache: true
 
 - name: Copy Logwatch configuration
   template:

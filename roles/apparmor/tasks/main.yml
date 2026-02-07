@@ -5,7 +5,6 @@
       - apparmor
       - apparmor-utils
     state: present
-    update_cache: true
 
 - name: Ensure /etc/apparmor.d exists
   file:

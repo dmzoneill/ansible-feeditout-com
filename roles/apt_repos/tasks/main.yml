@@ -1,0 +1,51 @@
+---
+- name: Ensure keyrings directory exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Remove legacy Grafana GPG key from trusted.gpg
+  ansible.builtin.apt_key:
+    id: "963FA27710458545"
+    state: absent
+  failed_when: false
+
+- name: Download Grafana GPG key to keyrings
+  get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /tmp/grafana-gpg.key
+    mode: '0644'
+
+- name: Dearmor Grafana GPG key
+  command: gpg --dearmor -o /etc/apt/keyrings/grafana.gpg /tmp/grafana-gpg.key
+  args:
+    creates: /etc/apt/keyrings/grafana.gpg
+
+- name: Set permissions on Grafana keyring
+  file:
+    path: /etc/apt/keyrings/grafana.gpg
+    mode: '0644'
+
+- name: Remove old Grafana repo config
+  file:
+    path: /etc/apt/sources.list.d/grafana.list
+    state: absent
+
+- name: Add Grafana repo with signed-by keyring
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main"
+    state: present
+    filename: grafana
+
+- name: Remove old NodeSource repo (SHA1 deprecated)
+  file:
+    path: /etc/apt/sources.list.d/nodesource.list
+    state: absent
+
+- name: Update apt cache after repo fixes
+  apt:
+    update_cache: yes
+  register: apt_repos_update
+  failed_when: false
+  changed_when: false

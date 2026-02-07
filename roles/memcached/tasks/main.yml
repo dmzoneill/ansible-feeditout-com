@@ -3,7 +3,6 @@
   apt:
     name: memcached
     state: present
-    update_cache: true
 
 - name: Copy custom memcached.conf
   copy:

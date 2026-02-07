@@ -16,7 +16,6 @@
   apt:
     name: network-manager
     state: present
-    update_cache: true
 
 - name: Enable and start NetworkManager
   systemd:

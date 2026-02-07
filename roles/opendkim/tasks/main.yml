@@ -3,7 +3,6 @@
   apt:
     name: opendkim
     state: present
-    update_cache: true
 
 - name: Ensure /etc exists
   file:

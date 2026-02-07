@@ -5,7 +5,6 @@
       - spamassassin
       - spamc
     state: present
-    update_cache: true
 
 - name: Ensure /etc/spamassassin exists
   file:

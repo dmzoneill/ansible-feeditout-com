@@ -102,7 +102,6 @@
       - python3
       - python3-pip
     state: present
-    update_cache: yes
   tags: webhook
 
 - name: Install Flask and Redis via apt
@@ -111,7 +110,6 @@
       - python3-flask
       - python3-redis
     state: present
-    update_cache: yes
   tags: webhook
 
 - name: Deploy alert webhook script

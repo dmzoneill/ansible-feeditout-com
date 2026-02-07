@@ -3,7 +3,6 @@
   apt:
     name: [apt-transport-https, ca-certificates, curl, gnupg, lsb-release]
     state: present
-    update_cache: true
   tags: [docker]
 
 - name: Install Docker and docker-compose
@@ -12,7 +11,6 @@
       - docker.io
       - docker-compose
     state: present
-    update_cache: true
   tags: [docker]
 
 - name: Ensure /opt/jumphost directory exists

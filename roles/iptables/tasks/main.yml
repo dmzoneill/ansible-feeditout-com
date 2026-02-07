@@ -3,7 +3,6 @@
   apt:
     name: iptables-persistent
     state: present
-    update_cache: true
 
 - name: Deploy iptables management script
   copy:
