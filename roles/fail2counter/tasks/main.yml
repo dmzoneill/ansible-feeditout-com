@@ -59,6 +59,7 @@
       - PyMySQL
     state: present
     executable: pip3
+    break_system_packages: true
 
 - name: Create script directory
   file:
