@@ -17,9 +17,8 @@
     state: absent
 
 - name: Remove legacy Grafana GPG key from trusted.gpg
-  ansible.builtin.apt_key:
-    id: "963FA27710458545"
-    state: absent
+  command: apt-key del 963FA27710458545
+  changed_when: false
   failed_when: false
 
 # Add Grafana repo with modern signed-by keyring

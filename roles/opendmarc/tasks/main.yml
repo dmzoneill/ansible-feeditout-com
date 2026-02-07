@@ -17,7 +17,7 @@
 - name: Update opendmarc.conf config
   template:
     src: opendmarc.conf.j2
-    dest: /etc/opendmarc/opendmarc.conf.j2
+    dest: /etc/opendmarc/opendmarc.conf
     owner: root
     group: root
     mode: '0644'
