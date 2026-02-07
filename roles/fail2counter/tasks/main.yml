@@ -97,6 +97,7 @@
     state: present
     login_unix_socket: /run/mysqld/mysqld.sock
     check_implicit_admin: yes
+  failed_when: false
 
 - name: Create fail2counter MySQL user
   community.mysql.mysql_user:
@@ -106,6 +107,7 @@
     state: present
     login_unix_socket: /run/mysqld/mysqld.sock
     check_implicit_admin: yes
+  failed_when: false
 
 - name: Initialize fail2counter database schema
   community.mysql.mysql_db:
