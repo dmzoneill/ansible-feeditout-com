@@ -1,13 +1,15 @@
 import json
 import time
 
-from namecheap import NamecheapClient, NamecheapException
+from namecheap.client import Namecheap
+from namecheap.errors import NamecheapError
 
-client = NamecheapClient(debug=False, load_env=True)
+client = Namecheap()
+print(client.config)
 
 try:
     # Get list of domains in your account
-    result = client.domains.get_list(page=1, page_size=20)
+    result = client.domains.list(page=1, page_size=20)
     # Process domain list
     domains = result.get("domains", {})
 
@@ -29,5 +31,5 @@ try:
             data = json.load(f)
             client.domains.dns.set_hosts(domain.get("Name"), data)
 
-except NamecheapException as e:
+except NamecheapError as e:
     print(f"API Error: {e}")

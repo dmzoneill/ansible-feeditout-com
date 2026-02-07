@@ -1,0 +1,69 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Snapshot
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://gitlab.cee.redhat.com/automation-analytics/automation-analytics-backend/-/tree/9ad92c772f7fac29a91e983035b9665116b637c4
+    build.appstudio.redhat.com/commit_sha: 9ad92c772f7fac29a91e983035b9665116b637c4
+    build.appstudio.redhat.com/target_branch: main
+    pac.test.appstudio.openshift.io/branch: main
+    pac.test.appstudio.openshift.io/cancel-in-progress: "false"
+    pac.test.appstudio.openshift.io/controller-info: '{"name":"default","configmap":"pipelines-as-code","secret":"pipelines-as-code-secret",
+      "gRepo": "pipelines-as-code"}'
+    pac.test.appstudio.openshift.io/event-type: push
+    pac.test.appstudio.openshift.io/git-auth-secret: pac-gitauth-weuycz
+    pac.test.appstudio.openshift.io/git-provider: gitlab
+    pac.test.appstudio.openshift.io/log-url: https://konflux-ui.apps.stone-prod-p02.hjvn.p1.openshiftapps.com/ns/aap-aa-tenant/pipelinerun/aap-aa-on-push-sjr9r
+    pac.test.appstudio.openshift.io/max-keep-runs: "3"
+    pac.test.appstudio.openshift.io/on-cel-expression: event == "push" && target_branch
+      == "main"
+    pac.test.appstudio.openshift.io/original-prname: aap-aa-on-push
+    pac.test.appstudio.openshift.io/repo-url: https://gitlab.cee.redhat.com/automation-analytics/automation-analytics-backend
+    pac.test.appstudio.openshift.io/repository: aap-aa
+    pac.test.appstudio.openshift.io/sender: daoneill
+    pac.test.appstudio.openshift.io/sha: 9ad92c772f7fac29a91e983035b9665116b637c4
+    pac.test.appstudio.openshift.io/sha-title: Merge branch 'conform-requirements'
+      into 'main'
+    pac.test.appstudio.openshift.io/sha-url: https://gitlab.cee.redhat.com/automation-analytics/automation-analytics-backend/-/commit/9ad92c772f7fac29a91e983035b9665116b637c4
+    pac.test.appstudio.openshift.io/source-branch: refs/heads/main
+    pac.test.appstudio.openshift.io/source-project-id: "37507"
+    pac.test.appstudio.openshift.io/source-repo-url: https://gitlab.cee.redhat.com/automation-analytics/automation-analytics-backend
+    pac.test.appstudio.openshift.io/state: completed
+    pac.test.appstudio.openshift.io/target-project-id: "37507"
+    pac.test.appstudio.openshift.io/url-org: automation-analytics
+    pac.test.appstudio.openshift.io/url-repository: automation-analytics-backend
+    test.appstudio.openshift.io/git-reporter-status: '{"scenarios":{"aa-bonfire-tekton-aap-aa-ggcbj":{"lastUpdateTime":"2025-07-13T05:08:38.973846911Z"}}}'
+    test.appstudio.openshift.io/pipelinerunstarttime: "1752343240"
+    test.appstudio.openshift.io/source-repo-url: https://gitlab.cee.redhat.com/automation-analytics/automation-analytics-backend
+    test.appstudio.openshift.io/status: '[{"scenario":"aa-bonfire-tekton","status":"InProgress","lastUpdateTime":"2025-07-13T05:08:38.973846911Z","details":"Integration
+      test is running as pipeline run ''https://konflux-ui.apps.stone-prod-p02.hjvn.p1.openshiftapps.com/ns/aap-aa-tenant/pipelinerun/aa-bonfire-tekton-5jz6b''","startTime":"2025-07-13T05:08:38.906217104Z","testPipelineRunName":"aa-bonfire-tekton-5jz6b"}]'
+  creationTimestamp: "2025-07-12T18:14:17Z"
+  generateName: aap-aa-
+  generation: 1
+  labels:
+    appstudio.openshift.io/application: aap-aa
+    appstudio.openshift.io/build-pipelinerun: aap-aa-on-push-sjr9r
+    appstudio.openshift.io/component: aap-aa
+    pac.test.appstudio.openshift.io/cancel-in-progress: "false"
+    pac.test.appstudio.openshift.io/event-type: push
+    pac.test.appstudio.openshift.io/original-prname: aap-aa-on-push
+    pac.test.appstudio.openshift.io/repository: aap-aa
+    pac.test.appstudio.openshift.io/sha: 9ad92c772f7fac29a91e983035b9665116b637c4
+    pac.test.appstudio.openshift.io/state: completed
+    pac.test.appstudio.openshift.io/url-org: automation-analytics
+    pac.test.appstudio.openshift.io/url-repository: automation-analytics-backend
+    test.appstudio.openshift.io/pipelinerunfinishtime: "1752344054"
+    test.appstudio.openshift.io/type: component
+  name: aap-aa-ggcbjff
+  namespace: aap-aa-tenant
+  resourceVersion: "1798434303"
+  uid: c78a1a75-189c-4660-92ad-42d488625350
+spec:
+  application: aap-aa
+  artifacts: {}
+  components:
+  - containerImage: quay.io/redhat-user-workloads/aap-aa-tenant/aap-aa-main/automation-analytics-backend-main@sha256:86d7626b6301308a2478313f27f4f030b848fc44624a6b8778274173a955fbff
+    name: aap-aa
+    source:
+      git:
+        revision: 9ad92c772f7fac29a91e983035b9665116b637c4
+        url: https://gitlab.cee.redhat.com/automation-analytics/automation-analytics-backend

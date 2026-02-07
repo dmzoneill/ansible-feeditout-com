@@ -1,0 +1,3 @@
+use exploit/windows/wins/ms04_045_wins
+show options
+exit
