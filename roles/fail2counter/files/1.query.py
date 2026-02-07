@@ -9,7 +9,7 @@ def fetch_open_ports(
     cursor = conn.cursor(dictionary=True)
 
     query = """
-    SELECT 
+    SELECT
         h.ip_address,
         h.id AS host_id,
         s.id AS service_id,

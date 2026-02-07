@@ -541,7 +541,7 @@ iptables:
 
       - proto: tcp
         dport: 2222
-        jump: ACCEPT      
+        jump: ACCEPT
 
       - proto: tcp
         dport: 80

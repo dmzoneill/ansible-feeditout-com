@@ -10,7 +10,7 @@ echo "🔄 Checking for missing domains at $(date)"
 apache_domains=$(grep -rhoP 'Server(Name|Alias)\s+\K\S+' $APACHE_SITES_DIR | sort -u | uniq)
 
 # Extract domains already in certs
-certbot_domains=$(find "$CERTBOT_LIVE_DIR" -mindepth 1 -maxdepth 1 -type d | while read certdir; do
+certbot_domains=$(find "$CERTBOT_LIVE_DIR" -mindepth 1 -maxdepth 1 -type d | while read -r certdir; do
     openssl x509 -in "$certdir/cert.pem" -noout -text 2>/dev/null |
         grep -oP 'DNS:\K[^,]+' || true
 done | sort -u)

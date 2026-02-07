@@ -10,29 +10,28 @@ cleanup_orphans() {
     local PATTERN=$3
 
     if [[ ! -d "$DIR" ]]; then
-        echo "⚠️  Skipping $LABEL cleanup: Directory $DIR does not exist."
+        echo "Warning: Skipping $LABEL cleanup: Directory $DIR does not exist."
         return
     fi
 
-    echo "🔍 Scanning for orphaned $LABEL in $DIR matching '$PATTERN'..."
+    echo "Scanning for orphaned $LABEL in $DIR matching '$PATTERN'..."
 
-    find "$DIR" -type f -name "$PATTERN" | while read -r filepath; do
-        # Get hardlink count
+    while read -r filepath; do
         linkcount=$(stat -c %h "$filepath" 2>/dev/null)
         if [[ "$linkcount" -eq 1 ]]; then
-            echo "🗑️  Deleting orphaned $LABEL: $filepath"
+            echo "Deleting orphaned $LABEL: $filepath"
             rm -f "$filepath"
             ((DELETED_COUNT++))
             if (( DELETED_COUNT % BATCH_SIZE == 0 )); then
-                echo "⏸️  Deleted $DELETED_COUNT files so far... pausing briefly."
+                echo "Deleted $DELETED_COUNT files so far... pausing briefly."
                 sleep 2
             fi
         fi
-    done
+    done < <(find "$DIR" -type f -name "$PATTERN")
 }
 
 cleanup_orphans "$BASE_DIR/keys"  "key"         "*_key-certbot.pem"
 cleanup_orphans "$BASE_DIR/csr"   "CSR"         "*_csr-certbot.pem"
 cleanup_orphans "$BASE_DIR/certs" "certificate" "*.pem"
 
-echo "✅ Done. Total deleted: $DELETED_COUNT"
+echo "Done. Total deleted: $DELETED_COUNT"
