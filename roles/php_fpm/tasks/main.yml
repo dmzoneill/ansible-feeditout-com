@@ -1,4 +1,19 @@
 ---
+- name: Find installed PHP-FPM versions
+  shell: dpkg -l 'php*-fpm' 2>/dev/null | awk '/^ii/ {print $2}' | grep -oP '\d+\.\d+' | sort -u
+  register: installed_php_versions
+  changed_when: false
+  failed_when: false
+
+- name: Stop and disable old PHP-FPM services
+  systemd:
+    name: "php{{ item }}-fpm"
+    state: stopped
+    enabled: false
+  loop: "{{ installed_php_versions.stdout_lines | default([]) }}"
+  when: item != php_version
+  failed_when: false
+
 - name: Ensure PHP-FPM is installed
   apt:
     name: "{{ php_fpm_package }}"
