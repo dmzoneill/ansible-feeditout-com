@@ -15,7 +15,7 @@ echo "" > "$OUTPUT_FILE"
 # Loop through each exploit module
 while read -r exploit; do
     echo "[+] Processing: $exploit"
-    
+
     # Write temporary msfconsole script
     {
         echo "use $exploit"

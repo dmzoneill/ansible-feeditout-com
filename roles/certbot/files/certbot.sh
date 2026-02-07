@@ -1,3 +1,3 @@
 #!/bin/bash -x
 
-/usr/bin/certbot renew 
+/usr/bin/certbot renew

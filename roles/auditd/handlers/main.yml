@@ -21,4 +21,3 @@
     - sysstat-summary.timer
   loop_control:
     loop_var: sysstat_timer
-

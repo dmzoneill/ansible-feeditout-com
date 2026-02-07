@@ -190,4 +190,3 @@
     name: postfix
     state: restarted
   when: postfix_files_changed | default(false) or chroot_files_changed | default(false)
-
