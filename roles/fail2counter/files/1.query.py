@@ -1,3 +1,4 @@
+import os
 import mysql.connector
 from typing import List, Dict
 
@@ -36,11 +37,10 @@ def fetch_open_ports(
 
 
 if __name__ == "__main__":
-    # Replace with your actual DB connection settings
     db_config = {
         'host': 'localhost',
         'user': 'fail2counter',
-        'password': 'REDACTED',
+        'password': os.environ.get('FAIL2COUNTER_PASSWORD', ''),
         'database': 'fail2counter'
     }
 
