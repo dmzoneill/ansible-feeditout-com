@@ -30,6 +30,15 @@ SCHEMA_FILE = "/opt/fail2counter/schema.sql"
 logs: List[str] = []
 
 
+def log(msg, level="INFO"):
+    print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
+
+
+def capture(msg, level="INFO"):
+    log(msg, level)
+    logs.append(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
+
+
 def get_db():
     """Get or reconnect MySQL connection."""
     global db, cursor
@@ -176,15 +185,6 @@ def insert_notification(
 
 
 # --- Utility functions ---
-
-
-def log(msg, level="INFO"):
-    print(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
-
-
-def capture(msg, level="INFO"):
-    log(msg, level)
-    logs.append(f"[{datetime.utcnow().isoformat()}] [{level}] {msg}")
 
 
 def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
