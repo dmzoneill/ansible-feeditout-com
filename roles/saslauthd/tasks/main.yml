@@ -6,11 +6,19 @@
       - libsasl2-modules
     state: present
 
-- name: Enable and start saslauthd
-  systemd:
-    name: saslauthd
-    enabled: true
-    state: started
+- name: Ensure saslauth user exists
+  user:
+    name: saslauth
+    group: sasl
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Add postfix to sasl group
+  user:
+    name: postfix
+    groups: sasl
+    append: true
 
 - name: Ensure /var/run/saslauthd exists
   file:
@@ -20,6 +28,14 @@
     group: sasl
     mode: '0755'
 
+- name: Ensure saslauthd runtime directory exists
+  file:
+    path: /var/spool/postfix/var/run/saslauthd
+    state: directory
+    owner: saslauth
+    group: sasl
+    mode: '0755'
+
 - name: Ensure saslauthd socket is bind-mounted into postfix chroot
   mount:
     src: /var/run/saslauthd
@@ -28,29 +44,6 @@
     state: mounted
     fstype: none
   notify: Restart saslauthd
-
-- name: Ensure saslauth user exists
-  user:
-    name: saslauth
-    group: sasl
-    system: true
-    shell: /usr/sbin/nologin
-    create_home: false
-
-- name: Ensure saslauthd runtime directory exists
-  file:
-    path: /var/spool/postfix/var/run/saslauthd
-    state: directory
-    owner: saslauth
-    group: sasl
-    mode: '0755'
-    recurse: true
-
-- name: Add postfix to sasl group
-  user:
-    name: postfix
-    groups: sasl
-    append: true
 
 - name: Configure saslauthd defaults
   template:
@@ -59,37 +52,8 @@
     mode: '0644'
   notify: Restart saslauthd
 
-- name: Ensure saslauthd socket is bind-mounted into postfix chroot
-  mount:
-    src: /var/run/saslauthd
-    path: /var/spool/postfix/var/run/saslauthd
-    opts: bind
-    state: mounted
-    fstype: none
-  notify: Restart saslauthd
-
-- name: Add postfix to sasl group
-  user:
-    name: postfix
-    groups: sasl
-    append: true
-
-- name: Set correct permissions on saslauthd directory
-  file:
-    path: /var/spool/postfix/var/run/saslauthd
-    mode: '0755'
-
 - name: Enable and start saslauthd
   systemd:
     name: saslauthd
     enabled: true
     state: started
-
-- name: Ensure saslauthd socket is bind-mounted into postfix chroot
-  mount:
-    src: /var/run/saslauthd
-    path: /var/spool/postfix/var/run/saslauthd
-    opts: bind
-    state: mounted
-    fstype: none
-  notify: Restart saslauthd

@@ -146,9 +146,10 @@
 - name: Run npm ci if repo was updated (as {{ user }})
   become: true
   become_user: "{{ user }}"
-  command: /home/dave/.nvm/versions/node/v20.19.2/bin/npm ci
+  shell: source /home/{{ user }}/.nvm/nvm.sh && npm ci
   args:
     chdir: /opt/Chuckbot
+    executable: /bin/bash
   environment:
     HOME: "/home/{{ user }}"
   when: chuckbot_git_updated | default(false)
