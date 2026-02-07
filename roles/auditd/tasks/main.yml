@@ -5,7 +5,6 @@
       - auditd
       - audispd-plugins
     state: present
-    update_cache: true
 
 - name: Ensure /etc/audit directory exists
   file:

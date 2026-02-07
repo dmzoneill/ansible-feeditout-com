@@ -3,7 +3,6 @@
   ansible.builtin.apt:
     name: "{{ ntp_package }}"
     state: present
-    update_cache: true
 
 - name: Determine correct NTP service name
   ansible.builtin.set_fact:

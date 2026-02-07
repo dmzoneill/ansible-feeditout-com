@@ -3,7 +3,6 @@
   apt:
     name: fail2ban
     state: present
-    update_cache: true
 
 - name: Ensure /etc/fail2ban exists
   file:

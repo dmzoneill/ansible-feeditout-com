@@ -3,7 +3,6 @@
   apt:
     name: certbot
     state: present
-    update_cache: true
 
 - name: Initialize certbot tracking facts
   set_fact:

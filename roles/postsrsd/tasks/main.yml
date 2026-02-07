@@ -3,7 +3,6 @@
   apt:
     name: postsrsd
     state: present
-    update_cache: true
 
 - name: Recursively copy postsrsd configuration to /etc
   copy:

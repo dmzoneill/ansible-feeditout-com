@@ -9,7 +9,6 @@
       - dbus-x11
       - gnome-tweaks
     state: present
-    update_cache: true
   tags: [vnc, gnome]
 
 - name: Ensure the VNC user exists

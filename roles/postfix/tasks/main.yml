@@ -3,7 +3,6 @@
   apt:
     name: postfix
     state: present
-    update_cache: true
 
 - name: Ensure /etc/postfix exists
   file:

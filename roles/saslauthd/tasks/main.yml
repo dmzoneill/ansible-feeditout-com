@@ -5,7 +5,6 @@
       - sasl2-bin
       - libsasl2-modules
     state: present
-    update_cache: true
 
 - name: Enable and start saslauthd
   systemd:

@@ -3,7 +3,6 @@
   apt:
     name: mariadb-server
     state: present
-    update_cache: true
 
 - name: Ensure /etc/mysql exists
   file:

@@ -3,7 +3,6 @@
   apt:
     name: opendmarc
     state: present
-    update_cache: true
 
 - name: Recursively copy OpenDMARC configuration to /etc
   copy:

@@ -7,7 +7,6 @@
       - redis-server
       - webdis
     state: present
-    update_cache: true
 
 - name: Create Redis TLS directory
   file:
