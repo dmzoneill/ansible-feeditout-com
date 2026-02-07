@@ -1,0 +1,25 @@
+# Redirect to local php-fpm if mod_php is not available
+<IfModule !mod_php8.c>
+<IfModule proxy_fcgi_module>
+    # Enable HTTP Authorization headers
+    <IfModule setenvif_module>
+        SetEnvIfNoCase ^Authorization$ "(.+)" HTTP_AUTHORIZATION=$1
+    </IfModule>
+
+    <FilesMatch ".+\.ph(?:ar|p|tml)$">
+        SetHandler "proxy:unix:{{ php_fpm_sock }}|fcgi://localhost"
+    </FilesMatch>
+
+    <FilesMatch ".+\.phps$">
+        Require all denied
+    </FilesMatch>
+
+    <FilesMatch "^\.ph(?:ar|p|ps|tml)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+</IfModule>
+
+<IfModule mod_dir.c>
+    DirectoryIndex index.php index.html
+</IfModule>

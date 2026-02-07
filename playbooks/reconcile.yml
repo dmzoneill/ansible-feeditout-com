@@ -6,6 +6,26 @@
   vars_files:
     - ../host_vars/migrated.yml
     - ../host_vars/migrated_secrets.yml
+  pre_tasks:
+    - name: Detect PHP version for this Debian release
+      set_fact:
+        php_version: "{{ '8.4' if ansible_distribution_major_version | int >= 13 else '8.2' }}"
+
+    - name: Set PHP-derived variables
+      set_fact:
+        php_fpm_package: "php{{ php_version }}-fpm"
+        php_fpm_mysql_package: "php{{ php_version }}-mysql"
+        php_fpm_service: "php{{ php_version }}-fpm"
+        php_fpm_conf_dir: "/etc/php/{{ php_version }}/fpm"
+        php_fpm_conf_file: "/etc/php/{{ php_version }}/fpm/php-fpm.conf"
+        php_fpm_pool_file: "/etc/php/{{ php_version }}/fpm/pool.d/www.conf"
+        php_fpm_sock: "/run/php/php{{ php_version }}-fpm.sock"
+        php_fpm_pid: "/run/php/php{{ php_version }}-fpm.pid"
+
+    - name: Log detected versions
+      debug:
+        msg: "Debian {{ ansible_distribution_major_version }} detected — using PHP {{ php_version }}"
+
   tasks:
     - name: Include roles with ignore_errors
       include_role:

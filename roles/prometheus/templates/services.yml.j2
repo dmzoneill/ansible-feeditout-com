@@ -290,13 +290,13 @@ groups:
       annotations:
         summary: "perlbal.service is not running"
         description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
-    - alert: Php82FpmDown
-      expr: node_systemd_unit_state{name="php8.2-fpm.service", state="active"} != 1
+    - alert: PhpFpmDown
+      expr: node_systemd_unit_state{name="{{ php_fpm_service }}.service", state="active"} != 1
       for: 10s
       labels:
         severity: critical
       annotations:
-        summary: "php8.2-fpm.service is not running"
+        summary: "{{ php_fpm_service }}.service is not running"
         description: "The { $labels.name } service is currently { $labels.state } (expected: active)."
     - alert: PlymouthQuitWaitDown
       expr: node_systemd_unit_state{name="plymouth-quit-wait.service", state="active"} != 1

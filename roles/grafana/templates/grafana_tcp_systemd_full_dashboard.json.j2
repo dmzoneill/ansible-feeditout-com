@@ -1,0 +1,3364 @@
+{
+  "id": null,
+  "uid": "detailed-tcp-systemd-all",
+  "title": "Full TCP Port & Service Health Dashboard",
+  "tags": [
+    "node_exporter",
+    "auto_generated",
+    "alerts"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Alert_WebhookDown",
+      "id": 16,
+      "gridPos": {
+        "x": 0,
+        "y": 60,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"alert_webhook.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "AlertmanagerDown",
+      "id": 17,
+      "gridPos": {
+        "x": 0,
+        "y": 64,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"alertmanager.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Apache2Down",
+      "id": 18,
+      "gridPos": {
+        "x": 0,
+        "y": 68,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"apache2.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ApparmorDown",
+      "id": 19,
+      "gridPos": {
+        "x": 0,
+        "y": 72,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"apparmor.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "AuditdDown",
+      "id": 20,
+      "gridPos": {
+        "x": 0,
+        "y": 76,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"auditd.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "AvahiDaemonDown",
+      "id": 21,
+      "gridPos": {
+        "x": 0,
+        "y": 80,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"avahi-daemon.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "BinfmtSupportDown",
+      "id": 22,
+      "gridPos": {
+        "x": 0,
+        "y": 84,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"binfmt-support.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ChronyDown",
+      "id": 23,
+      "gridPos": {
+        "x": 0,
+        "y": 88,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"chrony.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ChuckbotDown",
+      "id": 24,
+      "gridPos": {
+        "x": 0,
+        "y": 92,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"chuckbot.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ClamavDaemonDown",
+      "id": 25,
+      "gridPos": {
+        "x": 0,
+        "y": 96,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"clamav-daemon.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ClamavFreshclamDown",
+      "id": 26,
+      "gridPos": {
+        "x": 0,
+        "y": 100,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"clamav-freshclam.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ClamavMilterDown",
+      "id": 27,
+      "gridPos": {
+        "x": 0,
+        "y": 104,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"clamav-milter.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ConsoleSetupDown",
+      "id": 28,
+      "gridPos": {
+        "x": 0,
+        "y": 108,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"console-setup.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ContainerdDown",
+      "id": 29,
+      "gridPos": {
+        "x": 0,
+        "y": 112,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"containerd.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "CronDown",
+      "id": 30,
+      "gridPos": {
+        "x": 0,
+        "y": 116,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"cron.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "DbusDown",
+      "id": 31,
+      "gridPos": {
+        "x": 0,
+        "y": 120,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"dbus.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "DockerDown",
+      "id": 32,
+      "gridPos": {
+        "x": 0,
+        "y": 124,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"docker.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Fail2BanDown",
+      "id": 33,
+      "gridPos": {
+        "x": 0,
+        "y": 128,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"fail2ban.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Fail2CounterDown",
+      "id": 34,
+      "gridPos": {
+        "x": 0,
+        "y": 132,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"fail2counter.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "GettyTty1Down",
+      "id": 35,
+      "gridPos": {
+        "x": 0,
+        "y": 136,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"getty@tty1.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "GldDown",
+      "id": 36,
+      "gridPos": {
+        "x": 0,
+        "y": 140,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"gld.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "HavegedDown",
+      "id": 37,
+      "gridPos": {
+        "x": 0,
+        "y": 144,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"haveged.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "JitterentropyDown",
+      "id": 38,
+      "gridPos": {
+        "x": 0,
+        "y": 148,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"jitterentropy.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "KeyboardSetupDown",
+      "id": 39,
+      "gridPos": {
+        "x": 0,
+        "y": 152,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"keyboard-setup.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "KmodStaticNodesDown",
+      "id": 40,
+      "gridPos": {
+        "x": 0,
+        "y": 156,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"kmod-static-nodes.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "MariadbDown",
+      "id": 41,
+      "gridPos": {
+        "x": 0,
+        "y": 160,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"mariadb.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "MemcachedDown",
+      "id": 42,
+      "gridPos": {
+        "x": 0,
+        "y": 164,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"memcached.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "ModemmanagerDown",
+      "id": 43,
+      "gridPos": {
+        "x": 0,
+        "y": 168,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"ModemManager.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "MultipathdDown",
+      "id": 44,
+      "gridPos": {
+        "x": 0,
+        "y": 172,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"multipathd.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "NetfilterPersistentDown",
+      "id": 45,
+      "gridPos": {
+        "x": 0,
+        "y": 176,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"netfilter-persistent.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "NetworkmanagerWaitOnlineDown",
+      "id": 46,
+      "gridPos": {
+        "x": 0,
+        "y": 180,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"NetworkManager-wait-online.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "NetworkmanagerDown",
+      "id": 47,
+      "gridPos": {
+        "x": 0,
+        "y": 184,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"NetworkManager.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "NftablesDown",
+      "id": 48,
+      "gridPos": {
+        "x": 0,
+        "y": 188,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"nftables.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "OpendkimDown",
+      "id": 49,
+      "gridPos": {
+        "x": 0,
+        "y": 192,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"opendkim.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "OpendmarcDown",
+      "id": 50,
+      "gridPos": {
+        "x": 0,
+        "y": 196,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"opendmarc.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PerlbalDown",
+      "id": 51,
+      "gridPos": {
+        "x": 0,
+        "y": 200,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"perlbal.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Php82FpmDown",
+      "id": 52,
+      "gridPos": {
+        "x": 0,
+        "y": 204,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"{{ php_fpm_service }}.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PlymouthQuitWaitDown",
+      "id": 53,
+      "gridPos": {
+        "x": 0,
+        "y": 208,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"plymouth-quit-wait.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PlymouthQuitDown",
+      "id": 54,
+      "gridPos": {
+        "x": 0,
+        "y": 212,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"plymouth-quit.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PlymouthReadWriteDown",
+      "id": 55,
+      "gridPos": {
+        "x": 0,
+        "y": 216,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"plymouth-read-write.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PlymouthStartDown",
+      "id": 56,
+      "gridPos": {
+        "x": 0,
+        "y": 220,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"plymouth-start.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PolkitDown",
+      "id": 57,
+      "gridPos": {
+        "x": 0,
+        "y": 224,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"polkit.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PostfixDown",
+      "id": 58,
+      "gridPos": {
+        "x": 0,
+        "y": 228,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"postfix.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PostfixDown",
+      "id": 59,
+      "gridPos": {
+        "x": 0,
+        "y": 232,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"postfix@-.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PostgresqlDown",
+      "id": 60,
+      "gridPos": {
+        "x": 0,
+        "y": 236,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"postgresql.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Postgresql15MainDown",
+      "id": 61,
+      "gridPos": {
+        "x": 0,
+        "y": 240,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"postgresql@15-main.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PostsrsdDown",
+      "id": 62,
+      "gridPos": {
+        "x": 0,
+        "y": 244,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"postsrsd.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PrivoxyDown",
+      "id": 63,
+      "gridPos": {
+        "x": 0,
+        "y": 248,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"privoxy.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "PrometheusDown",
+      "id": 64,
+      "gridPos": {
+        "x": 0,
+        "y": 252,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"prometheus.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "QemuGuestAgentDown",
+      "id": 65,
+      "gridPos": {
+        "x": 0,
+        "y": 256,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"qemu-guest-agent.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "RedisServerDown",
+      "id": 66,
+      "gridPos": {
+        "x": 0,
+        "y": 260,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"redis-server.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "RngToolsDebianDown",
+      "id": 67,
+      "gridPos": {
+        "x": 0,
+        "y": 264,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"rng-tools-debian.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "RpcbindDown",
+      "id": 68,
+      "gridPos": {
+        "x": 0,
+        "y": 268,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"rpcbind.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "RsyslogDown",
+      "id": 69,
+      "gridPos": {
+        "x": 0,
+        "y": 272,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"rsyslog.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SaslauthdDown",
+      "id": 70,
+      "gridPos": {
+        "x": 0,
+        "y": 276,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"saslauthd.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SpamdDown",
+      "id": 71,
+      "gridPos": {
+        "x": 0,
+        "y": 280,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"spamd.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SshDown",
+      "id": 72,
+      "gridPos": {
+        "x": 0,
+        "y": 284,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"ssh.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SysstatDown",
+      "id": 73,
+      "gridPos": {
+        "x": 0,
+        "y": 288,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"sysstat.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdBinfmtDown",
+      "id": 74,
+      "gridPos": {
+        "x": 0,
+        "y": 292,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-binfmt.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdJournalFlushDown",
+      "id": 75,
+      "gridPos": {
+        "x": 0,
+        "y": 296,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-journal-flush.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdJournaldDown",
+      "id": 76,
+      "gridPos": {
+        "x": 0,
+        "y": 300,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-journald.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdLogindDown",
+      "id": 77,
+      "gridPos": {
+        "x": 0,
+        "y": 304,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-logind.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdModulesLoadDown",
+      "id": 78,
+      "gridPos": {
+        "x": 0,
+        "y": 308,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-modules-load.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdRandomSeedDown",
+      "id": 79,
+      "gridPos": {
+        "x": 0,
+        "y": 312,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-random-seed.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdRemountFsDown",
+      "id": 80,
+      "gridPos": {
+        "x": 0,
+        "y": 316,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-remount-fs.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdSysctlDown",
+      "id": 81,
+      "gridPos": {
+        "x": 0,
+        "y": 320,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-sysctl.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdSysusersDown",
+      "id": 82,
+      "gridPos": {
+        "x": 0,
+        "y": 324,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-sysusers.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdTmpfilesSetupDevDown",
+      "id": 83,
+      "gridPos": {
+        "x": 0,
+        "y": 328,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-tmpfiles-setup-dev.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdTmpfilesSetupDown",
+      "id": 84,
+      "gridPos": {
+        "x": 0,
+        "y": 332,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-tmpfiles-setup.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdUdevTriggerDown",
+      "id": 85,
+      "gridPos": {
+        "x": 0,
+        "y": 336,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-udev-trigger.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdUdevdDown",
+      "id": 86,
+      "gridPos": {
+        "x": 0,
+        "y": 340,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-udevd.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdUpdateUtmpDown",
+      "id": 87,
+      "gridPos": {
+        "x": 0,
+        "y": 344,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-update-utmp.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "SystemdUserSessionsDown",
+      "id": 88,
+      "gridPos": {
+        "x": 0,
+        "y": 348,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"systemd-user-sessions.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "UnattendedUpgradesDown",
+      "id": 89,
+      "gridPos": {
+        "x": 0,
+        "y": 352,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"unattended-upgrades.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "UpowerDown",
+      "id": 90,
+      "gridPos": {
+        "x": 0,
+        "y": 356,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"upower.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "UsbguardDbusDown",
+      "id": 91,
+      "gridPos": {
+        "x": 0,
+        "y": 360,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"usbguard-dbus.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "UsbguardDown",
+      "id": 92,
+      "gridPos": {
+        "x": 0,
+        "y": 364,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"usbguard.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "UserRuntimeDir1000Down",
+      "id": 93,
+      "gridPos": {
+        "x": 0,
+        "y": 368,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"user-runtime-dir@1000.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "User1000Down",
+      "id": 94,
+      "gridPos": {
+        "x": 0,
+        "y": 372,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"user@1000.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "WebdisDown",
+      "id": 95,
+      "gridPos": {
+        "x": 0,
+        "y": 376,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "node_systemd_unit_state{name=\"webdis.service\", state=\"active\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:9100\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1001,
+      "title": "Node Exporter (Port 9100)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:3306\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1002,
+      "title": "MariaDB (Port 3306)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:6379\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1003,
+      "title": "Redis (Port 6379)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:41204\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1004,
+      "title": "Prometheus (Custom Port) (Port 41204)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:44395\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1005,
+      "title": "Chromium (Port 44395)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:57530\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1006,
+      "title": "Docker Proxy (Port 57530)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:41848\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1007,
+      "title": "Node App (Port 41848)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:36428\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1008,
+      "title": "Python3 (Port 36428)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:55972\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1009,
+      "title": "Python3 (2) (Port 55972)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:34052\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1010,
+      "title": "Webdis (Port 34052)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 44,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:34064\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1011,
+      "title": "Webdis (2) (Port 34064)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:34080\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1012,
+      "title": "Webdis (3) (Port 34080)"
+    },
+    {
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "up{instance=~\".*:34088\"}",
+          "refId": "A"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1013,
+      "title": "Webdis (4) (Port 34088)"
+    }
+  ]
+}

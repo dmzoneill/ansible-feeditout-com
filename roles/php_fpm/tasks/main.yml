@@ -18,8 +18,8 @@
     mode: '0755'
 
 - name: Deploy main PHP-FPM config file
-  copy:
-    src: php-fpm.conf
+  template:
+    src: php-fpm.conf.j2
     dest: "{{ php_fpm_conf_file }}"
     owner: root
     group: root

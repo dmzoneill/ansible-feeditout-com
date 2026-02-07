@@ -91,13 +91,16 @@ users:
 sudo_user: "{{ user }}"
 sudo_commands: "ALL"
 
-# php-fpm
-php_fpm_package: "php8.2-fpm"
-php_fpm_mysql_package: "php8.2-mysql"
-php_fpm_service: "php8.2-fpm"
-php_fpm_conf_dir: "/etc/php/8.2/fpm"
+# php-fpm (defaults for Debian 12 — overridden by version detection in reconcile.yml)
+php_version: "8.2"
+php_fpm_package: "php{{ php_version }}-fpm"
+php_fpm_mysql_package: "php{{ php_version }}-mysql"
+php_fpm_service: "php{{ php_version }}-fpm"
+php_fpm_conf_dir: "/etc/php/{{ php_version }}/fpm"
 php_fpm_conf_file: "{{ php_fpm_conf_dir }}/php-fpm.conf"
 php_fpm_pool_file: "{{ php_fpm_conf_dir }}/pool.d/www.conf"
+php_fpm_sock: "/run/php/php{{ php_version }}-fpm.sock"
+php_fpm_pid: "/run/php/php{{ php_version }}-fpm.pid"
 
 # fail2ban
 fail2ban_destemail: "{{ email }}"
@@ -241,9 +244,9 @@ broken_apache_modules:
   - name: evasive
     package: libapache2-mod-evasive
   - name: php
-    package: libapache2-mod-php8.2
-  - name: php8.2
-    package: libapache2-mod-php8.2
+    package: "libapache2-mod-php{{ php_version }}"
+  - name: "php{{ php_version }}"
+    package: "libapache2-mod-php{{ php_version }}"
   - name: security2
     package: libapache2-mod-security2
 required_apache_modules:

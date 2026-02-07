@@ -99,12 +99,21 @@
     - apache2.json
     - apache.json
     - docker.json
-    - grafana_tcp_systemd_full_dashboard.json
     - mysql.json
     - prometheus.json
     - redis.json
   loop_control:
     loop_var: dashboard_file
+  notify: Restart Grafana
+  tags: [grafana]
+
+- name: Deploy templated Grafana systemd dashboard
+  ansible.builtin.template:
+    src: grafana_tcp_systemd_full_dashboard.json.j2
+    dest: /etc/grafana/provisioning/dashboards/grafana_tcp_systemd_full_dashboard.json
+    owner: grafana
+    group: grafana
+    mode: '0644'
   notify: Restart Grafana
   tags: [grafana]
 

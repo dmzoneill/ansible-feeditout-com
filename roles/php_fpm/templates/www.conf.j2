@@ -1,7 +1,7 @@
 [www]
 user = {{ php_fpm_user }}
 group = {{ php_fpm_user }}
-listen = /run/php/php8.2-fpm.sock
+listen = {{ php_fpm_sock }}
 listen.owner = {{ php_fpm_user }}
 listen.group = {{ php_fpm_user }}
 listen.mode = 0660

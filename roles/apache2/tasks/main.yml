@@ -198,6 +198,22 @@
     loop_var: mod
   changed_when: false
 
+- name: Deploy PHP-FPM Apache config
+  template:
+    src: php-fpm.conf.j2
+    dest: "/etc/apache2/conf-available/php{{ php_version }}-fpm.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart apache2
+
+- name: Enable PHP-FPM Apache config
+  file:
+    src: "/etc/apache2/conf-available/php{{ php_version }}-fpm.conf"
+    dest: "/etc/apache2/conf-enabled/php{{ php_version }}-fpm.conf"
+    state: link
+  notify: restart apache2
+
 - name: Ensure required Apache module packages are installed
   apt:
     name: "{{ required_mod.package }}"
