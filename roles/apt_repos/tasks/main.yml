@@ -5,12 +5,24 @@
     state: directory
     mode: '0755'
 
+# Remove broken repos first, before any cache updates
+- name: Remove old NodeSource repo (SHA1 deprecated)
+  file:
+    path: /etc/apt/sources.list.d/nodesource.list
+    state: absent
+
+- name: Remove old Grafana repo config
+  file:
+    path: /etc/apt/sources.list.d/grafana.list
+    state: absent
+
 - name: Remove legacy Grafana GPG key from trusted.gpg
   ansible.builtin.apt_key:
     id: "963FA27710458545"
     state: absent
   failed_when: false
 
+# Add Grafana repo with modern signed-by keyring
 - name: Download Grafana GPG key to keyrings
   get_url:
     url: https://apt.grafana.com/gpg.key
@@ -27,22 +39,14 @@
     path: /etc/apt/keyrings/grafana.gpg
     mode: '0644'
 
-- name: Remove old Grafana repo config
-  file:
-    path: /etc/apt/sources.list.d/grafana.list
-    state: absent
-
 - name: Add Grafana repo with signed-by keyring
   apt_repository:
     repo: "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main"
     state: present
     filename: grafana
+    update_cache: no
 
-- name: Remove old NodeSource repo (SHA1 deprecated)
-  file:
-    path: /etc/apt/sources.list.d/nodesource.list
-    state: absent
-
+# Single apt cache update after all repo fixes
 - name: Update apt cache after repo fixes
   apt:
     update_cache: yes
