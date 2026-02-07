@@ -198,6 +198,52 @@
     loop_var: mod
   changed_when: false
 
+- name: Find old PHP-FPM Apache configs
+  find:
+    paths: /etc/apache2/conf-enabled
+    patterns: "php*-fpm.conf"
+  register: old_php_fpm_confs
+
+- name: Disable old PHP-FPM Apache configs
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ old_php_fpm_confs.files | default([]) }}"
+  when: "('php' + php_version + '-fpm.conf') not in item.path"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  notify: restart apache2
+
+- name: Remove old PHP-FPM Apache conf-available files
+  find:
+    paths: /etc/apache2/conf-available
+    patterns: "php*-fpm.conf"
+  register: old_php_fpm_avail
+
+- name: Clean old PHP-FPM conf-available files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ old_php_fpm_avail.files | default([]) }}"
+  when: "('php' + php_version + '-fpm.conf') not in item.path"
+  loop_control:
+    label: "{{ item.path | basename }}"
+
+- name: Find old PHP mod-enabled files
+  find:
+    paths: /etc/apache2/mods-enabled
+    patterns: "php*.load,php*.conf"
+  register: old_php_mods
+
+- name: Remove old PHP module files from mods-enabled
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ old_php_mods.files | default([]) }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  notify: restart apache2
+
 - name: Deploy PHP-FPM Apache config
   template:
     src: php-fpm.conf.j2
