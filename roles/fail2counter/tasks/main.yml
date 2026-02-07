@@ -96,6 +96,7 @@
     name: fail2counter
     state: present
     login_unix_socket: /run/mysqld/mysqld.sock
+    check_implicit_admin: yes
 
 - name: Create fail2counter MySQL user
   community.mysql.mysql_user:
@@ -104,6 +105,7 @@
     priv: "fail2counter.*:ALL"
     state: present
     login_unix_socket: /run/mysqld/mysqld.sock
+    check_implicit_admin: yes
 
 - name: Initialize fail2counter database schema
   community.mysql.mysql_db:
@@ -111,6 +113,7 @@
     state: import
     target: /opt/fail2counter/schema.sql
     login_unix_socket: /run/mysqld/mysqld.sock
+    check_implicit_admin: yes
   register: schema_import
   failed_when: false
   changed_when: schema_import.rc | default(0) == 0
