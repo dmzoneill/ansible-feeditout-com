@@ -49,6 +49,13 @@
     mode: '0644'
   notify: Restart php-fpm
 
+- name: Ensure Apache user is in PHP-FPM user group for socket access
+  user:
+    name: www-data
+    groups: "{{ php_fpm_user }}"
+    append: yes
+  when: php_fpm_user != 'www-data'
+
 - name: Ensure PHP-FPM is enabled and started
   systemd:
     name: "{{ php_fpm_service }}"
