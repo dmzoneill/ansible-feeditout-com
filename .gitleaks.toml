@@ -1,0 +1,20 @@
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''host_vars/.*_secrets\.yml''',
+  '''host_vars/old\.yml''',
+  '''host_vars/new\.yml''',
+  '''host_vars/avoro\.yml''',
+  '''\.ansible-vault-pass''',
+]
+
+# Ignore Jinja2 template variables that look like secrets
+regexTarget = "match"
+
+[[rules]]
+id = "ansible-vault-files"
+description = "Ansible vault encrypted files"
+regex = '''\$ANSIBLE_VAULT'''
+allowlist = { regexes = ['''.*'''] }
