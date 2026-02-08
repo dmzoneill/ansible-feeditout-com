@@ -31,6 +31,8 @@ ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
 RC_DIR = "/tmp/fail2counter_rc"
 MSF_TIMEOUT = 120
 MAX_TOTAL_EXPLOIT_TIME = 900  # 15 minutes per IP
+NETNS = "msf_vpn"
+NETNS_CMD = ["ip", "netns", "exec", NETNS]
 
 # Service name fragments to exploit category mapping
 SERVICE_TO_CATEGORIES = {
@@ -338,7 +340,7 @@ def run_msf(rc_path: str, timeout: int = MSF_TIMEOUT) -> tuple[str, int, float]:
     proc = None
     try:
         proc = subprocess.Popen(
-            ["/usr/bin/msfconsole", "-q", "-r", rc_path],
+            NETNS_CMD + ["/usr/bin/msfconsole", "-q", "-r", rc_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,

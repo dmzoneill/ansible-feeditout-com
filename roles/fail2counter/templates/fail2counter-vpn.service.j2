@@ -1,0 +1,14 @@
+[Unit]
+Description=Fail2Counter VPN network namespace
+Before=fail2counter.service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/fail2counter/vpn_namespace.sh start
+ExecStop=/opt/fail2counter/vpn_namespace.sh stop
+
+[Install]
+WantedBy=multi-user.target
