@@ -14,7 +14,7 @@ Group=postgres
 Environment=REDIS_PASSWORD={{ redis_password }}
 
 # PostgreSQL connection (uses MSF's Postgres instance via peer auth)
-Environment=FAIL2COUNTER_DSN=host=/var/run/postgresql dbname=fail2counter user=postgres
+Environment="FAIL2COUNTER_DSN=host=/var/run/postgresql dbname=fail2counter user=postgres"
 
 # Google Vertex AI / Claude configuration
 Environment=ANTHROPIC_VERTEX_PROJECT_ID={{ anthropic_vertex_project_id | default('itpc-gcp-ansible-pe-eng-claude') }}
