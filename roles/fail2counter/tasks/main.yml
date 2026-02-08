@@ -1,4 +1,6 @@
 ---
+# --- System packages ---
+
 - name: Install required packages
   apt:
     name:
@@ -33,6 +35,19 @@
       - python3-pip
     state: present
 
+- name: Install Python dependencies for AI integration
+  pip:
+    name:
+      - "anthropic[vertex]"
+      - mysql-connector-python
+      - redis
+      - PyMySQL
+    state: present
+    executable: pip3
+    break_system_packages: true
+
+# --- Metasploit Framework ---
+
 - name: Check if Metasploit is installed
   command: which msfconsole
   register: metasploit_check
@@ -50,16 +65,42 @@
   command: /tmp/msfinstall
   when: metasploit_check.rc != 0
 
-- name: Install Python dependencies for AI integration
-  pip:
-    name:
-      - "anthropic[vertex]"
-      - mysql-connector-python
-      - redis
-      - PyMySQL
-    state: present
-    executable: pip3
-    break_system_packages: true
+- name: Initialize Metasploit database
+  command: msfdb init
+  args:
+    creates: /var/lib/postgresql/.msf_db_initialized
+  register: msfdb_init
+  failed_when: false
+
+- name: Mark msfdb as initialized
+  file:
+    path: /var/lib/postgresql/.msf_db_initialized
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+  when: msfdb_init is changed
+
+- name: Check when Metasploit was last updated
+  stat:
+    path: /opt/metasploit-framework/.msf_last_update
+  register: msf_last_update
+
+- name: Update Metasploit modules (weekly)
+  command: msfupdate
+  when: >
+    not msf_last_update.stat.exists or
+    (ansible_date_time.epoch | int - msf_last_update.stat.mtime | default(0) | int) > 604800
+  register: msf_update
+  failed_when: false
+  timeout: 600
+
+- name: Mark Metasploit update timestamp
+  file:
+    path: /opt/metasploit-framework/.msf_last_update
+    state: touch
+  when: msf_update is changed
+
+# --- Deploy fail2counter files ---
 
 - name: Create script directory
   file:
@@ -79,6 +120,18 @@
     dest: /opt/fail2counter/metasploit_exploits_with_options.txt
     mode: '0644'
 
+- name: Deploy exploit list refresh script
+  copy:
+    src: refresh_exploits.sh
+    dest: /opt/fail2counter/refresh_exploits.sh
+    mode: '0755'
+
+- name: Refresh exploit list from installed Metasploit (weekly)
+  command: /opt/fail2counter/refresh_exploits.sh
+  when: msf_update is changed
+  failed_when: false
+  timeout: 300
+
 - name: Deploy AI module
   copy:
     src: ai.py
@@ -97,39 +150,34 @@
     dest: /opt/fail2counter/migrate_schema.sql
     mode: '0644'
 
+# --- MySQL database setup ---
+
 - name: Run schema migration (rename old exploits table if needed)
   shell: mysql fail2counter < /opt/fail2counter/migrate_schema.sql
   changed_when: false
   failed_when: false
 
 - name: Create fail2counter MySQL database
-  community.mysql.mysql_db:
-    name: fail2counter
-    state: present
-    login_unix_socket: /run/mysqld/mysqld.sock
-    check_implicit_admin: yes
+  command: mysql -e "CREATE DATABASE IF NOT EXISTS fail2counter;"
+  changed_when: false
   failed_when: false
 
-- name: Create fail2counter MySQL user
-  community.mysql.mysql_user:
-    name: fail2counter
-    password: "{{ FAIL2COUNTER_PASSWORD }}"
-    priv: "fail2counter.*:ALL"
-    state: present
-    login_unix_socket: /run/mysqld/mysqld.sock
-    check_implicit_admin: yes
+- name: Create fail2counter MySQL user and grant privileges
+  command: >
+    mysql -e "CREATE USER IF NOT EXISTS 'fail2counter'@'localhost'
+    IDENTIFIED BY '{{ FAIL2COUNTER_PASSWORD }}';
+    GRANT ALL PRIVILEGES ON fail2counter.* TO 'fail2counter'@'localhost';
+    FLUSH PRIVILEGES;"
+  changed_when: false
   failed_when: false
+  no_log: true
 
 - name: Initialize fail2counter database schema
-  community.mysql.mysql_db:
-    name: fail2counter
-    state: import
-    target: /opt/fail2counter/schema.sql
-    login_unix_socket: /run/mysqld/mysqld.sock
-    check_implicit_admin: yes
-  register: schema_import
+  shell: mysql fail2counter < /opt/fail2counter/schema.sql
+  changed_when: false
   failed_when: false
-  changed_when: schema_import.rc | default(0) == 0
+
+# --- Deploy scripts and service ---
 
 - name: Deploy push script
   template:
@@ -174,3 +222,14 @@
     src: redis-queue.conf
     dest: /etc/fail2ban/action.d/redis-queue.conf
     mode: '0644'
+
+# --- Cron for weekly exploit refresh ---
+
+- name: Schedule weekly exploit list refresh
+  cron:
+    name: "fail2counter refresh exploits"
+    job: "/opt/fail2counter/refresh_exploits.sh >> /var/log/fail2counter_refresh.log 2>&1"
+    weekday: "0"
+    hour: "3"
+    minute: "0"
+    user: root
