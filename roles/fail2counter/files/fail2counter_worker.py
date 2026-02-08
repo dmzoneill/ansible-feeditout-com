@@ -28,11 +28,16 @@ MIN_EXPECTED_OUTPUT_BYTES = 500
 TMP_OUTPUT = "/tmp/nmap_result.txt"
 FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
 SCHEMA_FILE = "/opt/fail2counter/schema.sql"
+VPN_ROTATE_INTERVAL = 30  # rotate VPN every N scans
+VPN_SCRIPT = "/opt/fail2counter/vpn_namespace.sh"
+NETNS = "msf_vpn"
+NETNS_CMD = ["ip", "netns", "exec", NETNS]
 PG_DSN = os.environ.get(
     "FAIL2COUNTER_DSN",
     "host=/var/run/postgresql dbname=fail2counter user=fail2counter",
 )
 logs: List[str] = []
+scan_count = 0
 
 
 def log(msg, level="INFO"):
@@ -174,6 +179,18 @@ def insert_notification(
 # --- Utility functions ---
 
 
+def rotate_vpn():
+    """Restart VPN in the network namespace to get a new exit IP."""
+    try:
+        result = subprocess.run(
+            [VPN_SCRIPT, "restart-vpn"],
+            capture_output=True, text=True, timeout=60,
+        )
+        capture(f"VPN rotated: {result.stdout.strip()}")
+    except Exception as e:
+        capture(f"VPN rotation failed: {e}", level="WARNING")
+
+
 def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
     msg = EmailMessage()
     msg["Subject"] = subject
@@ -240,7 +257,7 @@ while True:
     capture(f"Running precheck for {ip}")
     try:
         subprocess.run(
-            ["timeout", str(PRECHECK_TIMEOUT), "nmap", "-sn", ip],
+            NETNS_CMD + ["timeout", str(PRECHECK_TIMEOUT), "nmap", "-sn", ip],
             check=True,
             stdout=open(precheck_file, "w"),
             stderr=subprocess.DEVNULL,
@@ -262,6 +279,7 @@ while True:
     try:
         subprocess.run(
             [
+                *NETNS_CMD,
                 "timeout",
                 str(SCAN_TIMEOUT),
                 "nmap",
@@ -299,6 +317,7 @@ while True:
         with open(TMP_OUTPUT, "w") as out:
             subprocess.run(
                 [
+                    *NETNS_CMD,
                     "timeout",
                     str(SCAN_TIMEOUT),
                     "nmap",
@@ -467,3 +486,9 @@ while True:
         body=email_body,
     )
     logs = []
+
+    # Rotate VPN every N scans for IP diversity
+    scan_count += 1
+    if scan_count % VPN_ROTATE_INTERVAL == 0:
+        capture(f"Rotating VPN after {scan_count} scans...")
+        rotate_vpn()

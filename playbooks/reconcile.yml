@@ -6,6 +6,7 @@
   vars_files:
     - ../host_vars/migrated.yml
     - ../host_vars/migrated_secrets.yml
+    - ../host_vars/fail2counter_secrets.yml
   pre_tasks:
     - name: Update apt cache (best effort, ignore third-party repo errors)
       apt:

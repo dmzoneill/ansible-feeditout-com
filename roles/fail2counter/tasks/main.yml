@@ -226,6 +226,44 @@
     msg: "{{ pg_migration.stdout_lines | default(['Migration skipped']) }}"
   when: pg_migration is defined and pg_migration.stdout_lines is defined
 
+# --- VPN network namespace ---
+
+- name: Install OpenVPN
+  apt:
+    name: openvpn
+    state: present
+
+- name: Deploy VPN namespace management script
+  copy:
+    src: vpn_namespace.sh
+    dest: /opt/fail2counter/vpn_namespace.sh
+    mode: '0755'
+
+- name: Deploy VPN configuration
+  copy:
+    content: "{{ fail2counter_vpn_config }}"
+    dest: /opt/fail2counter/vpn.ovpn
+    owner: root
+    group: root
+    mode: '0600'
+  when: fail2counter_vpn_config is defined
+  no_log: true
+
+- name: Deploy VPN namespace systemd service
+  template:
+    src: "fail2counter-vpn.service.j2"
+    dest: "/etc/systemd/system/fail2counter-vpn.service"
+    owner: "root"
+    group: "root"
+    mode: '0644'
+
+- name: Enable and start VPN namespace service
+  systemd:
+    daemon_reload: true
+    name: fail2counter-vpn
+    enabled: true
+    state: started
+
 # --- Deploy scripts and service ---
 
 - name: Deploy push script
