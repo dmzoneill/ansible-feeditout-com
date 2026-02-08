@@ -201,6 +201,31 @@
   changed_when: false
   failed_when: false
 
+# --- One-time MySQL to PostgreSQL data migration ---
+
+- name: Deploy MySQL to PostgreSQL migration script
+  copy:
+    src: migrate_mysql_to_postgres.sh
+    dest: /opt/fail2counter/migrate_mysql_to_postgres.sh
+    mode: '0755'
+
+- name: Check if MySQL migration already completed
+  stat:
+    path: /opt/fail2counter/.pg_migration_complete
+  register: pg_migration_marker
+
+- name: Run MySQL to PostgreSQL data migration (one-time)
+  command: /opt/fail2counter/migrate_mysql_to_postgres.sh
+  when: not pg_migration_marker.stat.exists
+  register: pg_migration
+  failed_when: false
+  timeout: 600
+
+- name: Show migration result
+  debug:
+    msg: "{{ pg_migration.stdout_lines | default(['Migration skipped']) }}"
+  when: pg_migration is defined and pg_migration.stdout_lines is defined
+
 # --- Deploy scripts and service ---
 
 - name: Deploy push script
