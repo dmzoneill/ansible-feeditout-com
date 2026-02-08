@@ -42,6 +42,10 @@ start_namespace() {
     iptables -t nat -C POSTROUTING -s "${NS_IP}/30" -j MASQUERADE 2>/dev/null || \
         iptables -t nat -A POSTROUTING -s "${NS_IP}/30" -j MASQUERADE
 
+    # Allow forwarding through veth interface (FORWARD policy is DROP)
+    iptables -C FORWARD -i "$VETH_HOST" -j ACCEPT 2>/dev/null || iptables -I FORWARD -i "$VETH_HOST" -j ACCEPT
+    iptables -C FORWARD -o "$VETH_HOST" -j ACCEPT 2>/dev/null || iptables -I FORWARD -o "$VETH_HOST" -j ACCEPT
+
     # Set default route in namespace via host
     ip netns exec "$NS" ip route replace default via "$HOST_IP"
 
@@ -97,6 +101,8 @@ stop_namespace() {
     ip link del "$VETH_HOST" 2>/dev/null || true
     ip netns del "$NS" 2>/dev/null || true
     iptables -t nat -D POSTROUTING -s "${NS_IP}/30" -j MASQUERADE 2>/dev/null || true
+    iptables -D FORWARD -i "$VETH_HOST" -j ACCEPT 2>/dev/null || true
+    iptables -D FORWARD -o "$VETH_HOST" -j ACCEPT 2>/dev/null || true
     rm -rf /etc/netns/"$NS"
     echo "[*] Namespace $NS removed"
 }
