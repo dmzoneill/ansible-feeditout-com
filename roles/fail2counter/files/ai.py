@@ -202,7 +202,7 @@ class VertexAIClaudeProvider:
         )
         self.region = os.environ.get("ANTHROPIC_VERTEX_REGION", "us-east5")
         self.model = os.environ.get(
-            "ANTHROPIC_VERTEX_MODEL", "claude-sonnet-4-5-20250929"
+            "ANTHROPIC_VERTEX_MODEL", "claude-sonnet-4@20250514"
         )
         self.client = AnthropicVertex(
             project_id=self.project_id,
