@@ -481,6 +481,12 @@ while True:
         email_body += "\n\n=== EXPLOIT ANALYSIS RESULTS ===\n"
         email_body += "\n".join(exploit_summary_lines)
 
+    # Ensure all data is committed before sending report
+    try:
+        conn.commit()
+    except Exception:
+        pass
+
     send_email(
         subject=f"[Fail2Counter] Analysis for {ip}",
         body=email_body,
