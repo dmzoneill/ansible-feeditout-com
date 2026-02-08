@@ -1,15 +1,17 @@
 [Unit]
 Description=Fail2Counter IP scanner with AI exploit analysis
-After=network.target webdis.service
+After=network.target webdis.service postgresql.service
 
 [Service]
 ExecStart=/opt/fail2counter/fail2counter_worker.py
 Restart=always
 RestartSec=10
 
-# Redis and MySQL credentials
+# Redis credentials
 Environment=REDIS_PASSWORD={{ redis_password }}
-Environment=FAIL2COUNTER_PASSWORD={{ FAIL2COUNTER_PASSWORD }}
+
+# PostgreSQL connection (uses MSF's Postgres instance)
+Environment=FAIL2COUNTER_DSN=host=/var/run/postgresql dbname=fail2counter user=fail2counter
 
 # Google Vertex AI / Claude configuration
 Environment=ANTHROPIC_VERTEX_PROJECT_ID={{ anthropic_vertex_project_id | default('itpc-gcp-ansible-pe-eng-claude') }}

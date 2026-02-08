@@ -1,12 +1,11 @@
 import os
-import mysql.connector
+import psycopg2
+import psycopg2.extras
 from typing import List, Dict
 
-def fetch_open_ports(
-    db_config: Dict[str, str]
-) -> List[Dict[str, str]]:
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor(dictionary=True)
+def fetch_open_ports(dsn: str) -> List[Dict[str, str]]:
+    conn = psycopg2.connect(dsn)
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     query = """
     SELECT
@@ -37,14 +36,12 @@ def fetch_open_ports(
 
 
 if __name__ == "__main__":
-    db_config = {
-        'host': 'localhost',
-        'user': 'fail2counter',
-        'password': os.environ.get('FAIL2COUNTER_PASSWORD', ''),
-        'database': 'fail2counter'
-    }
+    dsn = os.environ.get(
+        "FAIL2COUNTER_DSN",
+        "host=/var/run/postgresql dbname=fail2counter user=fail2counter",
+    )
 
-    open_ports = fetch_open_ports(db_config)
+    open_ports = fetch_open_ports(dsn)
 
     for target in open_ports:
         print(f"[{target['ip_address']}:{target['port_number']}/{target['protocol']}] "

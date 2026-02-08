@@ -11,7 +11,8 @@ from datetime import datetime
 from email.message import EmailMessage
 from typing import List
 
-import mysql.connector
+import psycopg2
+import psycopg2.extras
 import redis
 
 # Allow importing ai.py from the same directory
@@ -27,6 +28,10 @@ MIN_EXPECTED_OUTPUT_BYTES = 500
 TMP_OUTPUT = "/tmp/nmap_result.txt"
 FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
 SCHEMA_FILE = "/opt/fail2counter/schema.sql"
+PG_DSN = os.environ.get(
+    "FAIL2COUNTER_DSN",
+    "host=/var/run/postgresql dbname=fail2counter user=fail2counter",
+)
 logs: List[str] = []
 
 
@@ -40,28 +45,20 @@ def capture(msg, level="INFO"):
 
 
 def get_db():
-    """Get or reconnect MySQL connection."""
-    global db, cursor
+    """Get or reconnect PostgreSQL connection."""
+    global conn, cursor
     try:
-        db.ping(reconnect=True)
+        conn.isolation_level
     except Exception:
-        db = mysql.connector.connect(
-            host="localhost",
-            user="fail2counter",
-            password=os.environ.get("FAIL2COUNTER_PASSWORD"),
-            database="fail2counter",
-        )
-        cursor = db.cursor(dictionary=True)
-    return db, cursor
+        conn = psycopg2.connect(PG_DSN)
+        conn.autocommit = True
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    return conn, cursor
 
 
-db = mysql.connector.connect(
-    host="localhost",
-    user="fail2counter",
-    password=os.environ.get("FAIL2COUNTER_PASSWORD"),
-    database="fail2counter",
-)
-cursor = db.cursor(dictionary=True)
+conn = psycopg2.connect(PG_DSN)
+conn.autocommit = True
+cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
 
 def init_schema():
@@ -71,18 +68,14 @@ def init_schema():
         return
     with open(SCHEMA_FILE) as f:
         sql = f.read()
-    for statement in sql.split(";"):
-        statement = statement.strip()
-        if statement:
-            cursor.execute(statement)
-    db.commit()
+    cursor.execute(sql)
     log("Database schema initialized")
 
 
 init_schema()
 
 
-# --- Existing insert functions ---
+# --- Insert functions ---
 
 
 def insert_host(ip: str, hostname: str) -> int:
@@ -91,30 +84,28 @@ def insert_host(ip: str, hostname: str) -> int:
     if row:
         return row["id"]
     cursor.execute(
-        "INSERT INTO hosts (ip_address, hostname) VALUES (%s, %s)", (ip, hostname)
+        "INSERT INTO hosts (ip_address, hostname) VALUES (%s, %s) RETURNING id",
+        (ip, hostname),
     )
-    db.commit()
-    return cursor.lastrowid
+    return cursor.fetchone()["id"]
 
 
 def insert_scan(
     host_id: int, scan_type: str, start_time: datetime, latency: float, duration: float
 ) -> int:
     cursor.execute(
-        "INSERT INTO scans (host_id, scan_time, scan_type, latency_seconds, duration_seconds) VALUES (%s, %s, %s, %s, %s)",
+        "INSERT INTO scans (host_id, scan_time, scan_type, latency_seconds, duration_seconds) VALUES (%s, %s, %s, %s, %s) RETURNING id",
         (host_id, start_time, scan_type, latency, duration),
     )
-    db.commit()
-    return cursor.lastrowid
+    return cursor.fetchone()["id"]
 
 
 def insert_port(scan_id: int, port: int, protocol: str, state: str) -> int:
     cursor.execute(
-        "INSERT INTO ports (scan_id, port_number, protocol, state) VALUES (%s, %s, %s, %s)",
+        "INSERT INTO ports (scan_id, port_number, protocol, state) VALUES (%s, %s, %s, %s) RETURNING id",
         (scan_id, port, protocol, state),
     )
-    db.commit()
-    return cursor.lastrowid
+    return cursor.fetchone()["id"]
 
 
 def insert_service(
@@ -129,10 +120,9 @@ def insert_service(
         "INSERT INTO services (port_id, service_name, product, version, is_ssl, recognized) VALUES (%s, %s, %s, %s, %s, %s)",
         (port_id, service_name, product, version, is_ssl, recognized),
     )
-    db.commit()
 
 
-# --- New insert functions for exploit analysis ---
+# --- Exploit analysis insert functions ---
 
 
 def insert_exploit(
@@ -147,11 +137,10 @@ def insert_exploit(
     cursor.execute(
         """INSERT INTO exploits
            (scan_id, host_id, module_path, rhosts, rport, rc_file_path, status)
-           VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+           VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id""",
         (scan_id, host_id, module_path, rhosts, rport, rc_path, status),
     )
-    db.commit()
-    return cursor.lastrowid
+    return cursor.fetchone()["id"]
 
 
 def insert_exploit_result(
@@ -160,11 +149,10 @@ def insert_exploit_result(
     cursor.execute(
         """INSERT INTO exploit_results
            (exploit_id, output_text, exit_code, duration_seconds)
-           VALUES (%s, %s, %s, %s)""",
+           VALUES (%s, %s, %s, %s) RETURNING id""",
         (exploit_id, output_text, exit_code, duration),
     )
-    db.commit()
-    return cursor.lastrowid
+    return cursor.fetchone()["id"]
 
 
 def insert_notification(
@@ -177,11 +165,10 @@ def insert_notification(
     cursor.execute(
         """INSERT INTO notifications
            (host_id, exploit_id, notification_type, status, contact_info, message)
-           VALUES (%s, %s, %s, 'pending', %s, %s)""",
+           VALUES (%s, %s, %s, 'pending', %s, %s) RETURNING id""",
         (host_id, exploit_id, notification_type, contact_info, message),
     )
-    db.commit()
-    return cursor.lastrowid
+    return cursor.fetchone()["id"]
 
 
 # --- Utility functions ---
@@ -244,7 +231,7 @@ while True:
         timestamp, ip = ip_entry.decode().split("|")
         capture(f"Dequeued IP: {ip} (banned at {timestamp})")
     except Exception as e:
-        capture(f"Failed to parse Redis queue entry: {ip_entry} — {e}", level="ERROR")
+        capture(f"Failed to parse Redis queue entry: {ip_entry} - {e}", level="ERROR")
         logs = []
         continue
 
