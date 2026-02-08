@@ -91,6 +91,17 @@
     dest: /opt/fail2counter/schema.sql
     mode: '0644'
 
+- name: Deploy schema migration script
+  copy:
+    src: migrate_schema.sql
+    dest: /opt/fail2counter/migrate_schema.sql
+    mode: '0644'
+
+- name: Run schema migration (rename old exploits table if needed)
+  shell: mysql fail2counter < /opt/fail2counter/migrate_schema.sql
+  changed_when: false
+  failed_when: false
+
 - name: Create fail2counter MySQL database
   community.mysql.mysql_db:
     name: fail2counter
