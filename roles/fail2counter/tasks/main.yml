@@ -39,9 +39,8 @@
   pip:
     name:
       - "anthropic[vertex]"
-      - mysql-connector-python
+      - psycopg2-binary
       - redis
-      - PyMySQL
     state: present
     executable: pip3
     break_system_packages: true
@@ -150,30 +149,55 @@
     dest: /opt/fail2counter/migrate_schema.sql
     mode: '0644'
 
-# --- MySQL database setup ---
+# --- PostgreSQL database setup (uses MSF's Postgres instance) ---
+
+- name: Create fail2counter PostgreSQL user
+  become: true
+  become_user: postgres
+  command: psql -c "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'fail2counter') THEN CREATE ROLE fail2counter WITH LOGIN; END IF; END $$;"
+  changed_when: false
+  failed_when: false
+
+- name: Create fail2counter PostgreSQL database
+  become: true
+  become_user: postgres
+  command: psql -c "SELECT 1 FROM pg_database WHERE datname = 'fail2counter'" -t
+  register: pg_db_check
+  changed_when: false
+
+- name: Create fail2counter database if not exists
+  become: true
+  become_user: postgres
+  command: createdb -O fail2counter fail2counter
+  when: pg_db_check.stdout.strip() != '1'
+
+- name: Grant fail2counter user access
+  become: true
+  become_user: postgres
+  command: psql -c "GRANT ALL PRIVILEGES ON DATABASE fail2counter TO fail2counter;"
+  changed_when: false
+  failed_when: false
 
 - name: Run schema migration (rename old exploits table if needed)
-  shell: mysql fail2counter < /opt/fail2counter/migrate_schema.sql
+  become: true
+  become_user: postgres
+  command: psql -d fail2counter -f /opt/fail2counter/migrate_schema.sql
   changed_when: false
   failed_when: false
-
-- name: Create fail2counter MySQL database
-  command: mysql -e "CREATE DATABASE IF NOT EXISTS fail2counter;"
-  changed_when: false
-  failed_when: false
-
-- name: Create fail2counter MySQL user and grant privileges
-  command: >
-    mysql -e "CREATE USER IF NOT EXISTS 'fail2counter'@'localhost'
-    IDENTIFIED BY '{{ FAIL2COUNTER_PASSWORD }}';
-    GRANT ALL PRIVILEGES ON fail2counter.* TO 'fail2counter'@'localhost';
-    FLUSH PRIVILEGES;"
-  changed_when: false
-  failed_when: false
-  no_log: true
 
 - name: Initialize fail2counter database schema
-  shell: mysql fail2counter < /opt/fail2counter/schema.sql
+  become: true
+  become_user: postgres
+  command: psql -d fail2counter -f /opt/fail2counter/schema.sql
+  changed_when: false
+  failed_when: false
+
+- name: Grant fail2counter ownership on all tables
+  become: true
+  become_user: postgres
+  shell: |
+    psql -d fail2counter -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO fail2counter;"
+    psql -d fail2counter -c "GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO fail2counter;"
   changed_when: false
   failed_when: false
 
@@ -191,6 +215,12 @@
   copy:
     src: fail2counter_worker.py
     dest: /opt/fail2counter/fail2counter_worker.py
+    mode: '0755'
+
+- name: Deploy query script
+  copy:
+    src: 1.query.py
+    dest: /opt/fail2counter/1.query.py
     mode: '0755'
 
 - name: Deploy GCP service account credentials
@@ -215,7 +245,7 @@
     daemon_reload: true
     name: fail2counter
     enabled: true
-    state: started
+    state: restarted
 
 - name: Configure Fail2Ban custom action
   copy:
