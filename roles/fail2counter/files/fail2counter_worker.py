@@ -363,7 +363,10 @@ while True:
     except socket.herror:
         hostname = None
 
+    capture(f"[DB] About to insert host: {ip} (hostname: {hostname})", "DEBUG")
     host_id = insert_host(ip, hostname)
+    capture(f"[DB] Inserted host with ID: {host_id}", "DEBUG")
+    capture(f"[DB] Connection autocommit: {conn.autocommit}, isolation_level: {conn.isolation_level}", "DEBUG")
 
     scan_type = "version"
     scan_time = datetime.utcnow()
@@ -374,9 +377,11 @@ while True:
     latency = float(latency_match.group(1)) if latency_match else None
     duration = float(duration_match.group(1)) if duration_match else None
 
+    capture(f"[DB] About to insert scan for host_id: {host_id}", "DEBUG")
     scan_id = insert_scan(
         host_id, scan_type, scan_time, latency or 0.0, duration or 0.0
     )
+    capture(f"[DB] Inserted scan with ID: {scan_id}", "DEBUG")
 
     # Parse open ports and service details
     service_matches = re.finditer(
@@ -397,10 +402,13 @@ while True:
         # Remove trailing '?' from service name if present
         clean_service_name = service_name.rstrip("?")
 
+        capture(f"[DB] Inserting port {port} for scan_id: {scan_id}", "DEBUG")
         port_id = insert_port(scan_id, port, "tcp", "open")
+        capture(f"[DB] Inserted port with ID: {port_id}", "DEBUG")
         insert_service(
             port_id, clean_service_name, product, version, is_ssl, recognized
         )
+        capture(f"[DB] Inserted service for port_id: {port_id}", "DEBUG")
 
         detected_services.append(
             {
@@ -427,6 +435,7 @@ while True:
             )
 
             for result in ai_results:
+                capture(f"[DB] Inserting exploit: {result['module_path']} for scan_id: {scan_id}", "DEBUG")
                 exploit_id = insert_exploit(
                     scan_id=scan_id,
                     host_id=host_id,
@@ -483,9 +492,13 @@ while True:
 
     # Ensure all data is committed before sending report
     try:
+        capture("[DB] Attempting manual commit...", "DEBUG")
         conn.commit()
-    except Exception:
-        pass
+        capture("[DB] Manual commit successful", "DEBUG")
+    except Exception as e:
+        import traceback
+        capture(f"[DB] Manual commit failed: {e}", "ERROR")
+        capture(f"[DB] Traceback:\n{traceback.format_exc()}", "ERROR")
 
     send_email(
         subject=f"[Fail2Counter] Analysis for {ip}",
