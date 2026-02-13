@@ -226,6 +226,11 @@
     msg: "{{ pg_migration.stdout_lines | default(['Migration skipped']) }}"
   when: pg_migration is defined and pg_migration.stdout_lines is defined
 
+- name: Drop legacy fail2counter MySQL user (compromised password)
+  command: mysql -e "DROP USER IF EXISTS 'fail2counter'@'localhost';"
+  changed_when: false
+  failed_when: false
+
 # --- VPN network namespace ---
 
 - name: Install OpenVPN
