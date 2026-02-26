@@ -40,8 +40,8 @@ smtpd_helo_restrictions =
 smtpd_sender_restrictions =
     permit_mynetworks,
     permit_sasl_authenticated,
-    check_sender_access hash:/etc/postfix/sender_access,
-    reject
+    check_sender_access hash:/etc/postfix/sender_access
+
 
 # TLS
 smtpd_use_tls = yes
