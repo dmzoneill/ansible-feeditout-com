@@ -494,7 +494,4 @@
 #        Yorktown Heights, NY 10598, USA
 #
 #                                                               HEADER_CHECKS(5)
-/^Return-Path: <dave@feeditout\.com>.*$/ DISCARD spam
-/^smtp\.mailfrom=dave@feeditout\.com.*$/ DISCARD spam
 /^X-Spam-Flag:.YES/ DISCARD spam
-/^Content-Transfer-Encoding:/i PREPEND List-Unsubscribe: mailto:?subject=unsubscribe>"

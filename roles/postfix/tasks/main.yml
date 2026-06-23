@@ -1,7 +1,9 @@
 ---
 - name: Install Postfix
   apt:
-    name: postfix
+    name:
+      - postfix
+      - postfix-pcre
     state: present
 
 - name: Ensure /etc/postfix exists
@@ -150,7 +152,6 @@
   set_fact:
     postfix_maps:
       - { src: "sasl_passwd", tool: "postmap" }
-      - { src: "header_checks", tool: "postmap" }
       - { src: "virtualalias", tool: "postmap" }
       - { src: "sender_access", tool: "postmap" }
 

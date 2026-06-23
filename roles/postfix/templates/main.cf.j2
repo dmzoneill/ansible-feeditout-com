@@ -88,6 +88,7 @@ smtp_destination_rate_delay = 1s
 smtp_extra_recipient_limit = 10
 header_size_limit = 4096000
 bounce_template_file = /etc/postfix/bounce/bounce.cf
+header_checks = pcre:/etc/postfix/header_checks
 maximal_queue_lifetime = 5d
 bounce_queue_lifetime = 5d
 
