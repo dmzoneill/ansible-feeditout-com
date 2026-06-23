@@ -15,6 +15,7 @@
     repo: "{{ ansible_pull_repo_url }}"
     dest: "{{ ansible_pull_workdir }}"
     update: true
+    force: true
 
 - name: Deploy ansible-pull systemd service
   template:
