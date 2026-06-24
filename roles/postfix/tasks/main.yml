@@ -84,25 +84,36 @@
   command: systemctl daemon-reexec
   changed_when: false
 
+- name: Check if postfix instance directory exists
+  stat:
+    path: /etc/postfix-
+  register: postfix_instance_dir
+
 - name: Enable postfix@- instance if not already enabled
   command: systemctl is-enabled postfix@-
   register: postfix_instance_enabled
   failed_when: false
   changed_when: false
+  when: postfix_instance_dir.stat.exists
 
 - name: Enable postfix@- if not enabled
   command: systemctl enable postfix@-
-  when: postfix_instance_enabled.rc != 0
+  when:
+    - postfix_instance_dir.stat.exists
+    - postfix_instance_enabled.rc != 0
 
 - name: Start postfix@- if not already running
   command: systemctl is-active postfix@-
   register: postfix_instance_active
   failed_when: false
   changed_when: false
+  when: postfix_instance_dir.stat.exists
 
 - name: Start postfix@- instance
   command: systemctl start postfix@-
-  when: postfix_instance_active.rc != 0
+  when:
+    - postfix_instance_dir.stat.exists
+    - postfix_instance_active.rc != 0
 
 # --- Cert Hook Script ---
 
