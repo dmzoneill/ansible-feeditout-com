@@ -18,7 +18,7 @@
     dest: /etc/
     owner: root
     group: root
-    mode: preserve
+    mode: '0644'
     directory_mode: '0755'
   register: postfix_file_copy_result
 
@@ -72,13 +72,6 @@
   set_fact:
     postfix_files_changed: true
   when: main_cf_result is changed
-
-- name: Fix dynamicmaps.cf permissions for PCRE support
-  file:
-    path: /etc/postfix/dynamicmaps.cf
-    owner: root
-    group: root
-    mode: '0644'
 
 - name: Run postfix check (ignore error if Postfix not fully initialized)
   command: postfix check
