@@ -309,8 +309,9 @@
   command: "{{ certbot_helpers_dir }}/certbot.sh"
   args:
     chdir: "{{ certbot_helpers_dir }}"
-  when: cert_statuses.results | selectattr('stat.exists', 'equalto', false) | list
-        or cert_statuses.results | selectattr('stat.size', 'defined') | selectattr('stat.size', 'equalto', 0) | list
+  when: >
+    (cert_statuses.results | selectattr('stat.exists', 'equalto', false) | list | length > 0) or
+    (cert_statuses.results | selectattr('stat.size', 'defined') | selectattr('stat.size', 'equalto', 0) | list | length > 0)
   register: certbot_result
   changed_when: certbot_result.rc == 0
   failed_when: certbot_result.rc != 0
