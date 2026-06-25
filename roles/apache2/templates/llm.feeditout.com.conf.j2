@@ -1,0 +1,10 @@
+<Location />
+    ProxyPreserveHost On
+
+    ProxyPass http://localhost:4000/
+    ProxyPassReverse http://localhost:4000/
+
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+</Location>
