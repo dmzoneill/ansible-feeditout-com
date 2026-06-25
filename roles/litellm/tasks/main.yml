@@ -56,6 +56,12 @@
   notify: Restart LiteLLM
   tags: [litellm]
 
+- name: Ensure Docker service is running and iptables chains exist
+  systemd:
+    name: docker
+    state: restarted
+  tags: [litellm]
+
 - name: Start LiteLLM services
   command: docker compose up -d
   args:
