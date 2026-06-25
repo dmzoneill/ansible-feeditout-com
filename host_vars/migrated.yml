@@ -305,6 +305,10 @@ domains:
         document_root: grafana
         enabled: true
         custom_config: true
+      - name: llm.fio.ie
+        document_root: litellm
+        enabled: true
+        custom_config: true
     loglevel: warn
     enabled: true
 
@@ -571,10 +575,6 @@ iptables:
 
       - proto: tcp
         dport: 6380
-        jump: ACCEPT
-
-      - proto: tcp
-        dport: 4000
         jump: ACCEPT
 
     ANSIBLE_OUTPUT:
