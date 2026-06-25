@@ -2,8 +2,8 @@ model_list:
   - model_name: claude-opus-vertex
     litellm_params:
       model: vertex_ai/{{ litellm_claude_model }}
-      vertex_project: "{{ litellm_gcp_project_id }}"
-      vertex_location: "{{ litellm_gcp_location }}"
+      vertex_ai_project: "{{ litellm_gcp_project_id }}"
+      vertex_ai_location: "{{ litellm_gcp_location }}"
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
