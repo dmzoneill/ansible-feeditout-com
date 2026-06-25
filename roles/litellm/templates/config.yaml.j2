@@ -11,21 +11,3 @@ general_settings:
 litellm_settings:
   drop_params: true
   set_verbose: false
-
-environment_variables:
-  LITELLM_MASTER_KEY: os.environ/LITELLM_MASTER_KEY
-
-key_management:
-  keys:
-    - key: "{{ litellm_user_key_dave }}"
-      user_id: "dave"
-      key_alias: "dave-key"
-      models:
-        - claude-opus-vertex
-    - key: "{{ litellm_user_key_hugo }}"
-      user_id: "hugo"
-      key_alias: "hugo-key"
-      max_budget: 25.0
-      budget_duration: "30d"
-      models:
-        - claude-opus-vertex

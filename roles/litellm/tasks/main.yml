@@ -69,3 +69,46 @@
   register: litellm_compose_up
   changed_when: "'Started' in litellm_compose_up.stderr or 'Creating' in litellm_compose_up.stderr"
   tags: [litellm]
+
+- name: Wait for LiteLLM API to be ready
+  uri:
+    url: "http://127.0.0.1:{{ litellm_port }}/health"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ litellm_master_key }}"
+    status_code: 200
+  register: litellm_health
+  until: litellm_health.status == 200
+  retries: 30
+  delay: 5
+  tags: [litellm]
+
+- name: Register user API keys
+  uri:
+    url: "http://127.0.0.1:{{ litellm_port }}/key/generate"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ litellm_master_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body: "{{ item.body }}"
+    status_code: [200, 201]
+  loop:
+    - body:
+        key: "{{ litellm_user_key_dave }}"
+        user_id: "dave"
+        key_alias: "dave-key"
+        models: ["claude-opus-vertex"]
+    - body:
+        key: "{{ litellm_user_key_hugo }}"
+        user_id: "hugo"
+        key_alias: "hugo-key"
+        models: ["claude-opus-vertex"]
+        max_budget: 25.0
+        budget_duration: "30d"
+  loop_control:
+    label: "{{ item.body.user_id }}"
+  register: key_result
+  failed_when: key_result.status not in [200, 201] and 'already exists' not in (key_result.json.error.message | default(''))
+  changed_when: key_result.status in [200, 201]
+  tags: [litellm]
