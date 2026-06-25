@@ -1,5 +1,5 @@
 model_list:
-  - model_name: claude-sonnet-vertex
+  - model_name: claude-opus-vertex
     litellm_params:
       model: vertex_ai/{{ litellm_claude_model }}
       vertex_project: "{{ litellm_gcp_project_id }}"
@@ -21,9 +21,11 @@ key_management:
       user_id: "dave"
       key_alias: "dave-key"
       models:
-        - claude-sonnet-vertex
+        - claude-opus-vertex
     - key: "{{ litellm_user_key_hugo }}"
       user_id: "hugo"
       key_alias: "hugo-key"
+      max_budget: 25.0
+      budget_duration: "30d"
       models:
-        - claude-sonnet-vertex
+        - claude-opus-vertex
