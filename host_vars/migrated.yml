@@ -573,6 +573,10 @@ iptables:
         dport: 6380
         jump: ACCEPT
 
+      - proto: tcp
+        dport: 4000
+        jump: ACCEPT
+
     ANSIBLE_OUTPUT:
       - proto: all
         ctstate: NEW,RELATED,ESTABLISHED
