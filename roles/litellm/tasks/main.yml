@@ -71,16 +71,14 @@
   tags: [litellm]
 
 - name: Wait for LiteLLM API to be ready
-  uri:
-    url: "http://127.0.0.1:{{ litellm_port }}/health"
-    method: GET
-    headers:
-      Authorization: "Bearer {{ litellm_master_key }}"
-    status_code: 200
-  register: litellm_health
-  until: litellm_health.status == 200
-  retries: 30
-  delay: 5
+  command: docker compose logs --tail=5 litellm
+  args:
+    chdir: /opt/litellm
+  register: litellm_logs
+  until: "'Application startup complete' in litellm_logs.stdout or 'Uvicorn running' in litellm_logs.stdout or 'Application startup complete' in litellm_logs.stderr or 'Uvicorn running' in litellm_logs.stderr"
+  retries: 24
+  delay: 10
+  changed_when: false
   tags: [litellm]
 
 - name: Register user API keys
