@@ -1,0 +1,29 @@
+model_list:
+  - model_name: claude-sonnet-vertex
+    litellm_params:
+      model: vertex_ai/{{ litellm_claude_model }}
+      vertex_project: "{{ litellm_gcp_project_id }}"
+      vertex_location: "{{ litellm_gcp_location }}"
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+litellm_settings:
+  drop_params: true
+  set_verbose: false
+
+environment_variables:
+  LITELLM_MASTER_KEY: os.environ/LITELLM_MASTER_KEY
+
+key_management:
+  keys:
+    - key: "{{ litellm_user_key_dave }}"
+      user_id: "dave"
+      key_alias: "dave-key"
+      models:
+        - claude-sonnet-vertex
+    - key: "{{ litellm_user_key_hugo }}"
+      user_id: "hugo"
+      key_alias: "hugo-key"
+      models:
+        - claude-sonnet-vertex

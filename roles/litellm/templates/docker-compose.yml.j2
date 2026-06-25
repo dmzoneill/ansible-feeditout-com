@@ -1,0 +1,40 @@
+services:
+  litellm:
+    image: docker.litellm.ai/berriai/litellm:main-stable
+    container_name: litellm-proxy
+    ports:
+      - "{{ litellm_port }}:4000"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./adc.json:/app/adc.json:ro
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/adc.json
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GCP_LOCATION=${GCP_LOCATION}
+      - DATABASE_URL=postgresql://llmproxy:${POSTGRES_PASSWORD}@db:5432/litellm
+      - STORE_MODEL_IN_DB=True
+    command: ["--config", "/app/config.yaml", "--port", "4000", "--num_workers", "4"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: docker.io/library/postgres:16-alpine
+    container_name: litellm-db
+    environment:
+      POSTGRES_DB: litellm
+      POSTGRES_USER: llmproxy
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - litellm-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U llmproxy -d litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  litellm-pgdata:

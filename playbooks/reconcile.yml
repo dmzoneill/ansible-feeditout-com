@@ -81,6 +81,7 @@
         - iptables
         - vnc
         - jumphost
+        - litellm
         - kernel
         - auditd
         - apparmor

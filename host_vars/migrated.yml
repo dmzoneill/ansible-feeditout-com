@@ -113,6 +113,12 @@ anthropic_vertex_project_id: "itpc-gcp-ansible-pe-eng-claude"
 anthropic_vertex_region: "us-east5"
 google_application_credentials: "/opt/fail2counter/gcp-sa-key.json"
 
+# litellm
+litellm_gcp_project_id: "itpc-gcp-ansible-pe-eng-claude"
+litellm_gcp_location: "us-east5"
+litellm_port: 4000
+litellm_claude_model: "claude-sonnet-4-5-20250514"
+
 # saslauthd
 saslauthd_mechanism: "pam"
 saslauthd_threads: 5

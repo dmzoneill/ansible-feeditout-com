@@ -1,0 +1,65 @@
+---
+- name: Install docker-compose
+  apt:
+    name:
+      - docker.io
+      - docker-compose
+    state: present
+  tags: [litellm]
+
+- name: Create LiteLLM directory
+  file:
+    path: /opt/litellm
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags: [litellm]
+
+- name: Deploy GCP credentials
+  copy:
+    content: "{{ litellm_gcp_adc_json }}"
+    dest: /opt/litellm/adc.json
+    owner: root
+    group: root
+    mode: '0600'
+  notify: Restart LiteLLM
+  tags: [litellm]
+
+- name: Deploy LiteLLM config
+  template:
+    src: config.yaml.j2
+    dest: /opt/litellm/config.yaml
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart LiteLLM
+  tags: [litellm]
+
+- name: Deploy LiteLLM environment file
+  template:
+    src: env.j2
+    dest: /opt/litellm/.env
+    owner: root
+    group: root
+    mode: '0600'
+  notify: Restart LiteLLM
+  tags: [litellm]
+
+- name: Deploy docker-compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/litellm/docker-compose.yml
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart LiteLLM
+  tags: [litellm]
+
+- name: Start LiteLLM services
+  command: docker compose up -d
+  args:
+    chdir: /opt/litellm
+  register: litellm_compose_up
+  changed_when: "'Started' in litellm_compose_up.stderr or 'Creating' in litellm_compose_up.stderr"
+  tags: [litellm]
