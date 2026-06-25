@@ -91,7 +91,7 @@
       Authorization: "Bearer {{ litellm_master_key }}"
       Content-Type: "application/json"
     body_format: json
-    body: "{{ item.body }}"
+    body: "{{ litellm_key_entry.body }}"
     status_code: [200, 201]
   loop:
     - body:
@@ -107,7 +107,8 @@
         max_budget: 25.0
         budget_duration: "30d"
   loop_control:
-    label: "{{ item.body.user_id }}"
+    loop_var: litellm_key_entry
+    label: "{{ litellm_key_entry.body.user_id }}"
   register: key_result
   failed_when: key_result.status not in [200, 201] and 'already exists' not in (key_result.json.error.message | default(''))
   changed_when: key_result.status in [200, 201]
