@@ -102,3 +102,12 @@
         - saslauthd
       when: role_to_run is not defined or role_to_run == item
       ignore_errors: true
+      register: role_results
+
+    - name: Report any failed roles
+      debug:
+        msg: "Role '{{ item.item }}' failed: {{ item.msg | default('unknown error') }}"
+      loop: "{{ role_results.results | default([]) }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: item is failed
