@@ -54,9 +54,9 @@
         group: root
         mode: '0755'
 
-    - name: Generate UUID for connection
+    - name: Generate deterministic UUID for connection
       set_fact:
-        connection_uuid: "{{ lookup('pipe', 'uuidgen') }}"
+        connection_uuid: "{{ connection_name | to_uuid }}"
 
     - name: Create static IP connection file for NetworkManager
       copy:
