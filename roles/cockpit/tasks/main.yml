@@ -13,6 +13,8 @@
     group: "{{ user }}"
   notify: Restart cockpit
 
+- meta: flush_handlers
+
 - name: Ensure Cockpit service is enabled and started
   ansible.builtin.service:
     name: cockpit
