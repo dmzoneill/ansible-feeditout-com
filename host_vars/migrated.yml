@@ -19,6 +19,7 @@ loopback_ip: "127.0.1.1"
 
 # vnc
 vnc_user: dave
+# UNUSED - consider removing
 vnc_display: 1
 
 # cockpit
@@ -27,13 +28,16 @@ cockpit_packages:
   - cockpit-system
   - cockpit-networkmanager
   - cockpit-storaged
+# UNUSED - consider removing
 cockpit_listen_port: 9090
 
 # ansible_pull
+# UNUSED - consider removing
 is_ansible_pull_host: true
 ansible_pull_repo_url: "https://github.com/dmzoneill/ansible-feeditout-com"
 ansible_pull_workdir: "/opt/ansible"
 ansible_pull_interval_minutes: 30
+# UNUSED - consider removing
 ansible_pull_expected_ip: "{{ ipv4_addr }}"
 ansible_pull_email: "{{ email }}"
 
@@ -68,6 +72,7 @@ dns_nameservers:
   - "{{ ipv6_dns1 }}"
   - "{{ ipv6_dns2 }}"
 resolv_conf_path: "/etc/resolv.conf"
+# UNUSED - consider removing
 resolv_conf_immutable: true
 disable_systemd_resolved: true
 
@@ -158,6 +163,7 @@ locale_timezone: "Europe/Dublin"
 locale_zonefile: "/usr/share/zoneinfo/Europe/Dublin"
 locale_lang: "en_IE.UTF-8"
 locale_language: "en_IE:en"
+# UNUSED - consider removing
 locale_lc_all: "en_IE.UTF-8"
 
 # logwatch
@@ -599,7 +605,9 @@ prometheus_alertmanager_enabled: true
 prometheus_alertmanager_targets:
   - "localhost:9093"
 prometheus_tls_enabled: true
+# UNUSED - consider removing (TLS config is commented out in prometheus role)
 prometheus_tls_cert_file: /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem
+# UNUSED - consider removing (TLS config is commented out in prometheus role)
 prometheus_tls_key_file: /etc/letsencrypt/live/{{ fqdn }}/privkey.pem
 
 alertmanager_email_enabled: true
