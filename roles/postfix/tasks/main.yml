@@ -201,3 +201,9 @@
     name: postfix
     state: restarted
   when: postfix_files_changed | default(false) or chroot_files_changed | default(false)
+
+- name: Ensure Postfix service is enabled and started
+  ansible.builtin.systemd:
+    name: postfix
+    enabled: true
+    state: started
