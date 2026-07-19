@@ -4,12 +4,6 @@
     name: opendkim
     state: present
 
-- name: Ensure /etc exists
-  file:
-    path: /etc
-    state: directory
-    mode: '0755'
-
 - name: Recursively copy all OpenDKIM configuration to /etc
   copy:
     src: "{{ role_path }}/files/"
