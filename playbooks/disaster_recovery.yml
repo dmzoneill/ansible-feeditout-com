@@ -13,6 +13,9 @@
         timeout: 5
       register: github_check
       failed_when: false
+      retries: 3
+      delay: 10
+      until: github_check.status is defined and github_check.status == 200
 
     - name: Flush all IPv4 rules and set default ACCEPT (if GitHub unreachable)
       shell: |
