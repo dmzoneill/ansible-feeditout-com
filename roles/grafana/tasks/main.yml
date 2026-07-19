@@ -117,3 +117,4 @@
     group: grafana
     mode: '0644'
   notify: Restart Grafana
+  tags: [grafana]

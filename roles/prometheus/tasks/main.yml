@@ -3,6 +3,7 @@
   ansible.builtin.group:
     name: prometheus
     state: present
+  tags: prometheus
 
 - name: Ensure prometheus user exists
   ansible.builtin.user:
@@ -11,6 +12,7 @@
     shell: /usr/sbin/nologin
     system: true
     create_home: false
+  tags: prometheus
 
 - name: Create required directories
   ansible.builtin.file:
@@ -26,6 +28,7 @@
     - /etc/prometheus/file_sd
   loop_control:
     loop_var: prometheus_dir
+  tags: prometheus
 
 - name: Download Prometheus tarball
   ansible.builtin.get_url:
@@ -49,6 +52,7 @@
     dest: /opt/prometheus
     state: link
     force: true
+  tags: prometheus
 
 - name: Copy Prometheus binaries
   ansible.builtin.copy:
@@ -61,6 +65,7 @@
     - promtool
   loop_control:
     loop_var: binary
+  tags: prometheus
 
 - name: Install systemd service
   ansible.builtin.template:
@@ -68,6 +73,7 @@
     dest: /etc/systemd/system/prometheus.service
     mode: '0644'
   notify: Restart Prometheus
+  tags: prometheus
 
 - name: Ensure Prometheus rules directory exists
   ansible.builtin.file:
@@ -76,6 +82,7 @@
     mode: '0755'
     owner: prometheus
     group: prometheus
+  tags: prometheus
 
 - name: Deploy system alert rules for Prometheus
   ansible.builtin.template:
@@ -86,6 +93,7 @@
     group: prometheus
     validate: 'promtool check rules %s'
   notify: Restart Prometheus
+  tags: prometheus
 
 - name: Deploy systemd alert rules for Prometheus
   ansible.builtin.template:
@@ -96,6 +104,7 @@
     group: prometheus
     validate: 'promtool check rules %s'
   notify: Restart Prometheus
+  tags: prometheus
 
 - name: Deploy ports alert rules for Prometheus
   ansible.builtin.template:
@@ -106,6 +115,7 @@
     group: prometheus
     validate: 'promtool check rules %s'
   notify: Restart Prometheus
+  tags: prometheus
 
 # - name: Download alert rules archive only if not present
 #   ansible.builtin.get_url:
@@ -183,6 +193,7 @@
     group: prometheus
     mode: '0644'
   notify: Restart Prometheus
+  tags: prometheus
 
 # - name: Configure Prometheus TLS web_config.yml
 #   ansible.builtin.template:
@@ -197,9 +208,11 @@
 - name: Reload systemd daemon
   ansible.builtin.systemd:
     daemon_reload: yes
+  tags: prometheus
 
 - name: Enable and start Prometheus
   ansible.builtin.systemd:
     name: prometheus
     enabled: yes
     state: started
+  tags: prometheus
