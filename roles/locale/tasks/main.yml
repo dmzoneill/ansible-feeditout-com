@@ -29,7 +29,7 @@
 - name: Ensure {{ locale_lang }} is enabled in /etc/locale.gen
   ansible.builtin.lineinfile:
     path: /etc/locale.gen
-    regexp: '^#?{{ locale_lang }}\s+UTF-8'
+    regexp: '^#?{{ locale_lang | regex_escape }}\s+UTF-8'
     line: '{{ locale_lang }} UTF-8'
     state: present
   register: locale_gen_update
