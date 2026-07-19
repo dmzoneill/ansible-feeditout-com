@@ -1,18 +1,18 @@
 ---
-- name: reload auditd rules
+- name: Reload Auditd Rules
   command: augenrules --load
 
-- name: restart sysstat
+- name: Restart Sysstat
   service:
     name: sysstat
     state: restarted
 
-- name: restart auditd
+- name: Restart Auditd
   systemd:
     name: auditd
     state: restarted
 
-- name: Restart sysstat timers
+- name: Restart Sysstat Timers
   systemd:
     name: "{{ sysstat_timer }}"
     state: restarted

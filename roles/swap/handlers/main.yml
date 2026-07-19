@@ -1,4 +1,4 @@
 ---
-- name: reload systemd daemon
+- name: Reload Systemd Daemon
   become: true
   command: systemctl daemon-reexec
