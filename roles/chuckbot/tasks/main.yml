@@ -35,7 +35,7 @@
     version: main
     update: true
     force: true
-  when: not chuckbot_git.stat.exists or git_remote.stdout != "git@github.com:dmzoneill/Chuckbot.git"
+  when: not chuckbot_git.stat.exists or git_remote.stdout | default('') != "git@github.com:dmzoneill/Chuckbot.git"
 
 - name: Check for dirty working directory (as {{ user }})
   become: true
@@ -112,7 +112,7 @@
   changed_when: "'up to date' not in git_pull_result.stdout"
   when:
     - git_dirty.stdout == ""
-    - git_remote.stdout == "git@github.com:dmzoneill/Chuckbot.git"
+    - git_remote.stdout | default('') == "git@github.com:dmzoneill/Chuckbot.git"
 
 - name: Get current commit hash after pull (as {{ user }})
   become: true
