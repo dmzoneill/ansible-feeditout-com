@@ -1,4 +1,9 @@
 ---
+- name: Validate required variables
+  assert:
+    that: vnc_password is defined
+    fail_msg: "vnc_password must be defined (expected from vault)"
+
 - name: Ensure required packages are installed
   apt:
     name:
