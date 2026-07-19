@@ -292,12 +292,4 @@
     mode: '0644'
 
 # --- Cron for weekly exploit refresh ---
-
-- name: Schedule weekly exploit list refresh
-  cron:
-    name: "fail2counter refresh exploits"
-    job: "/opt/fail2counter/refresh_exploits.sh >> /var/log/fail2counter_refresh.log 2>&1"
-    weekday: "0"
-    hour: "3"
-    minute: "0"
-    user: root
+# The fail2counter cron entry is managed by the cron role (roles/cron/templates/root.j2)

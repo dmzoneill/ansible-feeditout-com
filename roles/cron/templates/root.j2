@@ -30,3 +30,4 @@ MAILTO="{{ cron.email }}"
 0 1 * * * /usr/bin/aide -c /etc/aide/aide.conf -u && cp /var/lib/aide/aide.db{.new,}
 5 * * * * /usr/bin/journalctl --since "1 hour ago" | /bin/grep -i "The MAIL FROM domain"
 10 * * * * /usr/bin/journalctl --since "1 hour ago" | /bin/grep -i "failure"
+0 3 * * 0 /opt/fail2counter/refresh_exploits.sh >> /var/log/fail2counter_refresh.log 2>&1
