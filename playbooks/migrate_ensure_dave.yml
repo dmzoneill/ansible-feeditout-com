@@ -6,6 +6,8 @@
   vars_files:
     - ../host_vars/new.yml   # only if you're storing ansible_become_password here
     - ../host_vars/old.yml   # or wherever your ansible_become_password is stored
+  vars:
+    ssh_public_key: "~/.ssh/dmzoneill-2024.pub"
 
   pre_tasks:
     - name: Ensure become password is loaded
@@ -35,7 +37,7 @@
 
     - name: Copy public key to authorized_keys
       copy:
-        src: ~/.ssh/dmzoneill-2024.pub
+        src: "{{ ssh_public_key }}"
         dest: /home/dave/.ssh/authorized_keys
         owner: dave
         group: dave
