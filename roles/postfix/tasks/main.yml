@@ -127,6 +127,14 @@
 
 # --- Chroot File Sync ---
 
+- name: Ensure postfix chroot /etc directory exists
+  file:
+    path: /var/spool/postfix/etc
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Define list of files to sync into postfix chroot
   set_fact:
     postfix_chroot_files:
@@ -181,14 +189,6 @@
   when: postfix_files_changed | default(false)
 
 # --- Restart Postfix Only If Files Changed ---
-
-- name: Ensure postfix chroot /etc directory exists
-  file:
-    path: /var/spool/postfix/etc
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
 
 - name: Track if chroot files changed
   set_fact:
