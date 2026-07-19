@@ -38,9 +38,9 @@
 - name: Install Python dependencies for AI integration
   pip:
     name:
-      - "anthropic[vertex]"
-      - psycopg2-binary
-      - redis
+      - "anthropic[vertex]>=0.40.0,<1.0"
+      - "psycopg2-binary>=2.9.0,<3.0"
+      - "redis>=5.0.0,<6.0"
     state: present
     executable: pip3
     break_system_packages: true
