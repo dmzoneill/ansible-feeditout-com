@@ -38,9 +38,9 @@
 - name: Install Python dependencies for AI integration
   pip:
     name:
-      - "anthropic[vertex]"
-      - psycopg2-binary
-      - redis
+      - "anthropic[vertex]>=0.40.0,<1.0"
+      - "psycopg2-binary>=2.9.0,<3.0"
+      - "redis>=5.0.0,<6.0"
     state: present
     executable: pip3
     break_system_packages: true
@@ -154,8 +154,9 @@
 - name: Create fail2counter PostgreSQL user
   become: true
   become_user: postgres
-  command: psql -c "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'fail2counter') THEN CREATE ROLE fail2counter WITH LOGIN; END IF; END $$;"
-  changed_when: false
+  command: psql -c "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'fail2counter') THEN CREATE ROLE fail2counter WITH LOGIN; RAISE NOTICE 'ROLE CREATED'; END IF; END $$;"
+  register: pg_create_role
+  changed_when: "'ROLE CREATED' in pg_create_role.stderr"
   failed_when: false
 
 - name: Create fail2counter PostgreSQL database
@@ -182,14 +183,16 @@
   become: true
   become_user: postgres
   command: psql -d fail2counter -f /opt/fail2counter/migrate_schema.sql
-  changed_when: false
+  register: pg_migrate_result
+  changed_when: "'ALTER' in pg_migrate_result.stdout or 'RENAME' in pg_migrate_result.stdout"
   failed_when: false
 
 - name: Initialize fail2counter database schema
   become: true
   become_user: postgres
   command: psql -d fail2counter -f /opt/fail2counter/schema.sql
-  changed_when: false
+  register: pg_schema_result
+  changed_when: "'CREATE' in pg_schema_result.stdout"
   failed_when: false
 
 - name: Grant fail2counter ownership on all tables
@@ -283,7 +286,7 @@
     daemon_reload: true
     name: fail2counter
     enabled: true
-    state: restarted
+    state: started
 
 - name: Configure Fail2Ban custom action
   copy:

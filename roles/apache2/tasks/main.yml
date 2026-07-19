@@ -175,7 +175,6 @@
   loop: "{{ broken_apache_modules }}"
   loop_control:
     loop_var: mod
-  changed_when: false
   failed_when: false
 
 - name: Remove broken Apache modules' .conf files
@@ -185,7 +184,6 @@
   loop: "{{ broken_apache_modules }}"
   loop_control:
     loop_var: mod
-  changed_when: false
   failed_when: false
 
 - name: Remove broken Apache module packages if installed
@@ -196,7 +194,6 @@
   loop: "{{ broken_apache_modules }}"
   loop_control:
     loop_var: mod
-  changed_when: false
 
 - name: Find old PHP-FPM Apache configs
   find:

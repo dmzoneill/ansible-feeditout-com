@@ -25,7 +25,7 @@
     index_var: batch_index
     label: "Batch {{ batch_index + 1 }}"
   register: install_results
-  changed_when: false
+  changed_when: "'0 newly installed' not in install_results.stdout"
 
 - name: Remove perlindex override
   file:

@@ -57,3 +57,9 @@
     state: started
     enabled: true
   when: freshclam_due
+
+- name: Ensure clamav-freshclam is always enabled and started
+  service:
+    name: clamav-freshclam
+    enabled: true
+    state: started

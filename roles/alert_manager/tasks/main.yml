@@ -41,12 +41,12 @@
 - name: Download Alertmanager tarball
   ansible.builtin.get_url:
     url: "{{ alertmanager_download_url }}"
-    dest: "/tmp/alertmanager.tar.gz"
+    dest: "/tmp/alertmanager-{{ alertmanager_version }}.tar.gz"
     mode: '0644'
 
 - name: Extract Alertmanager
   ansible.builtin.unarchive:
-    src: /tmp/alertmanager.tar.gz
+    src: /tmp/alertmanager-{{ alertmanager_version }}.tar.gz
     dest: /opt
     remote_src: yes
     creates: "{{ alertmanager_extract_path }}"

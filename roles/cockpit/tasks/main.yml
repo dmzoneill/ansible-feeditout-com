@@ -9,8 +9,8 @@
     src: cockpit.conf
     dest: /etc/cockpit/cockpit.conf
     mode: '0644'
-    owner: "{{ user }}"
-    group: "{{ user }}"
+    owner: root
+    group: root
   notify: Restart cockpit
 
 - name: Ensure Cockpit service is enabled and started
