@@ -81,8 +81,8 @@
 # --- Systemd Integration ---
 
 - name: Ensure systemd is reloaded if needed
-  command: systemctl daemon-reexec
-  changed_when: false
+  ansible.builtin.systemd:
+    daemon_reload: true
 
 - name: Check if postfix instance directory exists
   stat:
@@ -140,6 +140,8 @@
     postfix_chroot_files:
       - { src: "/etc/passwd", dest: "/var/spool/postfix/etc/passwd", mode: "0644" }
       - { src: "/etc/group", dest: "/var/spool/postfix/etc/group", mode: "0644" }
+      - { src: "/etc/resolv.conf", dest: "/var/spool/postfix/etc/resolv.conf", mode: "0644" }
+      - { src: "/etc/nsswitch.conf", dest: "/var/spool/postfix/etc/nsswitch.conf", mode: "0644" }
 
 - name: Sync critical files into postfix chroot
   copy:

@@ -9,9 +9,9 @@
 # service type  private unpriv  chroot  wakeup  maxproc command + args
 #               (yes)   (yes)   (no)    (never) (100)
 # ==========================================================================
-smtp      inet  n       -       y       -       -       smtpd -o content_filter=spamassasin
-#465      inet  n       -       y       -       -       smtpd -o content_filter=spamassasin
-587      inet  n       -       y       -       -       smtpd -o content_filter=spamassasin
+smtp      inet  n       -       y       -       -       smtpd -o content_filter=spamassassin
+#465      inet  n       -       y       -       -       smtpd -o content_filter=spamassassin
+587      inet  n       -       y       -       -       smtpd -o content_filter=spamassassin
 smtps   inet n   -   n   - - smtpd
       -o smtpd_sasl_auth_enable=yes
       -o smtpd_reject_unlisted_sender=yes
@@ -137,6 +137,6 @@ mailman   unix  -       n       n       -       -       pipe
         -o smtpd_sender_restrictions=
         -o smtpd_recipient_restrictions=permit_mynetworks,reject_unauth_destination
         -o mynetworks=127.0.0.0/8
-spamassasin unix -     n       n       -       -       pipe
+spamassassin unix -     n       n       -       -       pipe
         user=debian-spamd argv=/usr/bin/spamc -f -e
         /usr/sbin/sendmail -oi -f ${sender} ${recipient}
