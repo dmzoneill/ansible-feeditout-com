@@ -10,13 +10,12 @@ except IndexError:
     print("[!] No IP address provided as argument.", file=sys.stderr)
     sys.exit(1)
 
-# You can either inject this via Ansible template or use env vars
-REDIS_PASSWORD = "{{ redis_password }}"  # or: os.environ.get("REDIS_PASSWORD")
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", "")
 
 print(f"[+] Pushing banned IP to Redis: {IP}")
 
 try:
-    r = redis.Redis(host='localhost', port=6379, db=0, password=REDIS_PASSWORD)
+    r = redis.Redis(host='localhost', port={{ redis_port | default(6379) }}, db=0, password=REDIS_PASSWORD)
     now = datetime.datetime.utcnow().isoformat()
     value = f"{now}|{IP}"
     result = r.rpush("banned_ips", value)

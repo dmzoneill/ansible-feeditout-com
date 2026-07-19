@@ -602,7 +602,7 @@ prometheus_download_url: "https://github.com/prometheus/prometheus/releases/down
 prometheus_alertmanager_enabled: true
 prometheus_alertmanager_targets:
   - "localhost:9093"
-prometheus_tls_enabled: true
+prometheus_tls_enabled: false
 # UNUSED - consider removing (TLS config is commented out in prometheus role)
 prometheus_tls_cert_file: /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem
 # UNUSED - consider removing (TLS config is commented out in prometheus role)
