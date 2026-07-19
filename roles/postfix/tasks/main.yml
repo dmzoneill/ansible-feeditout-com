@@ -153,18 +153,6 @@
     loop_var: chroot_file
   register: chroot_file_result
 
-- name: Ensure chroot passwd/group match host exactly
-  copy:
-    src: "{{ chroot_file.src }}"
-    dest: "{{ chroot_file.dest }}"
-    owner: root
-    group: root
-    mode: "{{ chroot_file.mode }}"
-    force: true
-  loop: "{{ postfix_chroot_files }}"
-  loop_control:
-    loop_var: chroot_file
-
 # --- Map Rebuild Logic ---
 
 - name: Define list of postfix map files
