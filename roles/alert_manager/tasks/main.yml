@@ -119,6 +119,7 @@
     mode: '0755'
     owner: root
     group: root
+  tags: webhook
 
 - name: Deploy systemd unit for webhook
   ansible.builtin.template:
@@ -126,13 +127,16 @@
     dest: /etc/systemd/system/alert_webhook.service
     mode: '0644'
   notify: Restart Alert Webhook
+  tags: webhook
 
 - name: Reload systemd for webhook
   ansible.builtin.systemd:
     daemon_reload: yes
+  tags: webhook
 
 - name: Enable and start alert_webhook
   ansible.builtin.systemd:
     name: alert_webhook
     enabled: true
     state: started
+  tags: webhook

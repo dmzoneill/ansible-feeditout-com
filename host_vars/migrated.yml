@@ -270,8 +270,6 @@ required_apache_modules:
     package: libapache2-mod-geoip
   - name: fcgid
     package: libapache2-mod-fcgid
-  - name: proxy
-    package: apache2
   - name: proxy_http
     package: apache2
   - name: proxy_wstunnel

@@ -57,6 +57,8 @@
   notify: Reload systemd for VNC
   tags: [vnc, gnome]
 
+- meta: flush_handlers
+
 - name: Enable and start vncserver@1.service
   systemd:
     name: "vncserver@1.service"

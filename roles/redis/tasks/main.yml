@@ -76,6 +76,8 @@
     - Reload systemd unit files
     - Restart Redis
 
+- meta: flush_handlers
+
 - name: Enable Redis on boot
   systemd:
     name: redis-server
@@ -91,6 +93,8 @@
     mode: "0644"
   notify:
     - Restart Webdis
+
+- meta: flush_handlers
 
 - name: Enable Webdis on boot
   systemd:

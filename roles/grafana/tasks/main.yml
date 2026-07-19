@@ -112,6 +112,7 @@
     group: grafana
     mode: '0644'
   notify: Restart Grafana
+  tags: [grafana]
 
 - name: Enable and start Grafana service
   systemd:
