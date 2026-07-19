@@ -74,20 +74,20 @@
       - /etc/dkimkeys
       - /etc/postfix
     services_to_restart:
-      - apache2
-      - postsrsd
-      - clamav-daemon
       - mariadb
-      - php7.4-fpm
-      - saslauthd
-      - opendmarc
-      - imap
-      - spamassassin
-      - opendkim
-      - fail2ban
       - memcached
-      - cyrus-imapd
+      - php7.4-fpm
+      - apache2
+      - saslauthd
+      - opendkim
+      - opendmarc
+      - spamassassin
+      - postsrsd
       - postfix
+      - clamav-daemon
+      - imap
+      - cyrus-imapd
+      - fail2ban
 
   tasks:
     - name: Ensure sshpass is installed on old server
@@ -123,14 +123,25 @@
       shell: >
         sshpass -p "{{ root_ssh_password }}" \
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no root@{{ dest_host }} \
-        "systemctl enable {{ item }} || echo '⚠️ Service {{ item }} not found'"
+        "systemctl enable {{ item }}"
       with_items: "{{ services_to_restart }}"
       delegate_to: localhost
+      ignore_errors: true
 
     - name: Restart services on new host
       shell: >
         sshpass -p "{{ root_ssh_password }}" \
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no root@{{ dest_host }} \
-        "systemctl restart {{ item }} || echo '⚠️ Service {{ item }} not found'"
+        "systemctl restart {{ item }}"
       with_items: "{{ services_to_restart }}"
       delegate_to: localhost
+      ignore_errors: true
+      register: restart_results
+
+    - name: Report any service restart failures
+      debug:
+        msg: "Service '{{ item.item }}' failed to restart"
+      loop: "{{ restart_results.results | default([]) }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: item is failed
