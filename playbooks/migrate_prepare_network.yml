@@ -75,7 +75,7 @@
           gateway={{ static_gateway }}
           dns={{ dns_servers | join(';') }}
           dns-search=
-          routes1=0.0.0.0/0 {{ static_gateway }} 0 {{ interface_name }}
+          route1=0.0.0.0/0 {{ static_gateway }} 0 {{ interface_name }}
           route1-options=on-link
           never-default=false
           ignore-auto-routes=true
