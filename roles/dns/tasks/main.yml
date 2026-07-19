@@ -19,7 +19,7 @@
 
 - name: Set fact if resolv.conf is immutable
   set_fact:
-    resolv_conf_is_immutable: "{{ resolv_lsattr.stdout is search('^.*i.*\\s+{{ resolv_conf_path | regex_escape }}$') }}"
+    resolv_conf_is_immutable: "{{ resolv_lsattr.stdout is search('^.*i.*\\s+' ~ (resolv_conf_path | regex_escape) ~ '$') }}"
 
 - name: Remove immutable flag from resolv.conf if it is set
   command: chattr -i {{ resolv_conf_path }}
