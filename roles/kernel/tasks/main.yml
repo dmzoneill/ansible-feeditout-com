@@ -19,17 +19,27 @@
   loop_control:
     loop_var: param
 
-- name: Remove kernel.modules_disabled from config files
+- name: Remove kernel.modules_disabled from sysctl.conf
   lineinfile:
-    path: "{{ path }}"
+    path: /etc/sysctl.conf
     regexp: '^kernel\.modules_disabled'
     state: absent
-  with_fileglob:
-    - /etc/sysctl.conf
-    - /etc/sysctl.d/*.conf
-  loop_control:
-    loop_var: path
   ignore_errors: true
+
+- name: Find sysctl config files on remote
+  find:
+    paths: /etc/sysctl.d
+    patterns: "*.conf"
+  register: sysctl_files
+
+- name: Remove kernel.modules_disabled from sysctl configs
+  lineinfile:
+    path: "{{ item.path }}"
+    regexp: '^kernel\.modules_disabled'
+    state: absent
+  loop: "{{ sysctl_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
 
 - name: Disable usb-storage kernel module
   copy:
