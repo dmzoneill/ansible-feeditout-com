@@ -14,13 +14,30 @@
 
 - name: Recursively copy Postfix configuration to /etc/postfix
   copy:
-    src: "{{ role_path }}/files/"
-    dest: /etc/
+    src: "{{ role_path }}/files/postfix/"
+    dest: /etc/postfix/
     owner: root
     group: root
     mode: '0644'
     directory_mode: '0755'
   register: postfix_file_copy_result
+
+- name: Copy mail configuration to /etc/mail
+  copy:
+    src: "{{ role_path }}/files/mail/"
+    dest: /etc/mail/
+    owner: root
+    group: root
+    mode: '0644'
+    directory_mode: '0755'
+
+- name: Copy mailcap to /etc
+  copy:
+    src: "{{ role_path }}/files/mailcap"
+    dest: /etc/mailcap
+    owner: root
+    group: root
+    mode: '0644'
 
 - name: Set fact if postfix config changed
   set_fact:

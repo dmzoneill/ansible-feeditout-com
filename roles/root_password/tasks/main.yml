@@ -1,4 +1,9 @@
 ---
+- name: Validate required variables
+  assert:
+    that: root_password_hash is defined
+    fail_msg: "root_password_hash must be defined (expected from vault)"
+
 - name: Ensure root password matches desired value
   user:
     name: root

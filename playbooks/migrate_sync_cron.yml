@@ -32,9 +32,11 @@
 
     - name: Ensure destination cron directory exists (only if needed)
       shell: >
-        sshpass -p "{{ root_ssh_password }}" \
+        sshpass -e \
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
         root@{{ dest_host }} "mkdir -p {{ cron_dir }} && chmod 1730 {{ cron_dir }}"
+      environment:
+        SSHPASS: "{{ root_ssh_password }}"
       when: root_cron_stat.stat.exists or dave_cron_stat.stat.exists
       delegate_to: localhost
 
@@ -47,9 +49,11 @@
 
     - name: Push root crontab to new server
       shell: >
-        sshpass -p "{{ root_ssh_password }}" \
+        sshpass -e \
         rsync -az -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
         /tmp/crontabs/root root@{{ dest_host }}:{{ root_cron_file }}
+      environment:
+        SSHPASS: "{{ root_ssh_password }}"
       when: root_cron_stat.stat.exists
       delegate_to: localhost
 
@@ -62,18 +66,22 @@
 
     - name: Push dave crontab to new server
       shell: >
-        sshpass -p "{{ root_ssh_password }}" \
+        sshpass -e \
         rsync -az -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
         /tmp/crontabs/dave root@{{ dest_host }}:{{ dave_cron_file }}
+      environment:
+        SSHPASS: "{{ root_ssh_password }}"
       when: dave_cron_stat.stat.exists
       delegate_to: localhost
 
     - name: Set permissions on crontabs on new server
       shell: >
-        sshpass -p "{{ root_ssh_password }}" \
+        sshpass -e \
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
         root@{{ dest_host }} "
           {{ 'chmod 600 ' + root_cron_file + ' && chown root:crontab ' + root_cron_file if root_cron_stat.stat.exists else '' }}
           {{ 'chmod 600 ' + dave_cron_file + ' && chown dave:crontab ' + dave_cron_file if dave_cron_stat.stat.exists else '' }}"
+      environment:
+        SSHPASS: "{{ root_ssh_password }}"
       when: root_cron_stat.stat.exists or dave_cron_stat.stat.exists
       delegate_to: localhost

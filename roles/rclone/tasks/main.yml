@@ -1,4 +1,9 @@
 ---
+- name: Validate required variables
+  assert:
+    that: mysql_root is defined
+    fail_msg: "mysql_root must be defined (expected from vault)"
+
 - name: Install rclone
   apt:
     name: rclone

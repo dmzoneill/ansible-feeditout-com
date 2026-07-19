@@ -2,7 +2,7 @@
   "redis_host": "{{ redis_host }}",
   "redis_port": {{ redis_port }},
   "redis_auth": "{{ redis_auth }}",
-  "http_host": [{{ webdis_http_host }}],
+  "http_host": ["127.0.0.1"],
   "threads": {{ webdis_threads }},
   "pidfile": "/var/run/webdis/webdis.pid",
   "daemonize": true,
@@ -16,7 +16,7 @@
       },
 
       {
-          "http_basic_auth": "user:password",
+          "http_basic_auth": "{{ webdis_auth_user | default('admin') }}:{{ webdis_auth_password | default(redis_password) }}",
           "enabled": ["DEBUG"]
       }
   ],

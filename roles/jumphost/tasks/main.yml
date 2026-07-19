@@ -107,3 +107,11 @@
     group: root
     mode: '0644'
   tags: [jumphost]
+
+- name: Build and start jumphost container
+  command: docker compose up -d --build
+  args:
+    chdir: /opt/jumphost
+  register: compose_result
+  changed_when: "'Started' in compose_result.stdout or 'Created' in compose_result.stdout"
+  tags: [jumphost]

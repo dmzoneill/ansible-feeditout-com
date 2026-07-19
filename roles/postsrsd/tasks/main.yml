@@ -4,14 +4,13 @@
     name: postsrsd
     state: present
 
-- name: Recursively copy postsrsd configuration to /etc
+- name: Copy postsrsd secret to /etc
   copy:
-    src: "{{ role_path }}/files/"
-    dest: /etc/
+    src: "{{ role_path }}/files/postsrsd.secret"
+    dest: /etc/postsrsd.secret
     owner: root
     group: root
     mode: preserve
-    directory_mode: '0755'
   notify: Restart postsrsd
 
 - name: Update postsrsd config

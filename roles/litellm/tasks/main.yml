@@ -1,4 +1,11 @@
 ---
+- name: Validate required variables
+  assert:
+    that:
+      - litellm_master_key is defined
+      - litellm_postgres_password is defined
+    fail_msg: "litellm_master_key and litellm_postgres_password must be defined (expected from vault)"
+
 - name: Install docker-compose
   apt:
     name:

@@ -4,10 +4,19 @@
     name: opendkim
     state: present
 
-- name: Recursively copy all OpenDKIM configuration to /etc
+- name: Copy opendkim.conf to /etc
   copy:
-    src: "{{ role_path }}/files/"
-    dest: /etc/
+    src: "{{ role_path }}/files/opendkim.conf"
+    dest: /etc/opendkim.conf
+    owner: root
+    group: root
+    mode: preserve
+  notify: Restart opendkim
+
+- name: Recursively copy DKIM keys to /etc/dkimkeys
+  copy:
+    src: "{{ role_path }}/files/dkimkeys/"
+    dest: /etc/dkimkeys/
     owner: root
     group: root
     mode: preserve

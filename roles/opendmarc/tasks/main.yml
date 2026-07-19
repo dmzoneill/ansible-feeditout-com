@@ -4,10 +4,10 @@
     name: opendmarc
     state: present
 
-- name: Recursively copy OpenDMARC configuration to /etc
+- name: Recursively copy OpenDMARC configuration to /etc/opendmarc
   copy:
-    src: "{{ role_path }}/files/"
-    dest: /etc/
+    src: "{{ role_path }}/files/opendmarc/"
+    dest: /etc/opendmarc/
     owner: root
     group: root
     mode: preserve
