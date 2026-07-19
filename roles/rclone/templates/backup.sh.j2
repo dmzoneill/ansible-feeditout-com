@@ -45,48 +45,65 @@ echo "Creating tarball $TAR_FILE" | tee -a "$LOGFILE"
 tar -czpf "$TAR_FILE" -C "$STAGING" . || echo "Warning: tar encountered errors" | tee -a "$LOGFILE"
 
 # Upload system tarball
+RCLONE_FAILED=0
 echo "Uploading system tarball to $DEST/$DATE/system" | tee -a "$LOGFILE"
 rclone copy "$TAR_FILE" "$DEST/$DATE/system" --log-level INFO --log-file="$LOGFILE"
+if [ $? -ne 0 ]; then
+    echo "ERROR: rclone upload failed for system tarball" >> "$LOGFILE"
+    RCLONE_FAILED=1
+fi
 
 # Upload MySQL dump
 echo "Uploading MySQL dump to $DEST/$DATE/mysqldump" | tee -a "$LOGFILE"
 rclone copy "$(dirname "$MYSQL_DUMP_FILE")" "$DEST/$DATE/mysqldump" --log-level INFO --log-file="$LOGFILE"
+if [ $? -ne 0 ]; then
+    echo "ERROR: rclone upload failed for MySQL dump" >> "$LOGFILE"
+    RCLONE_FAILED=1
+fi
 
 # Upload log file
 echo "Uploading log file to $DEST/$DATE/log" | tee -a "$LOGFILE"
 rclone copy "$LOGFILE" "$DEST/$DATE/log" --log-level INFO --log-file="$LOGFILE"
+if [ $? -ne 0 ]; then
+    echo "ERROR: rclone upload failed for log file" >> "$LOGFILE"
+    RCLONE_FAILED=1
+fi
 
 # Tiered retention policy
-echo "Applying tiered retention policy (28 daily, 1 monthly for 12 months)" | tee -a "$LOGFILE"
+if [ "${RCLONE_FAILED:-0}" -eq 1 ]; then
+  echo "Skipping retention purge due to rclone failure" >> "$LOGFILE"
+else
+  echo "Applying tiered retention policy (28 daily, 1 monthly for 12 months)" | tee -a "$LOGFILE"
 
-all_backups=$(rclone lsf "$DEST" --dirs-only | sed 's|/$||' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort)
-now=$(date +%s)
-declare -A month_map
-keep=()
+  all_backups=$(rclone lsf "$DEST" --dirs-only | sed 's|/$||' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort)
+  now=$(date +%s)
+  declare -A month_map
+  keep=()
 
-for date in $all_backups; do
-  backup_ts=$(date -d "$date" +%s 2>/dev/null) || continue
-  days_old=$(( (now - backup_ts) / 86400 ))
+  for date in $all_backups; do
+    backup_ts=$(date -d "$date" +%s 2>/dev/null) || continue
+    days_old=$(( (now - backup_ts) / 86400 ))
 
-  # Keep backups from the last 28 days
-  if (( days_old <= 28 )); then
-    keep+=("$date")
-    continue
-  fi
+    # Keep backups from the last 28 days
+    if (( days_old <= 28 )); then
+      keep+=("$date")
+      continue
+    fi
 
-  # Keep one backup per month (only on the 1st of the month) for the last 12 months
-  if [[ "$date" =~ ^[0-9]{4}-[0-9]{2}-01$ ]]; then
-    month=$(date -d "$date" +%Y-%m)
-    [[ -z "${month_map[$month]+x}" ]] && keep+=("$date") && month_map["$month"]=1
-  fi
-done
+    # Keep one backup per month (only on the 1st of the month) for the last 12 months
+    if [[ "$date" =~ ^[0-9]{4}-[0-9]{2}-01$ ]]; then
+      month=$(date -d "$date" +%Y-%m)
+      [[ -z "${month_map[$month]+x}" ]] && keep+=("$date") && month_map["$month"]=1
+    fi
+  done
 
-for date in $all_backups; do
-  if [[ ! " ${keep[*]} " =~ " $date " ]]; then
-    echo "Deleting old backup folder: $DEST/$date" | tee -a "$LOGFILE"
-    rclone purge "$DEST/$date" --log-level INFO --log-file="$LOGFILE"
-  fi
-done
+  for date in $all_backups; do
+    if [[ ! " ${keep[*]} " =~ " $date " ]]; then
+      echo "Deleting old backup folder: $DEST/$date" | tee -a "$LOGFILE"
+      rclone purge "$DEST/$date" --log-level INFO --log-file="$LOGFILE"
+    fi
+  done
+fi
 
 # Cleanup
 echo "Cleaning up temporary files" | tee -a "$LOGFILE"
