@@ -33,8 +33,10 @@
 
     - name: Rsync dave's home from old to new using sshpass and vault password
       shell: >
-        sshpass -p "{{ ansible_become_password }}"
+        sshpass -e
         rsync -az -e "ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no"
         /home/dave/
         dave@{{ hostvars['new']['ansible_host'] | default('new') }}:/home/dave/
+      environment:
+        SSHPASS: "{{ ansible_become_password }}"
       become: false

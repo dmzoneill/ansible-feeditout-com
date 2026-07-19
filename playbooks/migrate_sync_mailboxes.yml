@@ -20,8 +20,10 @@
 
     - name: Rsync /var/mail to new server
       shell: >
-        sshpass -p "{{ root_ssh_password }}" \
+        sshpass -e \
         rsync -az \
         -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
         {{ mail_spool_dir }}/ root@{{ dest_host }}:{{ mail_spool_dir }}/
+      environment:
+        SSHPASS: "{{ root_ssh_password }}"
       delegate_to: localhost

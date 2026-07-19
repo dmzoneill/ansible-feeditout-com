@@ -102,35 +102,43 @@
 
     - name: Back up config dirs on new before overwrite (globbed)
       shell: >
-        sshpass -p "{{ root_ssh_password }}" \
+        sshpass -e \
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no root@{{ dest_host }} \
         "for p in {{ item }}; do [ -e \"$$p\" ] && cp -a $$p $$p.bak.$(date +%s) || true; done"
+      environment:
+        SSHPASS: "{{ root_ssh_password }}"
       with_items: "{{ config_globs }}"
       delegate_to: localhost
 
     - name: Rsync config directories/files to new host using sshpass (globbed)
       shell: >
         for p in {{ item }}; do
-          sshpass -p '{{ root_ssh_password }}' \
+          sshpass -e \
           rsync -az --delete \
           --exclude="*.log" --exclude="*.sock" --exclude="*.pid" --exclude="sshd_config" \
           -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
           "$p/" root@{{ dest_host }}:"$p/" || echo "Skipping $p";
         done
+      environment:
+        SSHPASS: "{{ root_ssh_password }}"
       with_items: "{{ config_globs }}"
 
     - name: Enable services on new host
       shell: >
-        sshpass -p "{{ root_ssh_password }}" \
+        sshpass -e \
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no root@{{ dest_host }} \
         "systemctl enable {{ item }} || echo '⚠️ Service {{ item }} not found'"
+      environment:
+        SSHPASS: "{{ root_ssh_password }}"
       with_items: "{{ services_to_restart }}"
       delegate_to: localhost
 
     - name: Restart services on new host
       shell: >
-        sshpass -p "{{ root_ssh_password }}" \
+        sshpass -e \
         ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no root@{{ dest_host }} \
         "systemctl restart {{ item }} || echo '⚠️ Service {{ item }} not found'"
+      environment:
+        SSHPASS: "{{ root_ssh_password }}"
       with_items: "{{ services_to_restart }}"
       delegate_to: localhost
