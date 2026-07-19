@@ -341,7 +341,7 @@ domains:
         enabled: true
       - name: home.feeditout.com
         document_root: feeditout.com
-        enable: true
+        enabled: true
       - name: cv.feeditout.com
         document_root: cv.fio.ie
         enabled: true
