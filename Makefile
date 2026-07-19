@@ -44,6 +44,9 @@ sync-services:
 sync-mail:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_mailboxes.yml $(VAULT_OPTS)
 
+sync-cron:
+	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_cron.yml $(VAULT_OPTS)
+
 harden-ssh:
 	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_harden_ssh.yml $(VAULT_OPTS)
 
@@ -67,6 +70,7 @@ full-migration:
 	$(MAKE) test-sudo
 	$(MAKE) base-packages
 	$(MAKE) sync-services
+	$(MAKE) sync-cron
 	$(MAKE) sync-mariadb
 	$(MAKE) sync-mail
 	- $(MAKE) harden-ssh

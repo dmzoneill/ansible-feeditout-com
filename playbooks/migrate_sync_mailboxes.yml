@@ -24,4 +24,3 @@
         rsync -az \
         -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
         {{ mail_spool_dir }}/ root@{{ dest_host }}:{{ mail_spool_dir }}/
-      delegate_to: localhost

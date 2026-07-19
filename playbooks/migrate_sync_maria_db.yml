@@ -23,35 +23,38 @@
         name: mariadb
         state: stopped
 
-    - name: Stop MariaDB on destination host
-      shell: >
-        sshpass -p "{{ root_ssh_password }}" \
-        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
-        root@{{ dest_host }} "systemctl stop mariadb"
-      delegate_to: localhost
+    - name: Sync MariaDB data and restart
+      block:
+        - name: Stop MariaDB on destination host
+          shell: >
+            sshpass -p "{{ root_ssh_password }}" \
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
+            root@{{ dest_host }} "systemctl stop mariadb"
+          delegate_to: localhost
 
-    - name: Rsync MariaDB data to new server
-      shell: >
-        sshpass -p "{{ root_ssh_password }}" \
-        rsync -az --delete \
-        -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
-        {{ mariadb_data_dir }}/ root@{{ dest_host }}:{{ mariadb_data_dir }}/
+        - name: Rsync MariaDB data to new server
+          shell: >
+            sshpass -p "{{ root_ssh_password }}" \
+            rsync -az --delete \
+            -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no" \
+            {{ mariadb_data_dir }}/ root@{{ dest_host }}:{{ mariadb_data_dir }}/
 
-    - name: Ensure correct ownership of MariaDB data on new server
-      shell: >
-        sshpass -p "{{ root_ssh_password }}" \
-        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
-        root@{{ dest_host }} "chown -R mysql:mysql {{ mariadb_data_dir }}"
-      delegate_to: localhost
+        - name: Ensure correct ownership of MariaDB data on new server
+          shell: >
+            sshpass -p "{{ root_ssh_password }}" \
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
+            root@{{ dest_host }} "chown -R mysql:mysql {{ mariadb_data_dir }}"
+          delegate_to: localhost
 
-    - name: Start MariaDB service on new server
-      shell: >
-        sshpass -p "{{ root_ssh_password }}" \
-        ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
-        root@{{ dest_host }} "systemctl start mariadb"
-      delegate_to: localhost
+        - name: Start MariaDB service on new server
+          shell: >
+            sshpass -p "{{ root_ssh_password }}" \
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
+            root@{{ dest_host }} "systemctl start mariadb"
+          delegate_to: localhost
 
-    - name: Start MariaDB service on old server
-      service:
-        name: mariadb
-        state: started
+      always:
+        - name: Start MariaDB service on old server
+          service:
+            name: mariadb
+            state: started

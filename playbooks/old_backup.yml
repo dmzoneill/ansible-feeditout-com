@@ -6,6 +6,7 @@
   become: true
   vars:
     fetch_dest_base: "../backups/old/"
+    ssh_key_path: "~/.ssh/dmzoneill-2024"
   tasks:
     - name: Ensure local backup destination exists
       delegate_to: localhost
@@ -49,6 +50,6 @@
         recursive: true
         rsync_opts:
           - "--delete"
-          - "--rsh='ssh -p 33 -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i ~/.ssh/dmzoneill-2024'"
+          - "--rsh='ssh -p {{ ansible_port | default(22) }} -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i {{ ssh_key_path }}'"
       delegate_to: localhost
       become: false
