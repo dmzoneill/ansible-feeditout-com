@@ -27,7 +27,7 @@
 - name: Ensure /etc/hosts entry for FQDN and shortname exists
   lineinfile:
     path: /etc/hosts
-    regexp: "^{{ loopback_ip }}\\s+"
+    regexp: "^{{ loopback_ip }}\\s+{{ fqdn }}\\s+"
     line: "{{ loopback_ip }} {{ fqdn }} {{ hostname }}"
     state: present
     create: true

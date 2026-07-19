@@ -119,7 +119,7 @@
   loop_control:
     loop_var: vhost
   when: not vhost.secure
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Create secure vhost files
   template:
@@ -130,7 +130,7 @@
   loop_control:
     loop_var: vhost
   when: vhost.secure
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Create www redirect vhost files
   template:
@@ -141,7 +141,7 @@
   loop_control:
     loop_var: vhost
   when: vhost.redirect_to_www | default(false)
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Enable vhosts via symlinks
   file:
@@ -209,7 +209,7 @@
   when: "('php' + php_version + '-fpm.conf') not in item.path"
   loop_control:
     label: "{{ item.path | basename }}"
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Remove old PHP-FPM Apache conf-available files
   find:
@@ -239,7 +239,7 @@
   loop: "{{ old_php_mods.files | default([]) }}"
   loop_control:
     label: "{{ item.path | basename }}"
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Deploy PHP-FPM Apache config
   template:
@@ -248,14 +248,14 @@
     owner: root
     group: root
     mode: '0644'
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Enable PHP-FPM Apache config
   file:
     src: "/etc/apache2/conf-available/php{{ php_version }}-fpm.conf"
     dest: "/etc/apache2/conf-enabled/php{{ php_version }}-fpm.conf"
     state: link
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Ensure required Apache module packages are installed
   apt:
@@ -271,7 +271,7 @@
     dest: "/etc/apache2/mods-enabled/mpm_event.load"
     state: link
     force: true
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Ensure mpm_event module .conf symlink exists
   file:
@@ -279,7 +279,7 @@
     dest: "/etc/apache2/mods-enabled/mpm_event.conf"
     state: link
     force: true
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Enable mod_headers
   file:
@@ -287,7 +287,7 @@
     dest: "/etc/apache2/mods-enabled/headers.load"
     state: link
     force: true
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Extract SSL cert paths from enabled site configs
   shell: "grep -rhoE '^\\s*SSLCertificateFile\\s+\\S+' /etc/apache2/sites-enabled/ | awk '{print $2}' | sort -u"
@@ -343,7 +343,7 @@
   loop: "{{ required_apache_modules }}"
   loop_control:
     loop_var: required_mod
-  notify: restart apache2
+  notify: Restart Apache2
 
 - name: Ensure Apache2 is started and enabled
   service:

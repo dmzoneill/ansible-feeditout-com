@@ -24,7 +24,7 @@
   loop: "{{ lookup('fileglob', role_path + '/files/*.conf', wantlist=True) }}"
   loop_control:
     loop_var: audit_file
-  notify: restart auditd
+  notify: Restart Auditd
 
 - name: Enable and start auditd
   systemd:
@@ -42,7 +42,7 @@
     path: /etc/default/sysstat
     regexp: '^ENABLED='
     line: 'ENABLED="true"'
-  notify: Restart sysstat timers
+  notify: Restart Sysstat Timers
 
 - name: Enable and start sysstat timers
   systemd:
