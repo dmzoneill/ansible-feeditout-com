@@ -1,67 +1,110 @@
-# Makefile for Ansible Server Cloning Project
+# Makefile for Ansible Server Migration & Configuration
+#
+# Remote targets: run from a workstation against remote hosts
+# Local targets:  run on the server itself (localhost)
 
 INVENTORY_REMOTE ?= inventories/hosts_avoro.ini
-INVENTORY_LOCAL ?= inventories/hosts_local.ini
-VAULT_OPTS ?=  --vault-password-file ~/.ansible-vault-pass
-VERBOSITY ?=  -vvv
+INVENTORY_LOCAL  ?= inventories/hosts_local.ini
+VAULT_OPTS       ?= --vault-password-file ~/.ansible-vault-pass
+VERBOSITY        ?= -vvv
+ANSIBLE_PLAY     := ansible-playbook $(VERBOSITY)
 
-.PHONY: all ping ensure-dave copy-dave test-sudo base-packages sync-services sync-mail harden-ssh sync-cron sync-mariadb reboot-new full-migration reconcile backup-old super-lint migrated-sync-mariadb
+.PHONY: all help \
+        ping old-backup base-packages static-networking new-ssh-key \
+        ansible-secret test-sudo ensure-dave copy-dave \
+        sync-services sync-mail sync-cron sync-mariadb \
+        harden-ssh reboot-new full-migration \
+        reconcile reconcile-role reconcile-local reconcile-local-role \
+        ansible-pull lint ansible-lint super-lint go-live
 
-all: base-packages
+all: help
 
-old-backup:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/old_backup.yml $(VAULT_OPTS)
+help:
+	@echo "Remote targets (run from workstation):"
+	@echo "  ping              - Test connectivity to old/new hosts"
+	@echo "  old-backup        - Backup old server data"
+	@echo "  base-packages     - Install base packages on new server"
+	@echo "  sync-services     - Sync service configs from old to new"
+	@echo "  sync-mail         - Sync mailboxes from old to new"
+	@echo "  sync-cron         - Sync cron jobs from old to new"
+	@echo "  sync-mariadb      - Sync MariaDB data from old to new"
+	@echo "  harden-ssh        - Apply SSH hardening to new server"
+	@echo "  full-migration    - Run complete migration sequence"
+	@echo "  reconcile         - Run all roles remotely via SSH"
+	@echo "  reconcile-role    - Run a single role remotely (ROLE=name)"
+	@echo ""
+	@echo "Local targets (run on the server itself):"
+	@echo "  reconcile-local      - Run all roles locally"
+	@echo "  reconcile-local-role - Run a single role locally (ROLE=name)"
+	@echo ""
+	@echo "Lint targets:"
+	@echo "  lint              - Run yamllint on all YAML files"
+	@echo "  ansible-lint      - Run ansible-lint on all YAML files"
+	@echo "  super-lint        - Run GitHub super-linter via Docker"
 
-base-packages:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_base_packages.yml $(VAULT_OPTS)
+# ---------------------------------------------------------------------------
+# Remote targets (workstation → remote hosts via SSH)
+# ---------------------------------------------------------------------------
 
 ping:
 	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) old -m ping $(VAULT_OPTS)
 	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) new -m ping $(VAULT_OPTS)
-	ansible $(VERBOSITY) -i $(INVENTORY_REMOTE) new_prep -m ping $(VAULT_OPTS)
+
+old-backup:
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/old_backup.yml $(VAULT_OPTS)
+
+base-packages:
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_base_packages.yml $(VAULT_OPTS)
 
 static-networking:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_prepare_network.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_prepare_network.yml $(VAULT_OPTS)
 
 new-ssh-key:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_ssh_key.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_ssh_key.yml $(VAULT_OPTS)
 
 ansible-secret:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_ansible_secret.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_ansible_secret.yml $(VAULT_OPTS)
 
 test-sudo:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_test_sudo.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_test_sudo.yml $(VAULT_OPTS)
 
 ensure-dave:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_ensure_dave.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_ensure_dave.yml $(VAULT_OPTS)
 
 copy-dave:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_home_dave.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_home_dave.yml $(VAULT_OPTS)
 
 sync-services:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_services.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_services.yml $(VAULT_OPTS)
 
 sync-mail:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_mailboxes.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_mailboxes.yml $(VAULT_OPTS)
 
 sync-cron:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_cron.yml $(VAULT_OPTS)
-
-harden-ssh:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_harden_ssh.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_cron.yml $(VAULT_OPTS)
 
 sync-mariadb:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_maria_db.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_maria_db.yml $(VAULT_OPTS)
+
+harden-ssh:
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_harden_ssh.yml $(VAULT_OPTS)
 
 reboot-new:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_reboot_new.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/migrate_reboot_new.yml $(VAULT_OPTS)
 
-migrated-sync-mariadb:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/migrate_sync_maria_db.yml $(VAULT_OPTS)
+reconcile:
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml $(VAULT_OPTS)
+
+reconcile-role:
+	$(ANSIBLE_PLAY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml --extra-vars "role_to_run=$(ROLE)" $(VAULT_OPTS)
+
+# ---------------------------------------------------------------------------
+# Full migration (sequential, some steps allowed to fail)
+# ---------------------------------------------------------------------------
 
 full-migration:
-	@echo "Starting full setup process..."
-	- $(MAKE) ping
+	@echo "Starting full migration..."
+	-$(MAKE) ping
 	$(MAKE) new-ssh-key
 	$(MAKE) static-networking
 	$(MAKE) ansible-secret
@@ -73,45 +116,52 @@ full-migration:
 	$(MAKE) sync-cron
 	$(MAKE) sync-mariadb
 	$(MAKE) sync-mail
-	- $(MAKE) harden-ssh
-	- $(MAKE) reboot-new
-	- $(MAKE) reconcile
+	-$(MAKE) harden-ssh
+	-$(MAKE) reboot-new
+	-$(MAKE) reconcile
 
-reconcile:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml $(VAULT_OPTS)
+# ---------------------------------------------------------------------------
+# Local targets (run directly on the managed server)
+# ---------------------------------------------------------------------------
 
-reconcile-role:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_REMOTE) playbooks/reconcile.yml --extra-vars "role_to_run=$(ROLE)" $(VAULT_OPTS)
+reconcile-local:
+	$(ANSIBLE_PLAY) -i $(INVENTORY_LOCAL) playbooks/reconcile.yml $(VAULT_OPTS)
+
+reconcile-local-role:
+	$(ANSIBLE_PLAY) -i $(INVENTORY_LOCAL) playbooks/reconcile.yml --extra-vars "role_to_run=$(ROLE)" $(VAULT_OPTS)
 
 ansible-pull:
-	ansible-playbook $(VERBOSITY) -i $(INVENTORY_LOCAL) playbooks/ansible-pull.yml $(VAULT_OPTS)
+	$(ANSIBLE_PLAY) -i $(INVENTORY_LOCAL) playbooks/ansible-pull.yml $(VAULT_OPTS)
+
+# ---------------------------------------------------------------------------
+# Linting
+# ---------------------------------------------------------------------------
+
+lint:
+	find playbooks/ roles/ host_vars/ group_vars/ inventories/ -type f -iname "*.yml" -exec yamllint {} +
+
+ansible-lint:
+	find playbooks/ roles/ host_vars/ group_vars/ inventories/ -type f -iname "*.yml" -exec ansible-lint {} +
 
 super-lint:
 	docker run --rm \
-	-e SUPER_LINTER_LINTER=error \
-	-e LINTER_OUTPUT=error \
-	-e LOG_LEVEL=ERROR \
-	-e RUN_LOCAL=true \
-	-e FILTER_REGEX_EXCLUDE="(^|/)\.git(/|$)|(^|/)backups(/|$)|(^|/)roles/[^/]+/files(/|/)" \
-	-e GIT_IGNORE=true \
-	-v $$(pwd):/tmp/lint \
-	-w /tmp/lint \
-	github/super-linter:latest --quiet
+		-e SUPER_LINTER_LINTER=error \
+		-e LINTER_OUTPUT=error \
+		-e LOG_LEVEL=ERROR \
+		-e RUN_LOCAL=true \
+		-e FILTER_REGEX_EXCLUDE="(^|/)\.git(/|$$)|(^|/)backups(/|$$)|(^|/)roles/[^/]+/files(/|/)" \
+		-e GIT_IGNORE=true \
+		-v $$(pwd):/tmp/lint \
+		-w /tmp/lint \
+		github/super-linter:latest --quiet
 
-lint:
-	find playbooks/ -type f -iname "*.yml" -exec yamllint {} \;
-	find inventories/ -type f -iname "*.yml" -exec yamllint {} \;
-	find roles/ -type f -iname "*.yml" -exec yamllint {} \;
-	find host_vars/ -type f -iname "*.yml" -exec yamllint {} \;
-	find group_vars/ -type f -iname "*.yml" -exec yamllint {} \;
-
-ansible-lint:
-	find playbooks/ -type f -iname "*.yml" -exec ansible-lint {} \;
-	find inventories/ -type f -iname "*.yml" -exec ansible-lint {} \;
-	find roles/ -type f -iname "*.yml" -exec ansible-lint {} \;
-	find host_vars/ -type f -iname "*.yml" -exec ansible-lint {} \;
-	find group_vars/ -type f -iname "*.yml" -exec ansible-lint {} \;
+# ---------------------------------------------------------------------------
+# Operations
+# ---------------------------------------------------------------------------
 
 go-live:
-	- rm -v dns/*bak*
-	git add dns/*; git add host_vars/*; git add roles/*; git add playbooks/*; fancy-git-commit; git pull --rebase; git push
+	-rm -v dns/*bak*
+	git add dns/ host_vars/ roles/ playbooks/
+	fancy-git-commit
+	git pull --rebase
+	git push
