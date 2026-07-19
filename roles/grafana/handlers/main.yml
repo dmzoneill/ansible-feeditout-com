@@ -3,8 +3,3 @@
   systemd:
     name: grafana-server
     state: restarted
-
-- name: Reload Prometheus
-  systemd:
-    name: prometheus
-    state: reloaded

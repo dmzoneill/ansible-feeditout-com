@@ -13,18 +13,12 @@
     state: present
   tags: [grafana]
 
-- name: Enable and start Grafana service
-  systemd:
-    name: grafana-server
-    enabled: true
-    state: started
-  tags: [grafana]
-
 - name: Set root_url in grafana.ini
   lineinfile:
     path: /etc/grafana/grafana.ini
     regexp: '^;?root_url'
     line: 'root_url = https://grafana.{{ fqdn }}/'
+    insertafter: '^\[server\]'
     create: yes
     backup: yes
   notify: Restart Grafana
@@ -35,6 +29,7 @@
     path: /etc/grafana/grafana.ini
     regexp: '^;?serve_from_sub_path'
     line: 'serve_from_sub_path = false'
+    insertafter: '^\[server\]'
     create: yes
     backup: yes
   notify: Restart Grafana
@@ -117,3 +112,10 @@
     group: grafana
     mode: '0644'
   notify: Restart Grafana
+
+- name: Enable and start Grafana service
+  systemd:
+    name: grafana-server
+    enabled: true
+    state: started
+  tags: [grafana]

@@ -13,12 +13,11 @@
 - name: Run Node Exporter container with systemd collector support
   community.docker.docker_container:
     name: node_exporter
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:v1.8.2
     restart_policy: always
     state: started
     network_mode: host
     pid_mode: host
-    privileged: true
     volumes:
       - "/proc:/host/proc:ro"
       - "/sys:/host/sys:ro"

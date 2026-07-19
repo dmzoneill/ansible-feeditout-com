@@ -29,7 +29,7 @@
     state: directory
     owner: postfix
     group: postfix
-    mode: '0777'
+    mode: '0750'
 
 - name: Enable and start OpenDMARC service
   service:

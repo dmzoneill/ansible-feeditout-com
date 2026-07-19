@@ -18,4 +18,5 @@
 
 - name: Execute iptables management script
   command: /usr/bin/python3 /usr/local/bin/manage_iptables.py
-  changed_when: false
+  register: iptables_result
+  changed_when: "'No changes' not in iptables_result.stdout"

@@ -1,3 +1,4 @@
 ---
-- name: Reload systemd
-  command: systemctl daemon-reexec && systemctl daemon-reload
+- name: Reload systemd for VNC
+  ansible.builtin.systemd:
+    daemon_reload: true

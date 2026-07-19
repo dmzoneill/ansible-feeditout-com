@@ -17,12 +17,14 @@
 - name: Set timezone to {{ ntp_timezone }}
   ansible.builtin.timezone:
     name: "{{ ntp_timezone }}"
+  register: timezone_result
 
 - name: Force sync time with NTP servers (no change event)
   ansible.builtin.command: chronyc -a makestep
   when: ntp_package == 'chrony'
   changed_when: false
 
-- name: Update hardware clock from system time (no change event)
+- name: Update hardware clock from system time
   ansible.builtin.command: hwclock --systohc
+  when: timezone_result is changed
   changed_when: false

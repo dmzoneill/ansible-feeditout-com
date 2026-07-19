@@ -4,18 +4,23 @@
     name: rsyslog
     state: present
 
-- name: Ensure /var/log/mail.log exists with correct ownership and permissions
+- name: Check if /var/log/mail.log exists
+  ansible.builtin.stat:
+    path: /var/log/mail.log
+  register: mail_log_stat
+
+- name: Create /var/log/mail.log if it does not exist
   ansible.builtin.file:
     path: /var/log/mail.log
     state: touch
     owner: root
     group: adm
     mode: '0640'
+  when: not mail_log_stat.stat.exists
   register: mail_log_file
-  changed_when: false
 
-- name: Restart rsyslog if /var/log/mail.log was changed
+- name: Restart rsyslog if /var/log/mail.log was created
   ansible.builtin.service:
     name: rsyslog
     state: restarted
-  when: mail_log_file.changed
+  when: mail_log_file is changed

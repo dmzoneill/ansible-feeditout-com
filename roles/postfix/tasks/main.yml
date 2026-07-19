@@ -127,6 +127,14 @@
 
 # --- Chroot File Sync ---
 
+- name: Ensure postfix chroot /etc directory exists
+  file:
+    path: /var/spool/postfix/etc
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Define list of files to sync into postfix chroot
   set_fact:
     postfix_chroot_files:
@@ -144,18 +152,6 @@
   loop_control:
     loop_var: chroot_file
   register: chroot_file_result
-
-- name: Ensure chroot passwd/group match host exactly
-  copy:
-    src: "{{ chroot_file.src }}"
-    dest: "{{ chroot_file.dest }}"
-    owner: root
-    group: root
-    mode: "{{ chroot_file.mode }}"
-    force: true
-  loop: "{{ postfix_chroot_files }}"
-  loop_control:
-    loop_var: chroot_file
 
 # --- Map Rebuild Logic ---
 
@@ -182,14 +178,6 @@
 
 # --- Restart Postfix Only If Files Changed ---
 
-- name: Ensure postfix chroot /etc directory exists
-  file:
-    path: /var/spool/postfix/etc
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-
 - name: Track if chroot files changed
   set_fact:
     chroot_files_changed: true
@@ -201,3 +189,9 @@
     name: postfix
     state: restarted
   when: postfix_files_changed | default(false) or chroot_files_changed | default(false)
+
+- name: Ensure Postfix service is enabled and started
+  ansible.builtin.systemd:
+    name: postfix
+    enabled: true
+    state: started

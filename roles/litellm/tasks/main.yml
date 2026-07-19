@@ -59,7 +59,7 @@
 - name: Ensure Docker service is running and iptables chains exist
   systemd:
     name: docker
-    state: restarted
+    state: started
   tags: [litellm]
 
 - name: Start LiteLLM services

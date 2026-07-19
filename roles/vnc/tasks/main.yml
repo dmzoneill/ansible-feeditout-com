@@ -54,7 +54,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: Reload systemd
+  notify: Reload systemd for VNC
   tags: [vnc, gnome]
 
 - name: Enable and start vncserver@1.service

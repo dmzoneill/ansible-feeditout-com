@@ -30,14 +30,14 @@
 - name: Download Prometheus tarball
   ansible.builtin.get_url:
     url: "{{ prometheus_download_url }}"
-    dest: "/tmp/prometheus.tar.gz"
+    dest: "/tmp/prometheus-{{ prometheus_version }}.tar.gz"
     mode: '0644'
   register: prometheus_download
   tags: prometheus
 
 - name: Extract Prometheus
   ansible.builtin.unarchive:
-    src: "/tmp/prometheus.tar.gz"
+    src: "/tmp/prometheus-{{ prometheus_version }}.tar.gz"
     dest: /opt
     remote_src: yes
     creates: "/opt/{{ prometheus_extracted_dir }}"
