@@ -1,0 +1,10 @@
+---
+- name: "Run role: {{ role_name }}"
+  block:
+    - name: "Include role: {{ role_name }}"
+      include_role:
+        name: "{{ role_name }}"
+  rescue:
+    - name: "Record failed role: {{ role_name }}"
+      set_fact:
+        failed_roles: "{{ failed_roles | default([]) + [role_name] }}"

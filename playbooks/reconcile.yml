@@ -41,15 +41,10 @@
         msg: "Debian {{ ansible_distribution_major_version }} detected — using PHP {{ php_version }}"
 
   tasks:
-    - name: Run roles with failure tracking
-      block:
-        - name: "Run role: {{ item }}"
-          include_role:
-            name: "{{ item }}"
-      rescue:
-        - name: "Record failed role"
-          set_fact:
-            failed_roles: "{{ failed_roles | default([]) + [item] }}"
+    - name: "Run role: {{ item }}"
+      include_tasks: files/run_role.yml
+      vars:
+        role_name: "{{ item }}"
       loop:
         - apt_repos
         - root_password
