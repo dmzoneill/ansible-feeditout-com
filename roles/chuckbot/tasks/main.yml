@@ -127,7 +127,7 @@
 - name: Set fact if git hash changed
   set_fact:
     chuckbot_git_updated: true
-  when: git_hash_before.stdout != git_hash_after.stdout
+  when: git_hash_after is defined and git_hash_before.stdout != git_hash_after.stdout
 
 - name: Copy chuckbot.service to systemd dir
   copy:
