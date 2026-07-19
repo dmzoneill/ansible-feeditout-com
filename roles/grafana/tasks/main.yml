@@ -13,13 +13,6 @@
     state: present
   tags: [grafana]
 
-- name: Enable and start Grafana service
-  systemd:
-    name: grafana-server
-    enabled: true
-    state: started
-  tags: [grafana]
-
 - name: Set root_url in grafana.ini
   lineinfile:
     path: /etc/grafana/grafana.ini
@@ -117,3 +110,10 @@
     group: grafana
     mode: '0644'
   notify: Restart Grafana
+
+- name: Enable and start Grafana service
+  systemd:
+    name: grafana-server
+    enabled: true
+    state: started
+  tags: [grafana]
