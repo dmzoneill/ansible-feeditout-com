@@ -283,7 +283,7 @@
     daemon_reload: true
     name: fail2counter
     enabled: true
-    state: restarted
+    state: started
 
 - name: Configure Fail2Ban custom action
   copy:
