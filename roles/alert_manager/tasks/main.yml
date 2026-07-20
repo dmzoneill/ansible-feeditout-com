@@ -38,15 +38,22 @@
     - /var/lib/alertmanager
     - /opt/alert_webhook
 
+- name: Check if Alertmanager is already installed
+  ansible.builtin.stat:
+    path: "{{ alertmanager_extract_path }}"
+  register: alertmanager_installed
+
 - name: Fetch Alertmanager SHA256 checksums
   ansible.builtin.uri:
     url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/sha256sums.txt"
     return_content: true
   register: alertmanager_checksums
+  when: not alertmanager_installed.stat.exists
 
 - name: Extract Alertmanager tarball checksum
   ansible.builtin.set_fact:
     alertmanager_checksum: "sha256:{{ alertmanager_checksums.content | regex_search('([a-f0-9]{64})\\s+' ~ alertmanager_tarball, '\\1') | first }}"
+  when: not alertmanager_installed.stat.exists
 
 - name: Download Alertmanager tarball
   ansible.builtin.get_url:
@@ -54,13 +61,14 @@
     dest: "/tmp/alertmanager-{{ alertmanager_version }}.tar.gz"
     checksum: "{{ alertmanager_checksum }}"
     mode: '0644'
+  when: not alertmanager_installed.stat.exists
 
 - name: Extract Alertmanager
   ansible.builtin.unarchive:
     src: /tmp/alertmanager-{{ alertmanager_version }}.tar.gz
     dest: /opt
     remote_src: yes
-    creates: "{{ alertmanager_extract_path }}"
+  when: not alertmanager_installed.stat.exists
 
 - name: Create symlink for alertmanager
   ansible.builtin.file:

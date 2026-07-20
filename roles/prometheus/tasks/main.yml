@@ -30,16 +30,24 @@
     loop_var: prometheus_dir
   tags: prometheus
 
+- name: Check if Prometheus is already installed
+  ansible.builtin.stat:
+    path: "/opt/{{ prometheus_extracted_dir }}"
+  register: prometheus_installed
+  tags: prometheus
+
 - name: Fetch Prometheus SHA256 checksums
   ansible.builtin.uri:
     url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/sha256sums.txt"
     return_content: true
   register: prometheus_checksums
+  when: not prometheus_installed.stat.exists
   tags: prometheus
 
 - name: Extract Prometheus tarball checksum
   ansible.builtin.set_fact:
     prometheus_checksum: "sha256:{{ prometheus_checksums.content | regex_search('([a-f0-9]{64})\\s+' ~ prometheus_extracted_dir ~ '.tar.gz', '\\1') | first }}"
+  when: not prometheus_installed.stat.exists
   tags: prometheus
 
 - name: Download Prometheus tarball
@@ -49,6 +57,7 @@
     checksum: "{{ prometheus_checksum }}"
     mode: '0644'
   register: prometheus_download
+  when: not prometheus_installed.stat.exists
   tags: prometheus
 
 - name: Extract Prometheus
@@ -56,7 +65,7 @@
     src: "/tmp/prometheus-{{ prometheus_version }}.tar.gz"
     dest: /opt
     remote_src: yes
-    creates: "/opt/{{ prometheus_extracted_dir }}"
+  when: not prometheus_installed.stat.exists
   tags: prometheus
 
 - name: Create symlink to /opt/prometheus
