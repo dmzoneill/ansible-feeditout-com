@@ -1,0 +1,5 @@
+#!/bin/bash
+set -a
+source /etc/fail2counter/env
+set +a
+exec /opt/fail2counter/venv/bin/python3 /opt/fail2counter/fail2counter_push_ip.py "$@"
