@@ -273,6 +273,23 @@
     mode: '0600'
   when: gcp_sa_key_file is defined
 
+- name: Ensure fail2counter config directory exists
+  file:
+    path: /etc/fail2counter
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Deploy fail2counter environment file
+  template:
+    src: "fail2counter_env.j2"
+    dest: "/etc/fail2counter/env"
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+
 - name: Deploy systemd service
   template:
     src: "fail2counter.service.j2"
@@ -280,7 +297,6 @@
     owner: "root"
     group: "root"
     mode: '0644'
-  no_log: true
 
 - name: Reload systemd and enable service
   systemd:
