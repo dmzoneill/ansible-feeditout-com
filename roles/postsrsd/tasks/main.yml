@@ -10,7 +10,7 @@
     dest: /etc/postsrsd.secret
     owner: root
     group: root
-    mode: preserve
+    mode: '0600'
   notify: Restart postsrsd
 
 - name: Update postsrsd config
