@@ -12,15 +12,6 @@
     group: root
     mode: '0750'
 
-- name: Deploy AIDE config
-  ansible.builtin.template:
-    src: aide.conf.j2
-    dest: /etc/aide/aide.conf
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Initialize AIDE database
-
 - name: Deploy daily AIDE check systemd unit if needed
   ansible.builtin.copy:
     src: dailyaidecheck.service
