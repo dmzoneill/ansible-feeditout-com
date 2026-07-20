@@ -50,7 +50,7 @@
     dest: /etc/redis/redis.conf
     owner: redis
     group: redis
-    mode: "0644"
+    mode: "0640"
   no_log: true
   notify:
     - Reload systemd daemon
@@ -91,7 +91,7 @@
     dest: /etc/webdis/webdis.json
     owner: redis
     group: redis
-    mode: "0644"
+    mode: "0640"
   no_log: true
   notify:
     - Restart Webdis
