@@ -240,8 +240,6 @@ virtualaliases:
     recipient: "{{ user }}, {{ email }}"
   - alias: "@ashtangayoga.ie"
     recipient: "{{ user }}, {{ email }}"
-  - alias: "@yogamantra.com"
-    recipient: "{{ user }}, {{ email }}"
   - alias: "@ecu-emr.com"
     recipient: "{{ user }}, {{ email }}"
   - alias: "@fio.ie"
