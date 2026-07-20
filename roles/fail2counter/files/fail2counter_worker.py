@@ -191,7 +191,7 @@ def rotate_vpn():
         capture(f"VPN rotation failed: {e}", level="WARNING")
 
 
-def send_email(subject: str, body: str, to_email="dmz.oneill@gmail.com"):
+def send_email(subject: str, body: str, to_email=os.environ.get("FAIL2COUNTER_EMAIL", "dmz.oneill@gmail.com")):
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = "root@feeditout.com"
@@ -220,7 +220,7 @@ if not REDIS_PASSWORD:
     exit(2)
 
 try:
-    r = redis.Redis(host="localhost", port=6379, db=0, password=REDIS_PASSWORD)
+    r = redis.Redis(host="localhost", port=int(os.environ.get("REDIS_PORT", 6379)), db=0, password=REDIS_PASSWORD)
     r.ping()
     capture("Connected to Redis successfully.")
 except Exception as e:
