@@ -338,7 +338,7 @@ groups:
       annotations:
         summary: "polkit.service is not running"
         description: "The {% raw %}{{ $labels.name }}{% endraw %} service is currently {% raw %}{{ $labels.state }}{% endraw %} (expected: active)."
-    - alert: PostfixDown
+    - alert: PostfixMainDown
       expr: node_systemd_unit_state{name="postfix.service", state="active"} != 1
       for: 10s
       labels:
@@ -346,7 +346,7 @@ groups:
       annotations:
         summary: "postfix.service is not running"
         description: "The {% raw %}{{ $labels.name }}{% endraw %} service is currently {% raw %}{{ $labels.state }}{% endraw %} (expected: active)."
-    - alert: PostfixDown
+    - alert: PostfixWorkerDown
       expr: node_systemd_unit_state{name="postfix@-.service", state="active"} != 1
       for: 10s
       labels:
