@@ -38,11 +38,20 @@
     group: root
   register: copied_debian_start
 
+- name: Copy mariadb.conf.d/ configuration directory
+  copy:
+    src: "{{ role_path }}/files/mariadb.conf.d/"
+    dest: /etc/mysql/mariadb.conf.d/
+    owner: root
+    group: root
+    mode: '0644'
+  register: copied_mariadb_confd
+
 - name: Restart MariaDB service if config changed
   service:
     name: mariadb
     state: restarted
-  when: copied_mysql_configs is changed or copied_debian_start is changed
+  when: copied_mysql_configs is changed or copied_debian_start is changed or copied_mariadb_confd is changed
 
 - name: Ensure MariaDB service is enabled and started
   systemd:
