@@ -10,13 +10,19 @@
     state: directory
     mode: '0755'
 
+- name: Backup existing MySQL config before applying changes
+  archive:
+    path: /etc/mysql/
+    dest: "/tmp/mysql-config-backup-{{ ansible_date_time.date }}.tar.gz"
+    mode: '0600'
+  ignore_errors: true
+
 - name: Copy all configuration files to /etc/mysql/
   copy:
     src: "{{ mysql_conf }}"
     dest: "/etc/mysql/{{ mysql_conf | basename }}"
     owner: root
     group: root
-    force: false
   with_fileglob:
     - "{{ role_path }}/files/*"
   loop_control:
@@ -30,11 +36,16 @@
     dest: /etc/mysql/debian-start
     owner: root
     group: root
-    force: false
   register: copied_debian_start
 
-- name: Restart and enable MariaDB service only if config changed
+- name: Restart MariaDB service if config changed
   service:
     name: mariadb
     state: restarted
   when: copied_mysql_configs is changed or copied_debian_start is changed
+
+- name: Ensure MariaDB service is enabled and started
+  systemd:
+    name: mariadb
+    enabled: true
+    state: started
