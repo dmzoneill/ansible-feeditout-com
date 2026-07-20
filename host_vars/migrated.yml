@@ -547,8 +547,16 @@ iptables:
         in_interface: lo
         jump: ACCEPT
 
-      - proto: udp
-        sport: 53
+      - proto: icmp
+        icmp_type: echo-request
+        jump: ACCEPT
+
+      - proto: icmp
+        icmp_type: destination-unreachable
+        jump: ACCEPT
+
+      - proto: icmp
+        icmp_type: time-exceeded
         jump: ACCEPT
 
       - proto: tcp
