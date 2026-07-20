@@ -4,13 +4,48 @@
     name:
       - apt-transport-https
       - software-properties-common
+      - gnupg
     state: present
+  tags: [grafana]
+
+- name: Ensure APT keyrings directory exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  tags: [grafana]
+
+- name: Download Grafana GPG key
+  get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /tmp/grafana-gpg.key
+    mode: '0644'
+  tags: [grafana]
+
+- name: Dearmor Grafana GPG key
+  command: gpg --dearmor -o /etc/apt/keyrings/grafana.gpg /tmp/grafana-gpg.key
+  args:
+    creates: /etc/apt/keyrings/grafana.gpg
+  tags: [grafana]
+
+- name: Set permissions on Grafana keyring
+  file:
+    path: /etc/apt/keyrings/grafana.gpg
+    mode: '0644'
+  tags: [grafana]
+
+- name: Add Grafana APT repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main"
+    state: present
+    filename: grafana
   tags: [grafana]
 
 - name: Install Grafana
   apt:
     name: grafana
     state: present
+    update_cache: true
   tags: [grafana]
 
 - name: Set root_url in grafana.ini
