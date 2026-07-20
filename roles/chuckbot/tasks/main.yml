@@ -133,6 +133,7 @@
   copy:
     src: /opt/Chuckbot/systemd/chuckbot.service
     dest: /etc/systemd/system/chuckbot.service
+    remote_src: true
     mode: '0644'
   register: service_file
 
