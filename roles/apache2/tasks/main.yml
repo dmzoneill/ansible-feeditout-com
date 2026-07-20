@@ -1,4 +1,9 @@
 ---
+- name: Install Apache2
+  apt:
+    name: apache2
+    state: present
+
 - name: Ensure /etc/apache2 exists
   file:
     path: /etc/apache2
