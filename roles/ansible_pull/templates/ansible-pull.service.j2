@@ -7,6 +7,7 @@ Type=oneshot
 WorkingDirectory={{ ansible_pull_workdir }}
 Environment="ANSIBLE_CALLBACKS_ENABLED=profile_tasks"
 Environment="ANSIBLE_CONFIG={{ ansible_pull_workdir }}/ansible.cfg"
+ExecStartPre=/bin/bash -c 'cd {{ ansible_pull_workdir }} && git pull --ff-only && /usr/bin/ansible-playbook --syntax-check -i inventories/hosts_local.ini --vault-password-file=/etc/ansible/.vault_pass.txt playbooks/reconcile.yml'
 ExecStart=/usr/bin/ansible-pull -vv \
   -i {{ ansible_pull_workdir }}/inventories/hosts_local.ini \
   -U {{ ansible_pull_repo_url }} \
@@ -17,7 +18,6 @@ ExecStart=/usr/bin/ansible-pull -vv \
 ExecStartPost=/bin/bash -c '/usr/bin/mail -s "Ansible-pull report from $(hostname)" {{ ansible_pull_email }} < /var/log/ansible-pull.log && truncate -s 0 /var/log/ansible-pull.log'
 StandardOutput=append:/var/log/ansible-pull.log
 StandardError=append:/var/log/ansible-pull.log
-StandardError=inherit
 LogLevelMax=notice
 
 [Install]
