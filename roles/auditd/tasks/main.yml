@@ -6,25 +6,30 @@
       - audispd-plugins
     state: present
 
-- name: Ensure /etc/audit directory exists
+- name: Ensure /etc/audit and rules.d directories exist
   file:
-    path: /etc/audit
+    path: "{{ audit_dir }}"
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: '0750'
+  loop:
+    - /etc/audit
+    - /etc/audit/rules.d
+  loop_control:
+    loop_var: audit_dir
 
-- name: Deploy auditd configuration files individually
+- name: Deploy audit rules to rules.d
   copy:
     src: "{{ audit_file }}"
-    dest: "/etc/audit/{{ audit_file | basename }}"
+    dest: "/etc/audit/rules.d/{{ audit_file | basename }}"
     owner: root
     group: root
     mode: '0640'
-  loop: "{{ lookup('fileglob', role_path + '/files/*.conf', wantlist=True) }}"
+  loop: "{{ lookup('fileglob', role_path + '/files/*.rules', wantlist=True) }}"
   loop_control:
     loop_var: audit_file
-  notify: Restart Auditd
+  notify: Reload Auditd Rules
 
 - name: Enable and start auditd
   systemd:
