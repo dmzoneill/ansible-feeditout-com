@@ -24,3 +24,27 @@
     name: rsyslog
     state: restarted
   when: mail_log_file is changed
+
+- name: Ensure journald override directory exists
+  file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    mode: '0755'
+
+- name: Configure journald size limits
+  copy:
+    content: |
+      [Journal]
+      SystemMaxUse=500M
+      SystemKeepFree=1G
+    dest: /etc/systemd/journald.conf.d/size-limits.conf
+    owner: root
+    group: root
+    mode: '0644'
+  register: journald_config
+
+- name: Restart journald if config changed
+  systemd:
+    name: systemd-journald
+    state: restarted
+  when: journald_config is changed
