@@ -68,7 +68,7 @@
 
 - name: Extract banned IPs
   set_fact:
-    banned_ips: "{{ jail_status.stdout | regex_search('Banned IP list:\\s*(.*)', '\\1') | default('') | trim | split(' ') }}"
+    banned_ips: "{{ jail_status.stdout | regex_search('Banned IP list:\\s*(.*)', '\\1') | first | default('') | trim | split(' ') }}"
 
 - name: Unban IPs if currently banned
   command: "fail2ban-client set {{ fail2ban_jail }} unbanip {{ ip }}"
