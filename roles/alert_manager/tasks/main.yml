@@ -38,10 +38,21 @@
     - /var/lib/alertmanager
     - /opt/alert_webhook
 
+- name: Fetch Alertmanager SHA256 checksums
+  ansible.builtin.uri:
+    url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/sha256sums.txt"
+    return_content: true
+  register: alertmanager_checksums
+
+- name: Extract Alertmanager tarball checksum
+  ansible.builtin.set_fact:
+    alertmanager_checksum: "sha256:{{ alertmanager_checksums.content | regex_search('([a-f0-9]{64})\\s+' ~ alertmanager_tarball, '\\1') | first }}"
+
 - name: Download Alertmanager tarball
   ansible.builtin.get_url:
     url: "{{ alertmanager_download_url }}"
     dest: "/tmp/alertmanager-{{ alertmanager_version }}.tar.gz"
+    checksum: "{{ alertmanager_checksum }}"
     mode: '0644'
 
 - name: Extract Alertmanager

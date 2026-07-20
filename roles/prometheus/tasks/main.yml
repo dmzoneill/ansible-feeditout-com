@@ -30,10 +30,23 @@
     loop_var: prometheus_dir
   tags: prometheus
 
+- name: Fetch Prometheus SHA256 checksums
+  ansible.builtin.uri:
+    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/sha256sums.txt"
+    return_content: true
+  register: prometheus_checksums
+  tags: prometheus
+
+- name: Extract Prometheus tarball checksum
+  ansible.builtin.set_fact:
+    prometheus_checksum: "sha256:{{ prometheus_checksums.content | regex_search('([a-f0-9]{64})\\s+' ~ prometheus_extracted_dir ~ '.tar.gz', '\\1') | first }}"
+  tags: prometheus
+
 - name: Download Prometheus tarball
   ansible.builtin.get_url:
     url: "{{ prometheus_download_url }}"
     dest: "/tmp/prometheus-{{ prometheus_version }}.tar.gz"
+    checksum: "{{ prometheus_checksum }}"
     mode: '0644'
   register: prometheus_download
   tags: prometheus
