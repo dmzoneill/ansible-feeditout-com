@@ -24,7 +24,8 @@ Environment=GOOGLE_APPLICATION_CREDENTIALS={{ google_application_credentials | d
 Environment=ANTHROPIC_MODEL={{ litellm_claude_model }}
 {% endif %}
 
-# Allow network namespace access
+# CAP_SYS_ADMIN: required for setns() via 'ip netns exec' to enter VPN namespace
+# CAP_NET_ADMIN: required for network namespace operations (nmap scanning via VPN)
 AmbientCapabilities=CAP_SYS_ADMIN CAP_NET_ADMIN
 
 [Install]
