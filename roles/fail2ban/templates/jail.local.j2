@@ -2,7 +2,7 @@
 destemail = {{ fail2ban_destemail }}
 sender = root@{{ fqdn }}
 mta = sendmail
-action = iptables-multiport[name=fail2ban, port="ssh,smtp,ssmtp,465,submission"]
+action = iptables-multiport[name=fail2ban, port="33,smtp,ssmtp,465,submission"]
 backend = auto
 bantime = 72h
 findtime = 30m
@@ -13,10 +13,10 @@ allowipv6 = auto
 allowipv6 = auto
 enabled = true
 filter = sshd
-port = ssh
+port = 33
 logpath = /var/log/auth.log
 backend = systemd
-action = iptables-multiport[name=sshd, port="ssh"]
+action = iptables-multiport[name=sshd, port="33"]
          email-only[name=apache-badbots, dest={{ fail2ban_destemail }}]
          fail2counter-analyze
 
