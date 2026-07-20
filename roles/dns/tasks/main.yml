@@ -40,7 +40,7 @@
     - disable_systemd_resolved
     - resolv_stat.stat.exists
     - resolv_stat.stat.islnk
-    - (resolv_conf_path | realpath) is search('/run/systemd/resolve')
+    - resolv_stat.stat.lnk_target is defined and resolv_stat.stat.lnk_target is search('/run/systemd/resolve')
   ignore_errors: true
 
 - name: Read current resolv.conf if it exists
