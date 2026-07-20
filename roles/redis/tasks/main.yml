@@ -16,7 +16,28 @@
     group: redis
     mode: '0755'
 
-- name: Generate self-signed cert and key (if not exists)
+- name: Check if Redis TLS cert exists
+  stat:
+    path: /etc/redis/tls/redis.crt
+  register: redis_cert_stat
+
+- name: Check Redis TLS cert expiry
+  command: openssl x509 -checkend 2592000 -noout -in /etc/redis/tls/redis.crt
+  register: redis_cert_expiry
+  changed_when: false
+  failed_when: false
+  when: redis_cert_stat.stat.exists
+
+- name: Remove expired or expiring Redis TLS cert
+  file:
+    path: "/etc/redis/tls/{{ item }}"
+    state: absent
+  loop:
+    - redis.crt
+    - redis.key
+  when: redis_cert_stat.stat.exists and redis_cert_expiry.rc != 0
+
+- name: Generate self-signed cert and key
   command: >
     openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes
     -keyout /etc/redis/tls/redis.key -out /etc/redis/tls/redis.crt
