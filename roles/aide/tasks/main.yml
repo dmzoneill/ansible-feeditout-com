@@ -12,15 +12,6 @@
     group: root
     mode: '0750'
 
-- name: Deploy daily AIDE check systemd unit if needed
-  ansible.builtin.copy:
-    src: dailyaidecheck.service
-    dest: /etc/systemd/system/dailyaidecheck.service
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Reload systemd
-
 - name: Ensure aide.log permissions are valid
   ansible.builtin.file:
     path: /var/log/aide/aide.log
