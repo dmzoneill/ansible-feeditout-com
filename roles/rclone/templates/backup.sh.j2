@@ -39,6 +39,9 @@ if docker ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -q litellm-db; then
   docker exec litellm-db pg_dumpall -U llmproxy | gzip -9 > "$BACKUP_ROOT/pgdump/litellm.sql.gz"
 fi
 
+# Include PostgreSQL dumps in staging
+cp -r "$BACKUP_ROOT/pgdump" "$STAGING/pgdump" 2>/dev/null || true
+
 # Rsync source paths to staging directory
 echo "Copying files to staging area: $STAGING" | tee -a "$LOGFILE"
 for path in $SRC_PATHS; do
