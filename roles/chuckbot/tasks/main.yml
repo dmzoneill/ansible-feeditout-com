@@ -143,6 +143,34 @@
     (chuckbot_git_updated | default(false)) or
     (service_file is defined and service_file.changed)
 
+- name: Check if nvm is installed
+  stat:
+    path: "/home/{{ user }}/.nvm/nvm.sh"
+  register: nvm_check
+
+- name: Install nvm if not present
+  become: true
+  become_user: "{{ user }}"
+  shell: >
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+  args:
+    executable: /bin/bash
+    creates: "/home/{{ user }}/.nvm/nvm.sh"
+  environment:
+    HOME: "/home/{{ user }}"
+  when: not nvm_check.stat.exists
+
+- name: Install Node.js LTS via nvm if not present
+  become: true
+  become_user: "{{ user }}"
+  shell: source /home/{{ user }}/.nvm/nvm.sh && nvm install --lts
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "/home/{{ user }}"
+  when: not nvm_check.stat.exists
+  changed_when: true
+
 - name: Run npm ci if repo was updated (as {{ user }})
   become: true
   become_user: "{{ user }}"
@@ -153,7 +181,6 @@
   environment:
     HOME: "/home/{{ user }}"
   when: chuckbot_git_updated | default(false)
-  ignore_errors: true
 
 - name: Reload systemd if service file changed
   become: true
