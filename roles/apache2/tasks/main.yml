@@ -4,6 +4,22 @@
     name: apache2
     state: present
 
+- name: Ensure Apache2 systemd override directory exists
+  file:
+    path: /etc/systemd/system/apache2.service.d
+    state: directory
+    mode: '0755'
+
+- name: Deploy Apache2 systemd restart override
+  copy:
+    content: |
+      [Service]
+      Restart=on-failure
+      RestartSec=5
+    dest: /etc/systemd/system/apache2.service.d/restart.conf
+    mode: '0644'
+  notify: Restart Apache2
+
 - name: Ensure /etc/apache2 exists
   file:
     path: /etc/apache2
