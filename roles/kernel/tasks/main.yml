@@ -1,23 +1,15 @@
 ---
-- name: Remove sysctl kernel hardening settings (without reload)
+- name: Apply kernel hardening parameters
   sysctl:
-    name: "{{ param }}"
-    state: absent
-    reload: false
-  loop:
-    - kernel.kptr_restrict
-    - kernel.unprivileged_bpf_disabled
-    - net.ipv4.conf.default.accept_source_route
-    - net.ipv4.conf.default.accept_redirects
-    - net.ipv4.conf.default.send_redirects
-    - net.ipv4.conf.default.rp_filter
-    - net.bridge.bridge-nf-call-iptables
-    - net.bridge.bridge-nf-call-ip6tables
-    - net.ipv4.ip_forward
-    - net.ipv6.conf.all.disable_ipv6
-    - net.ipv6.conf.default.disable_ipv6
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: true
+    reload: true
+  loop: "{{ kernel_params | dict2items }}"
   loop_control:
-    loop_var: param
+    label: "{{ item.key }}={{ item.value }}"
+  when: kernel_params is defined
 
 - name: Remove kernel.modules_disabled from sysctl.conf
   lineinfile:
