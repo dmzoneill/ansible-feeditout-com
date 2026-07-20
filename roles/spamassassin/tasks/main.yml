@@ -18,7 +18,7 @@
     dest: /etc/spamassassin/
     owner: root
     group: root
-    mode: preserve
+    mode: '0644'
     directory_mode: '0755'
   notify: Restart spamassassin
 
