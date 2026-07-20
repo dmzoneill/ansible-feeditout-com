@@ -177,7 +177,7 @@
   environment:
     HOME: "/home/{{ user }}"
   when: not nvm_check.stat.exists
-  changed_when: true
+  changed_when: not nvm_check.stat.exists
 
 - name: Run npm ci if repo was updated (as {{ user }})
   become: true
@@ -192,30 +192,35 @@
 
 - name: Reload systemd if service file changed
   become: true
-  command: systemctl daemon-reexec
+  systemd:
+    daemon_reload: true
   when: service_file.changed
 
 - name: Enable chuckbot service
   become: true
-  command: systemctl enable chuckbot.service
-  when: service_file.changed
+  systemd:
+    name: chuckbot
+    enabled: true
 
 - name: Try stopping chuckbot service
   become: true
-  command: systemctl stop chuckbot.service
+  systemd:
+    name: chuckbot
+    state: stopped
   register: stop_result
   failed_when: false
-  changed_when: stop_result.rc == 0
   when: chuckbot_needs_restart | default(false)
 
-- name: Kill node process if systemctl stop failed
+- name: Kill node process if systemd stop failed
   shell: |
     pkill -f chuckbot.js || true
   when:
     - chuckbot_needs_restart | default(false)
-    - stop_result.rc != 0
+    - stop_result is failed
 
 - name: Restart chuckbot service only if code or service file changed
   become: true
-  command: systemctl restart chuckbot.service
+  systemd:
+    name: chuckbot
+    state: restarted
   when: chuckbot_needs_restart | default(false)
