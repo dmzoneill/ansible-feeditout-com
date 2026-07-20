@@ -9,7 +9,7 @@ ExecStart=/usr/bin/env python3 /opt/alert_webhook/alert_webhook.py
 Environment=REDIS_HOST={{ redis_host }}
 Environment=REDIS_PORT={{ redis_port }}
 Environment="REDIS_AUTH={{ redis_auth }}"
-Environment=REDIS_CHANNEL=prometheus
+Environment=REDIS_LIST=prometheus
 Restart=on-failure
 
 [Install]
