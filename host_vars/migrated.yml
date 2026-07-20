@@ -474,6 +474,14 @@ logrotate_configs:
     path: /var/log/privoxy/logfile
     options: [weekly, rotate 4, compress, missingok, notifempty]
 
+  - name: ansible-pull
+    path: /var/log/ansible-pull.log
+    options: [daily, rotate 7, compress, missingok, notifempty]
+
+  - name: fail2counter-refresh
+    path: /var/log/fail2counter_refresh.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
+
   - name: rclone
     path: /var/log/rclone-backup.log
     options: [weekly, rotate 2, compress, missingok, notifempty]
