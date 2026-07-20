@@ -24,6 +24,20 @@
     name: "{{ php_fpm_mysql_package }}"
     state: present
 
+- name: Install common PHP modules
+  apt:
+    name:
+      - "php{{ php_version }}-xml"
+      - "php{{ php_version }}-mbstring"
+      - "php{{ php_version }}-curl"
+      - "php{{ php_version }}-gd"
+      - "php{{ php_version }}-intl"
+      - "php{{ php_version }}-zip"
+      - "php{{ php_version }}-bcmath"
+      - "php{{ php_version }}-soap"
+    state: present
+  notify: Restart php-fpm
+
 - name: Ensure PHP-FPM configuration directory exists
   file:
     path: "{{ php_fpm_conf_dir }}"
