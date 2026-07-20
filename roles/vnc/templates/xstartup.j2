@@ -6,7 +6,7 @@ echo ">>> Starting xstartup at $(date)"
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
 
-export DISPLAY=":1"
+export DISPLAY=":{{ vnc_display | default('1') }}"
 export XAUTHORITY="$HOME/.Xauthority"
 export XDG_SESSION_TYPE="x11"
 export GNOME_SHELL_SESSION_MODE="classic"
