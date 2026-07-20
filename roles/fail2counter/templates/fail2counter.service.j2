@@ -4,7 +4,7 @@ After=network.target webdis.service postgresql.service fail2counter-vpn.service
 Requires=fail2counter-vpn.service
 
 [Service]
-ExecStart=/opt/fail2counter/fail2counter_worker.py
+ExecStart=/opt/fail2counter/venv/bin/python3 /opt/fail2counter/fail2counter_worker.py
 Restart=always
 RestartSec=10
 User=postgres

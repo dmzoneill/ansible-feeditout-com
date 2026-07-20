@@ -42,8 +42,8 @@
       - "psycopg2-binary>=2.9.0,<3.0"
       - "redis>=5.0.0,<6.0"
     state: present
-    executable: pip3
-    break_system_packages: true
+    virtualenv: /opt/fail2counter/venv
+    virtualenv_python: python3
 
 # --- Metasploit Framework ---
 
