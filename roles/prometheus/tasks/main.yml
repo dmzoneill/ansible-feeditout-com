@@ -128,14 +128,10 @@
   notify: Restart Prometheus
   tags: prometheus
 
-- name: Deploy ports alert rules for Prometheus
-  ansible.builtin.template:
-    src: ports.yml.j2
-    dest: /etc/prometheus/rules/ports_alert_rules.yml
-    mode: '0644'
-    owner: prometheus
-    group: prometheus
-    validate: 'promtool check rules %s'
+- name: Remove dead port alert rules (used nonexistent metric)
+  ansible.builtin.file:
+    path: /etc/prometheus/rules/ports_alert_rules.yml
+    state: absent
   notify: Restart Prometheus
   tags: prometheus
 
