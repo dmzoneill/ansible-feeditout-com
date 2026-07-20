@@ -278,6 +278,10 @@ required_apache_modules:
     package: apache2
   - name: proxy_wstunnel
     package: apache2
+  - name: ssl
+    package: apache2
+  - name: rewrite
+    package: apache2
 
 domains:
   - domain: fio.ie
