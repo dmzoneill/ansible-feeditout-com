@@ -20,11 +20,24 @@ echo "Using backup destination: $DEST" | tee -a "$LOGFILE"
 
 # Prepare directories
 mkdir -p "$BACKUP_ROOT/mysqldump"
+mkdir -p "$BACKUP_ROOT/pgdump"
 mkdir -p "$STAGING"
 
 # Dump and gzip MySQL databases
 echo "Dumping and compressing MySQL databases..." | tee -a "$LOGFILE"
 mysqldump --defaults-file=/root/.my.cnf --all-databases | gzip -9 > "$MYSQL_DUMP_FILE"
+
+# Dump PostgreSQL databases (fail2counter)
+echo "Dumping PostgreSQL databases..." | tee -a "$LOGFILE"
+if command -v pg_dump &> /dev/null; then
+  sudo -u postgres pg_dumpall | gzip -9 > "$BACKUP_ROOT/pgdump/all_postgres.sql.gz"
+fi
+
+# Dump LiteLLM PostgreSQL (Docker)
+if docker ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -q litellm-db; then
+  echo "Dumping LiteLLM PostgreSQL from Docker..." | tee -a "$LOGFILE"
+  docker exec litellm-db pg_dumpall -U llmproxy | gzip -9 > "$BACKUP_ROOT/pgdump/litellm.sql.gz"
+fi
 
 # Rsync source paths to staging directory
 echo "Copying files to staging area: $STAGING" | tee -a "$LOGFILE"
