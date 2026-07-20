@@ -117,6 +117,6 @@
     loop_var: litellm_key_entry
     label: "{{ litellm_key_entry.body.user_id }}"
   register: key_result
-  failed_when: key_result.status not in [200, 201] and 'already exists' not in (key_result.json.error.message | default(''))
+  failed_when: key_result.status not in [200, 201] and 'already exists' not in ((key_result.json | default({})).get('error', {}).get('message', ''))
   changed_when: key_result.status in [200, 201]
   tags: [litellm]
