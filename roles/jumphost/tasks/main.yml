@@ -113,5 +113,5 @@
   args:
     chdir: /opt/jumphost
   register: compose_result
-  changed_when: "'Started' in compose_result.stdout or 'Created' in compose_result.stdout"
+  changed_when: "'Started' in compose_result.stdout + compose_result.stderr or 'Created' in compose_result.stdout + compose_result.stderr"
   tags: [jumphost]
