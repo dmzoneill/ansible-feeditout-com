@@ -8,3 +8,4 @@
   user:
     name: root
     password: "{{ root_password_hash }}"
+  no_log: true

@@ -51,6 +51,7 @@
     owner: redis
     group: redis
     mode: "0644"
+  no_log: true
   notify:
     - Reload systemd daemon
     - Reload systemd unit files
@@ -91,6 +92,7 @@
     owner: redis
     group: redis
     mode: "0644"
+  no_log: true
   notify:
     - Restart Webdis
 

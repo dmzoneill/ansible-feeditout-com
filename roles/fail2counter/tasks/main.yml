@@ -280,6 +280,7 @@
     owner: "root"
     group: "root"
     mode: '0644'
+  no_log: true
 
 - name: Reload systemd and enable service
   systemd:

@@ -41,6 +41,7 @@
     owner: "{{ vnc_user }}"
     group: "{{ vnc_user }}"
     mode: '0600'
+  no_log: true
   tags: [vnc]
 
 - name: Install xstartup script
