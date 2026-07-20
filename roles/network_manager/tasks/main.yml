@@ -49,14 +49,6 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK - DO NOT EDIT"
   notify: Restart NetworkManager
 
-- name: Remove iface lines from /etc/network/interfaces (if any)
-  lineinfile:
-    path: /etc/network/interfaces
-    regexp: '^iface .* inet'
-    state: absent
-  notify: Restart NetworkManager
-  when: ansible_facts['distribution'] == 'Debian'
-
 - name: Get current autoconnect settings
   command: nmcli -t -f NAME,AUTOCONNECT con show
   register: nmcli_connections
