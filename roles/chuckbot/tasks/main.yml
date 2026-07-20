@@ -148,11 +148,18 @@
     path: "/home/{{ user }}/.nvm/nvm.sh"
   register: nvm_check
 
+- name: Get latest nvm release version
+  uri:
+    url: https://api.github.com/repos/nvm-sh/nvm/releases/latest
+    return_content: true
+  register: nvm_latest
+  when: not nvm_check.stat.exists
+
 - name: Install nvm if not present
   become: true
   become_user: "{{ user }}"
   shell: >
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/{{ nvm_latest.json.tag_name }}/install.sh | bash
   args:
     executable: /bin/bash
     creates: "/home/{{ user }}/.nvm/nvm.sh"
