@@ -67,6 +67,7 @@
         - cron
         - logrotate
         - passwd
+        - redis
         - fail2ban
         - fail2counter
         - clamav
@@ -93,7 +94,6 @@
         - network_manager
         - mysql
         - memcached
-        - redis
         - php_fpm
         - postfix
         - apache2
