@@ -23,7 +23,7 @@
 
 - name: Remove immutable flag from resolv.conf if it is set
   command: chattr -i {{ resolv_conf_path }}
-  when: resolv_conf_is_immutable
+  when: resolv_conf_is_immutable | bool
   changed_when: true
 
 - name: Check if resolv.conf exists and is a symlink
@@ -73,8 +73,8 @@
     owner: root
     group: root
     mode: '0644'
-  when: resolv_needs_update
+  when: resolv_needs_update | bool
 
 - name: Re-apply immutable flag if it was originally set
   command: chattr +i {{ resolv_conf_path }}
-  when: resolv_conf_is_immutable and resolv_needs_update
+  when: resolv_conf_is_immutable | bool and resolv_needs_update | bool
