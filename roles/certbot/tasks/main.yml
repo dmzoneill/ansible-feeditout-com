@@ -98,7 +98,6 @@
     label: "{{ cert_entry.domain }}"
   register: certbot_result
   failed_when: certbot_result.rc != 0 and 'Certificate not yet due for renewal' not in certbot_result.stderr
-  ignore_errors: true
   when: certbot_needed
 
 - name: Start Apache if certbot was run
