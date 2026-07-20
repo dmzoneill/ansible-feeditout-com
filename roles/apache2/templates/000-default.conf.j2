@@ -1,0 +1,12 @@
+<VirtualHost *:80>
+  ServerName default
+  Redirect permanent / https://fio.ie/
+</VirtualHost>
+
+<VirtualHost *:443>
+  ServerName default
+  SSLEngine on
+  SSLCertificateFile /etc/letsencrypt/live/fio.ie/fullchain.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/fio.ie/privkey.pem
+  Redirect permanent / https://fio.ie/
+</VirtualHost>
