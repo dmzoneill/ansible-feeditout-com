@@ -13,10 +13,12 @@ route:
 
 receivers:
   - name: default
+{% if alertmanager_email_enabled %}
     email_configs:
       - to: "{{ alertmanager_email_to }}"
         from: "{{ alertmanager_email_from }}"
         send_resolved: true
+{% endif %}
     webhook_configs:
       - url: "http://localhost:5001/webhook"
         send_resolved: true
