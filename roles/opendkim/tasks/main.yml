@@ -9,18 +9,18 @@
     src: "{{ role_path }}/files/opendkim.conf"
     dest: /etc/opendkim.conf
     owner: root
-    group: root
-    mode: preserve
+    group: opendkim
+    mode: '0640'
   notify: Restart opendkim
 
 - name: Recursively copy DKIM keys to /etc/dkimkeys
   copy:
     src: "{{ role_path }}/files/dkimkeys/"
     dest: /etc/dkimkeys/
-    owner: root
-    group: root
-    mode: preserve
-    directory_mode: '0755'
+    owner: opendkim
+    group: opendkim
+    mode: '0600'
+    directory_mode: '0750'
   notify: Restart opendkim
 
 - name: Update opendkim keytable
