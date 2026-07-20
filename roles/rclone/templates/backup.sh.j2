@@ -10,7 +10,6 @@ MYSQL_DUMP_FILE="$BACKUP_ROOT/mysqldump/backup.sql.gz"
 DEST="google-backup:server-backup-$(hostname -s)"
 DATE=$(date +"%Y-%m-%d")
 LOGFILE="/var/log/rclone-backup.log"
-MYSQL_PASS="{{ mysql_root }}"
 EMAIL="{{ rclone_email }}"
 
 # Clear log file at the beginning
@@ -25,7 +24,7 @@ mkdir -p "$STAGING"
 
 # Dump and gzip MySQL databases
 echo "Dumping and compressing MySQL databases..." | tee -a "$LOGFILE"
-mysqldump --all-databases -u root -p"$MYSQL_PASS" | gzip -9 > "$MYSQL_DUMP_FILE"
+mysqldump --defaults-file=/root/.my.cnf --all-databases | gzip -9 > "$MYSQL_DUMP_FILE"
 
 # Rsync source paths to staging directory
 echo "Copying files to staging area: $STAGING" | tee -a "$LOGFILE"

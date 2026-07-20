@@ -25,6 +25,18 @@
     group: root
     mode: '0600'
 
+- name: Deploy MySQL credentials file for backups
+  copy:
+    content: |
+      [client]
+      user=root
+      password={{ mysql_root }}
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+
 - name: Deploy backup script
   template:
     src: backup.sh.j2
