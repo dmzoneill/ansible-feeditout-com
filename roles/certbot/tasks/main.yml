@@ -30,7 +30,7 @@
 
 - name: Extract SANs from existing certs
   command: >
-    openssl x509 -in /etc/letsencrypt/live/{{ item.0.domain }}/cert.pem -noout -text
+    openssl x509 -in /etc/letsencrypt/live/{{ item.0.domain }}/cert.pem -noout -ext subjectAltName
   loop: "{{ domains | zip(cert_stat_results.results) | list }}"
   loop_control:
     label: "{{ item.0.domain }}"
