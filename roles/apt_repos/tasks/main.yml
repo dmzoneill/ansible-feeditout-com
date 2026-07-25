@@ -45,6 +45,40 @@
     filename: grafana
     update_cache: no
 
+# Add Metasploit repo with modern signed-by keyring
+- name: Remove old Metasploit repo config
+  file:
+    path: /etc/apt/sources.list.d/metasploit.list
+    state: absent
+
+- name: Remove legacy Metasploit GPG key from trusted.gpg
+  command: apt-key del C048F0B49DEEC457
+  changed_when: false
+  failed_when: false
+
+- name: Download Metasploit GPG key
+  get_url:
+    url: https://apt.metasploit.com/metasploit-framework.gpg.key
+    dest: /tmp/metasploit-gpg.key
+    mode: '0644'
+
+- name: Dearmor Metasploit GPG key
+  command: gpg --dearmor -o /etc/apt/keyrings/metasploit.gpg /tmp/metasploit-gpg.key
+  args:
+    creates: /etc/apt/keyrings/metasploit.gpg
+
+- name: Set permissions on Metasploit keyring
+  file:
+    path: /etc/apt/keyrings/metasploit.gpg
+    mode: '0644'
+
+- name: Add Metasploit repo with signed-by keyring
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/metasploit.gpg] http://downloads.metasploit.com/data/releases/metasploit-framework/apt lucid main"
+    state: present
+    filename: metasploit
+    update_cache: no
+
 # Single apt cache update after all repo fixes
 - name: Update apt cache after repo fixes
   apt:
