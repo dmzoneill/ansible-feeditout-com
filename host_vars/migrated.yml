@@ -191,10 +191,8 @@ webdis_ssl_private_key: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
 mailname: "{{ fqdn }}"
 mail_domains:
   - "ashtangayoga.ie"
-  - "ecu-emr.com"
   - "{{ fqdn }}"
   - "feeditout.site"
-  - "feeditout.xyz"
   - "fio.ie"
 mail_main_tls_cert: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
 mail_main_tls_key: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
@@ -234,13 +232,9 @@ virtualaliases:
     recipient: ""
   - alias: "@feeditout.site"
     recipient: "{{ user }}, {{ email }}"
-  - alias: "@feeditout.xyz"
-    recipient: "{{ user }}, {{ email }}"
   - alias: "@feeditout.com"
     recipient: "{{ user }}, {{ email }}"
   - alias: "@ashtangayoga.ie"
-    recipient: "{{ user }}, {{ email }}"
-  - alias: "@ecu-emr.com"
     recipient: "{{ user }}, {{ email }}"
   - alias: "@fio.ie"
     recipient: "{{ user }}, {{ email }}"
@@ -318,15 +312,6 @@ domains:
     loglevel: warn
     enabled: true
 
-  - domain: feeditout.xyz
-    document_root: feeditout.xyz
-    virtual_hosts:
-      - name: www.feeditout.xyz
-        document_root: feeditout.xyz
-        enabled: true
-    loglevel: warn
-    enabled: true
-
   - domain: feeditout.site
     document_root: feeditout.site
     virtual_hosts:
@@ -370,16 +355,6 @@ domains:
         document_root: litellm
         enabled: true
         custom_config: true
-    loglevel: warn
-    enabled: true
-
-  - domain: ecu-emr.com
-    document_root: ecu-emr.com
-    virtual_hosts:
-      - name: www.ecu-emr.com
-        document_root: ecu-emr.com
-        enabled: true
-    custom_config: true
     loglevel: warn
     enabled: true
 
