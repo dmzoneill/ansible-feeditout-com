@@ -46,10 +46,17 @@
     update_cache: no
 
 # Add Metasploit repo with modern signed-by keyring
-- name: Remove old Metasploit repo config
+- name: Remove old Metasploit repo configs (all formats)
   file:
-    path: /etc/apt/sources.list.d/metasploit.list
+    path: "{{ metasploit_old_file }}"
     state: absent
+  loop:
+    - /etc/apt/sources.list.d/metasploit.list
+    - /etc/apt/sources.list.d/metasploit-framework.list
+    - /etc/apt/sources.list.d/metasploit.sources
+    - /etc/apt/sources.list.d/metasploit-framework.sources
+  loop_control:
+    loop_var: metasploit_old_file
 
 - name: Remove legacy Metasploit GPG key from trusted.gpg
   command: apt-key del C048F0B49DEEC457
