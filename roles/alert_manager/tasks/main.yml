@@ -28,7 +28,7 @@
 
 - name: Create alertmanager directories
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ alertmanager_dir }}"
     state: directory
     owner: alertmanager
     group: alertmanager
@@ -37,6 +37,8 @@
     - /etc/alertmanager
     - /var/lib/alertmanager
     - /opt/alert_webhook
+  loop_control:
+    loop_var: alertmanager_dir
 
 - name: Check if Alertmanager is already installed
   ansible.builtin.stat:
