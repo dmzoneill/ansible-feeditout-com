@@ -1,8 +1,18 @@
 ---
-- name: Ensure certbot is installed
+- name: Ensure certbot and dns-cloudflare plugin are installed
   apt:
-    name: certbot
+    name:
+      - certbot
+      - python3-certbot-dns-cloudflare
     state: present
+
+- name: Deploy Cloudflare credentials file
+  template:
+    src: cloudflare.ini.j2
+    dest: /etc/letsencrypt/cloudflare.ini
+    owner: root
+    group: root
+    mode: '0600'
 
 - name: Initialize certbot tracking facts
   set_fact:
@@ -18,92 +28,41 @@
     label: "{{ domain_entry.domain }}"
   register: cert_stat_results
 
-- name: Normalize domain/stat pair into a structured list
-  set_fact:
-    domain_cert_pairs: >-
-      {{
-        domain_cert_pairs | default([]) + [ {
-          "domain": domain_entry.0.domain,
-          "virtual_hosts": domain_entry.0.virtual_hosts,
-          "stat": domain_entry.1.stat
-        } ]
-      }}
-  loop_control:
-    loop_var: domain_entry
-  loop: "{{ domains | zip(cert_stat_results.results) | list }}"
-
-- name: Extract SANs from certs if they exist
+- name: Extract SANs from existing certs
   command: >
-    openssl x509 -in /etc/letsencrypt/live/{{ domain_cert.domain }}/cert.pem -noout -text
-  loop: "{{ domain_cert_pairs }}"
+    openssl x509 -in /etc/letsencrypt/live/{{ item.0.domain }}/cert.pem -noout -text
+  loop: "{{ domains | zip(cert_stat_results.results) | list }}"
   loop_control:
-    loop_var: domain_cert
-    label: "{{ domain_cert.domain }}"
-  when: domain_cert.stat.exists
+    label: "{{ item.0.domain }}"
+  when: item.1.stat.exists
   changed_when: false
   failed_when: false
   register: openssl_cert_results
 
-- name: Combine cert data with parsed SANs
-  set_fact:
-    domain_cert_openssl_pairs: >-
-      {{
-        domain_cert_openssl_pairs | default([]) + [ {
-          "domain": domain_entry.0.domain,
-          "virtual_hosts": domain_entry.0.virtual_hosts,
-          "stat": domain_entry.0.stat,
-          "cert_output": domain_entry.1.stdout
-        } ]
-      }}
-  loop_control:
-    loop_var: domain_entry
-  loop: "{{ domain_cert_pairs | zip(openssl_cert_results.results) | list }}"
-
 - name: Determine which certs need to be issued
   set_fact:
-    certs_to_issue: "{{ certs_to_issue + [ {
-      'domain': domain_cert.domain,
-      'domains': ([domain_cert.domain] + (domain_cert.virtual_hosts | map(attribute='name') | list)) | unique }] }}"
+    certs_to_issue: "{{ certs_to_issue + [item.0.domain] }}"
     certbot_needed: true
-  when: >
-    not domain_cert.stat.exists or
-    (
-      (
-        [domain_cert.domain] + (domain_cert.virtual_hosts | map(attribute='name') | list)
-      ) | unique
-      | difference(
-          (domain_cert.cert_output | regex_findall('DNS:([^,\\s]+)') | unique) | default([])
-        )
-    ) | length > 0
-  loop: "{{ domain_cert_openssl_pairs }}"
+  loop: "{{ domains | zip(cert_stat_results.results) | zip(openssl_cert_results.results) | map('flatten') | list }}"
   loop_control:
-    loop_var: domain_cert
-    label: "{{ domain_cert.domain }}"
+    label: "{{ item.0.domain }}"
+  when: >
+    not item.1.stat.exists or
+    ('*.%s' % item.0.domain) not in (item.2.stdout | default('') | regex_findall('DNS:([^,\\s]+)'))
 
-- name: Stop Apache if certbot is needed
-  ansible.builtin.service:
-    name: apache2
-    state: stopped
-  when: certbot_needed
-
-- name: Run certbot for domains that need certificates
+- name: Issue wildcard certificates via Cloudflare DNS challenge
   command: >
-    certbot certonly --standalone
-    --cert-name {{ cert_entry.domain }}
-    {{ cert_entry.domains | map('regex_replace', '^(.*)$', '-d \1') | join(' ') }}
-    --agree-tos --non-interactive --register-unsafely-without-email --expand
+    certbot certonly --dns-cloudflare
+    --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini
+    --cert-name {{ cert_domain }}
+    -d {{ cert_domain }} -d '*.{{ cert_domain }}'
+    --agree-tos --non-interactive --register-unsafely-without-email
   loop: "{{ certs_to_issue }}"
   loop_control:
-    loop_var: cert_entry
-    label: "{{ cert_entry.domain }}"
+    loop_var: cert_domain
+    label: "{{ cert_domain }}"
   register: certbot_result
   failed_when: certbot_result.rc != 0 and 'Certificate not yet due for renewal' not in certbot_result.stderr
-  when: certbot_needed
-
-- name: Start Apache if certbot was run
-  ansible.builtin.service:
-    name: apache2
-    state: started
   when: certbot_needed
 
 - name: Ensure {{ certbot_helpers_dir }} exists
@@ -122,14 +81,6 @@
     owner: "{{ user }}"
     group: "{{ user }}"
 
-- name: Copy missing.sh
-  copy:
-    src: missing.sh
-    dest: "{{ certbot_helpers_dir }}/missing.sh"
-    mode: '0755'
-    owner: "{{ user }}"
-    group: "{{ user }}"
-
 - name: Copy certbot_clean_old.sh
   copy:
     src: certbot_clean_old.sh
@@ -142,24 +93,3 @@
   command: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
   become: true
   changed_when: false
-
-# - name: Run missing.sh to check and issue missing certs
-#   command: "{{ certbot_helpers_dir }}/missing.sh"
-#   become: true
-#   register: missing_sh_result
-#   changed_when: false
-#   failed_when: missing_sh_result.rc != 0 and "'✅ No missing domains'" not in missing_sh_result.stdout
-#   ignore_errors: true
-
-# - name: Copy certbot_clean_old.sh
-#   copy:
-#     src: certbot_clean_old.sh
-#     dest: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
-#     mode: '0755'
-#     owner: "{{ user }}"
-#     group: "{{ user }}"
-
-# - name: Run clean_old.sh to check and issue missing certs
-#   command: "{{ certbot_helpers_dir }}/certbot_clean_old.sh"
-#   become: true
-#   changed_when: false
