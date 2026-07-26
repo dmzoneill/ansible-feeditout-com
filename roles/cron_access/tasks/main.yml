@@ -1,0 +1,28 @@
+---
+- name: Create /etc/cron.allow with permitted users
+  copy:
+    content: |
+      root
+    dest: /etc/cron.allow
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Create /etc/at.allow with permitted users
+  copy:
+    content: |
+      root
+    dest: /etc/at.allow
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Remove cron.deny if cron.allow exists
+  file:
+    path: /etc/cron.deny
+    state: absent
+
+- name: Remove at.deny if at.allow exists
+  file:
+    path: /etc/at.deny
+    state: absent

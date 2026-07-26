@@ -48,3 +48,20 @@
     name: systemd-journald
     state: restarted
   when: journald_config is changed
+
+- name: Ensure journald persistent storage is enabled
+  copy:
+    content: |
+      [Journal]
+      Storage=persistent
+    dest: /etc/systemd/journald.conf.d/persistent.conf
+    owner: root
+    group: root
+    mode: '0644'
+  register: journald_persistent
+
+- name: Restart journald if persistent config changed
+  systemd:
+    name: systemd-journald
+    state: restarted
+  when: journald_persistent.changed

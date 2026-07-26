@@ -68,6 +68,8 @@
         - ssl_hardening
         - coredump
         - shell_timeout
+        - login_defs
+        - cron_access
         - hostname
         - cron
         - logrotate

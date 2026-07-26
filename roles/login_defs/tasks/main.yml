@@ -1,0 +1,42 @@
+---
+- name: Set PASS_MAX_DAYS in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^#?\s*PASS_MAX_DAYS'
+    line: "PASS_MAX_DAYS\t{{ login_defs_pass_max_days }}"
+    backup: no
+
+- name: Set PASS_MIN_DAYS in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^#?\s*PASS_MIN_DAYS'
+    line: "PASS_MIN_DAYS\t{{ login_defs_pass_min_days }}"
+    backup: no
+
+- name: Set PASS_WARN_AGE in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^#?\s*PASS_WARN_AGE'
+    line: "PASS_WARN_AGE\t{{ login_defs_pass_warn_age }}"
+    backup: no
+
+- name: Set UMASK in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^#?\s*UMASK'
+    line: "UMASK\t\t{{ login_defs_umask }}"
+    backup: no
+
+- name: Set LOGIN_RETRIES in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^#?\s*LOGIN_RETRIES'
+    line: "LOGIN_RETRIES\t{{ login_defs_login_retries }}"
+    backup: no
+
+- name: Set LOGIN_TIMEOUT in /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^#?\s*LOGIN_TIMEOUT'
+    line: "LOGIN_TIMEOUT\t{{ login_defs_login_timeout }}"
+    backup: no

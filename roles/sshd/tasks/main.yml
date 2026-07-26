@@ -20,6 +20,19 @@
     directory_mode: '0755'
   notify: Restart sshd
 
+- name: Deploy SSH warning banner
+  copy:
+    content: |
+      ******************************************************************
+      * WARNING: Unauthorized access to this system is prohibited.     *
+      * All connections are monitored and recorded.                     *
+      * Disconnect IMMEDIATELY if you are not an authorized user.      *
+      ******************************************************************
+    dest: /etc/issue.net
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Enable and start SSHD service
   service:
     name: ssh

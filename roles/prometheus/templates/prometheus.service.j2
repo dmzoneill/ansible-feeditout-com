@@ -11,7 +11,8 @@ ExecStart=/usr/local/bin/prometheus \
   --config.file=/etc/prometheus/prometheus.yml \
   --storage.tsdb.path=/var/lib/prometheus \
   --web.console.templates=/opt/prometheus/consoles \
-  --web.console.libraries=/opt/prometheus/console_libraries
+  --web.console.libraries=/opt/prometheus/console_libraries \
+  --storage.tsdb.retention.time=30d
 
 # comment
 Restart=on-failure
