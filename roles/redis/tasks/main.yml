@@ -127,6 +127,26 @@
 
 - meta: flush_handlers
 
+- name: Ensure systemd override directory for webdis exists
+  file:
+    path: /etc/systemd/system/webdis.service.d
+    state: directory
+    mode: '0755'
+
+- name: Deploy webdis systemd override to reduce start timeout
+  copy:
+    content: |
+      [Service]
+      TimeoutStartSec=5
+    dest: /etc/systemd/system/webdis.service.d/override.conf
+    mode: '0644'
+  register: webdis_override
+
+- name: Reload systemd if webdis override changed
+  systemd:
+    daemon_reload: true
+  when: webdis_override.changed
+
 - name: Enable Webdis on boot
   systemd:
     name: webdis

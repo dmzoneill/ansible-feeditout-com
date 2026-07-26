@@ -1,14 +1,11 @@
 ---
-- name: Create logrotate config files
+- name: Deploy aggregated logrotate config
   template:
-    src: logrotate.conf.j2
-    dest: "/etc/logrotate.d/{{ logcfg.name }}"
+    src: logrotate-all.j2
+    dest: /etc/logrotate.d/zz-ansible-managed
     owner: root
     group: root
     mode: '0644'
-  loop: "{{ logrotate_configs }}"
-  loop_control:
-    loop_var: logcfg
 
 - name: Find all existing logrotate.d files
   find:
@@ -16,11 +13,13 @@
     file_type: file
   register: existing_logrotate_files
 
-- name: Delete logrotate configs not in managed list
+- name: Remove old individual logrotate configs now in aggregate
   file:
     path: "{{ oldfile.path }}"
     state: absent
   loop: "{{ existing_logrotate_files.files }}"
   loop_control:
     loop_var: oldfile
-  when: oldfile.path | basename not in logrotate_configs | map(attribute='name') | list
+  when:
+    - oldfile.path | basename != 'zz-ansible-managed'
+    - oldfile.path | basename in logrotate_configs | map(attribute='name') | list

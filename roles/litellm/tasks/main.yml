@@ -78,16 +78,11 @@
   tags: [litellm]
 
 - name: Wait for LiteLLM API to be ready
-  uri:
-    url: "http://127.0.0.1:{{ litellm_port }}/health"
-    method: GET
-    headers:
-      Authorization: "Bearer {{ litellm_master_key }}"
-    status_code: 200
-  register: litellm_health
-  until: litellm_health.status == 200
-  retries: 30
-  delay: 5
+  wait_for:
+    host: 127.0.0.1
+    port: "{{ litellm_port }}"
+    delay: 1
+    timeout: 15
   tags: [litellm]
 
 - name: Register user API keys

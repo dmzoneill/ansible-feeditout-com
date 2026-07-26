@@ -1,0 +1,8 @@
+{% for logcfg in logrotate_configs %}
+{{ logcfg.path }} {
+{% for opt in logcfg.options %}
+    {{ opt }}
+{% endfor %}
+}
+
+{% endfor %}

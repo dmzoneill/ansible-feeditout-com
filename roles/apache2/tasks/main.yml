@@ -8,10 +8,10 @@
 
 - name: Create htpasswd-protected document root directories
   file:
-    path: "/home/{{ role_user }}/www/{{ htpasswd_dir }}"
+    path: "/home/{{ user }}/www/{{ htpasswd_dir }}"
     state: directory
-    owner: "{{ role_user }}"
-    group: "{{ role_user }}"
+    owner: "{{ user }}"
+    group: "{{ user }}"
     mode: '0755'
   loop:
     - prometheus
@@ -22,10 +22,10 @@
 
 - name: Deploy htpasswd files for protected services
   community.general.htpasswd:
-    path: "/home/{{ role_user }}/www/{{ htpasswd_dir }}/.htpasswd"
+    path: "/home/{{ user }}/www/{{ htpasswd_dir }}/.htpasswd"
     name: "{{ htpasswd_user }}"
     password: "{{ htpasswd_password }}"
-    owner: "{{ role_user }}"
+    owner: "{{ user }}"
     group: www-data
     mode: '0640'
   loop:
