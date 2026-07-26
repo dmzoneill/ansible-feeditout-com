@@ -20,7 +20,7 @@ fio_bot_kb_path: "/opt/fio-bot/knowledge.db"
 fio_bot_kb_retention_days: 180
 fio_bot_kb_context_limit: 3
 fio_bot_kb_max_rows: 5000
-fio_bot_audit_channel: "{{ slack_alerts_channel_id }}"
+fio_bot_audit_channel: "C0BKW33B6HG"
 fio_bot_digest_enabled: "true"
 fio_bot_digest_hour: 8
 fio_bot_idle_mention_user: "{{ user }}"
