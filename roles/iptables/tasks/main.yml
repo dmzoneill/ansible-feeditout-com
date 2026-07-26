@@ -20,3 +20,16 @@
   command: /usr/bin/python3 /usr/local/bin/manage_iptables.py
   register: iptables_result
   changed_when: "'No changes' not in iptables_result.stdout"
+
+- name: Check if Docker service exists
+  stat:
+    path: /usr/bin/dockerd
+  register: dockerd_binary
+
+- name: Restart Docker to restore NAT/FORWARD chains after iptables sync
+  systemd:
+    name: docker
+    state: restarted
+  when:
+    - dockerd_binary.stat.exists
+    - iptables_result.changed

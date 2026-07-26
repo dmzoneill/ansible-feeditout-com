@@ -4,6 +4,29 @@
     name: docker.io
     state: present
 
+- name: Ensure /etc/docker directory exists
+  file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+
+- name: Deploy Docker daemon.json with DNS servers
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "dns": ["8.8.8.8", "1.1.1.1"]
+      }
+    mode: '0644'
+  register: docker_daemon_json
+
+- name: Restart Docker if daemon.json changed
+  systemd:
+    name: docker
+    state: restarted
+    daemon_reload: true
+  when: docker_daemon_json.changed
+
 - name: Ensure Docker service is started and enabled
   service:
     name: docker

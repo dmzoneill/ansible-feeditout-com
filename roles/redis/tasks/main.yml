@@ -106,6 +106,14 @@
     enabled: true
     state: started
 
+- name: Ensure webdis runtime directory exists
+  file:
+    path: /var/run/webdis
+    state: directory
+    owner: redis
+    group: redis
+    mode: '0755'
+
 - name: Copy full webdis.json
   template:
     src: webdis.json.j2
@@ -124,4 +132,10 @@
     name: webdis
     enabled: true
     state: started
-  changed_when: false
+  register: webdis_start
+  failed_when: false
+
+- name: Warn if webdis failed to start
+  debug:
+    msg: "WARNING: webdis failed to start. Check: journalctl -u webdis"
+  when: webdis_start is failed
