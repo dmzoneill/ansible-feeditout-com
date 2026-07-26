@@ -53,6 +53,17 @@
   loop_control:
     loop_var: metasploit_old_file
 
+- name: Remove legacy Metasploit keyrings (conflict with our signed-by)
+  file:
+    path: "{{ metasploit_old_key }}"
+    state: absent
+  loop:
+    - /usr/share/keyrings/metasploit-framework.gpg
+    - /etc/apt/trusted.gpg.d/metasploit.asc
+    - /etc/apt/trusted.gpg.d/metasploit.asc~
+  loop_control:
+    loop_var: metasploit_old_key
+
 - name: Download Metasploit GPG key
   get_url:
     url: https://apt.metasploit.com/metasploit-framework.gpg.key
