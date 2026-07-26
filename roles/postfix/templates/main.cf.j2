@@ -64,7 +64,7 @@ smtpd_tls_session_cache_timeout = 3600s
 
 # Milter support
 milter_default_action = accept
-milter_protocol = 2
+milter_protocol = 6
 smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 non_smtpd_milters = inet:127.0.0.1:12301, inet:127.0.0.1:12302
 
@@ -74,7 +74,6 @@ smtpd_sasl_type = cyrus
 smtpd_sasl_path = /var/run/saslauthd/mux
 smtpd_sasl_security_options = noanonymous
 smtpd_sasl_tls_security_options = noanonymous
-broken_sasl_auth_clients = yes
 
 # SASL for outbound relay (e.g., Gmail smarthost)
 smtp_sasl_auth_enable = yes

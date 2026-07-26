@@ -45,11 +45,11 @@
     backup: true
   register: grub_line
 
-- name: Ensure GRUB_TIMEOUT is set to 120 seconds
+- name: Ensure GRUB_TIMEOUT is set to 10 seconds
   lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_TIMEOUT='
-    line: 'GRUB_TIMEOUT=120'
+    line: 'GRUB_TIMEOUT=10'
     create: yes
   register: grub_timeout_line
 

@@ -16,11 +16,6 @@
     path: /etc/apt/sources.list.d/grafana.list
     state: absent
 
-- name: Remove legacy Grafana GPG key from trusted.gpg
-  command: apt-key del 963FA27710458545
-  changed_when: false
-  failed_when: false
-
 # Add Grafana repo with modern signed-by keyring
 - name: Download Grafana GPG key to keyrings
   get_url:
@@ -57,11 +52,6 @@
     - /etc/apt/sources.list.d/metasploit-framework.sources
   loop_control:
     loop_var: metasploit_old_file
-
-- name: Remove legacy Metasploit GPG key from trusted.gpg
-  command: apt-key del C048F0B49DEEC457
-  changed_when: false
-  failed_when: false
 
 - name: Download Metasploit GPG key
   get_url:
