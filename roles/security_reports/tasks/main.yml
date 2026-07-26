@@ -17,9 +17,7 @@
 
 - name: Install OpenSCAP scanner
   apt:
-    name:
-      - openscap-scanner
-      - libopenscap8
+    name: openscap-scanner
     state: present
 
 - name: Search for available SSG Debian packages

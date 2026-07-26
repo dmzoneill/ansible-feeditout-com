@@ -102,6 +102,18 @@
   register: git_hash_before
   changed_when: false
 
+- name: Abort any stale rebase before pull (as {{ user }})
+  become: true
+  become_user: "{{ user }}"
+  command: git rebase --abort
+  args:
+    chdir: /opt/Chuckbot
+  failed_when: false
+  changed_when: false
+  when:
+    - git_dirty.stdout == ""
+    - git_remote.stdout | default('') == "git@github.com:dmzoneill/Chuckbot.git"
+
 - name: Ensure on main branch before pull (as {{ user }})
   become: true
   become_user: "{{ user }}"
