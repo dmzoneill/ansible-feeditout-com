@@ -1,0 +1,16 @@
+---
+- name: Ensure /tmp is mounted with hardened options
+  ansible.posix.mount:
+    path: /tmp
+    src: tmpfs
+    fstype: tmpfs
+    opts: "defaults,noexec,nosuid,nodev,size=512m"
+    state: mounted
+
+- name: Ensure /dev/shm is mounted with hardened options
+  ansible.posix.mount:
+    path: /dev/shm
+    src: tmpfs
+    fstype: tmpfs
+    opts: "defaults,noexec,nosuid,nodev"
+    state: mounted

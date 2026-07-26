@@ -564,6 +564,22 @@ iptables:
         icmp_type: time-exceeded
         jump: ACCEPT
 
+      - proto: ipv6-icmp
+        icmp_type: router-solicitation
+        jump: ACCEPT
+
+      - proto: ipv6-icmp
+        icmp_type: router-advertisement
+        jump: ACCEPT
+
+      - proto: ipv6-icmp
+        icmp_type: neighbour-solicitation
+        jump: ACCEPT
+
+      - proto: ipv6-icmp
+        icmp_type: neighbour-advertisement
+        jump: ACCEPT
+
       - proto: tcp
         dport: 33
         jump: ACCEPT

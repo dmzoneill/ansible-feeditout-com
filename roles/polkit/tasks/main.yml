@@ -1,0 +1,22 @@
+---
+- name: Ensure polkitd directory exists
+  file:
+    path: /etc/polkit-1/rules.d
+    state: directory
+    mode: '0755'
+
+- name: Restrict reboot/shutdown to admin users
+  copy:
+    content: |
+      polkit.addRule(function(action, subject) {
+          if ((action.id == "org.freedesktop.login1.reboot" ||
+               action.id == "org.freedesktop.login1.power-off" ||
+               action.id == "org.freedesktop.login1.halt") &&
+              !subject.isInGroup("sudo")) {
+              return polkit.Result.NO;
+          }
+      });
+    dest: /etc/polkit-1/rules.d/10-restrict-reboot.rules
+    owner: root
+    group: root
+    mode: '0644'

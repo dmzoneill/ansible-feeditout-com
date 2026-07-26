@@ -1,0 +1,23 @@
+---
+- name: Install rkhunter
+  apt:
+    name: rkhunter
+    state: present
+
+- name: Configure rkhunter
+  lineinfile:
+    path: /etc/rkhunter.conf
+    regexp: "{{ rkhunter_item.regexp }}"
+    line: "{{ rkhunter_item.line }}"
+  loop:
+    - { regexp: '^#?CRON_DAILY_RUN=', line: 'CRON_DAILY_RUN="true"' }
+    - { regexp: '^#?CRON_DB_UPDATE=', line: 'CRON_DB_UPDATE="true"' }
+    - { regexp: '^#?APT_AUTOGEN=', line: 'APT_AUTOGEN="true"' }
+    - { regexp: '^#?MAIL-ON-WARNING=', line: 'MAIL-ON-WARNING="root"' }
+  loop_control:
+    loop_var: rkhunter_item
+
+- name: Update rkhunter database
+  command: rkhunter --update
+  changed_when: false
+  failed_when: false

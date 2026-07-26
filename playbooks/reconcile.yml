@@ -68,6 +68,9 @@
         - ssl_hardening
         - coredump
         - shell_timeout
+        - mount_hardening
+        - rkhunter
+        - polkit
         - login_defs
         - limits
         - cron_access
