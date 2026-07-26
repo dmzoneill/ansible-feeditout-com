@@ -1,8 +1,41 @@
 ---
-- name: Install Apache2
+- name: Install Apache2 and python3-passlib for htpasswd
   apt:
-    name: apache2
+    name:
+      - apache2
+      - python3-passlib
     state: present
+
+- name: Create htpasswd-protected document root directories
+  file:
+    path: "/home/{{ role_user }}/www/{{ htpasswd_dir }}"
+    state: directory
+    owner: "{{ role_user }}"
+    group: "{{ role_user }}"
+    mode: '0755'
+  loop:
+    - prometheus
+    - grafana
+    - alertmanager
+  loop_control:
+    loop_var: htpasswd_dir
+
+- name: Deploy htpasswd files for protected services
+  community.general.htpasswd:
+    path: "/home/{{ role_user }}/www/{{ htpasswd_dir }}/.htpasswd"
+    name: "{{ htpasswd_user }}"
+    password: "{{ htpasswd_password }}"
+    owner: "{{ role_user }}"
+    group: www-data
+    mode: '0640'
+  loop:
+    - prometheus
+    - grafana
+    - alertmanager
+  loop_control:
+    loop_var: htpasswd_dir
+  no_log: true
+  changed_when: false
 
 - name: Ensure Apache2 systemd override directory exists
   file:
