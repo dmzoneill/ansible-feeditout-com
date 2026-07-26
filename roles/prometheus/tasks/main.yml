@@ -203,6 +203,26 @@
 # #   when: prometheus_tls_enabled
 # #   notify: Restart Prometheus
 
+- name: Deploy SSL cert expiry collector script
+  copy:
+    src: ssl_cert_expiry.sh
+    dest: /usr/local/bin/ssl_cert_expiry.sh
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Run SSL cert expiry collector
+  command: /usr/local/bin/ssl_cert_expiry.sh
+  changed_when: false
+
+- name: Add SSL cert expiry cron job
+  cron:
+    name: "ssl_cert_expiry_collector"
+    minute: "0"
+    hour: "6"
+    job: "/usr/local/bin/ssl_cert_expiry.sh"
+    user: root
+
 - name: Copy Prometheus config
   ansible.builtin.template:
     src: prometheus.yml.j2

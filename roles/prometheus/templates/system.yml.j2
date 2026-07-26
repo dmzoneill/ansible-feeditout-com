@@ -121,3 +121,219 @@ groups:
         summary: 'High system load on {{ $labels.instance }}'
         description: 'System load is significantly above CPU count.'
         {% endraw %}
+
+    # Disk predicted full within 24h
+    - alert: DiskSpacePrediction
+      expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}[6h], 24*3600) < 0
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        {% raw %}
+        summary: 'Disk {{ $labels.mountpoint }} predicted full within 24h'
+        description: 'Based on 6h trend, disk {{ $labels.mountpoint }} on {{ $labels.instance }} will run out of space within 24 hours.'
+        {% endraw %}
+
+    # Inode exhaustion < 5%
+    - alert: InodeExhaustion
+      expr: (node_filesystem_files_free{fstype!~"tmpfs|overlay"} / node_filesystem_files{fstype!~"tmpfs|overlay"}) * 100 < 5
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        {% raw %}
+        summary: 'Inode exhaustion on {{ $labels.mountpoint }}'
+        description: 'Less than 5% inodes free on {{ $labels.mountpoint }}. Services may fail to create files.'
+        {% endraw %}
+
+    # Disk read latency > 100ms
+    - alert: DiskReadLatency
+      expr: rate(node_disk_read_time_seconds_total[5m]) / rate(node_disk_reads_completed_total[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'High disk read latency on {{ $labels.device }}'
+        description: 'Average read latency on {{ $labels.device }} exceeds 100ms.'
+        {% endraw %}
+
+    # Disk write latency > 100ms
+    - alert: DiskWriteLatency
+      expr: rate(node_disk_write_time_seconds_total[5m]) / rate(node_disk_writes_completed_total[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'High disk write latency on {{ $labels.device }}'
+        description: 'Average write latency on {{ $labels.device }} exceeds 100ms.'
+        {% endraw %}
+
+    # OOM killer invoked
+    - alert: OomKillDetected
+      expr: increase(node_vmstat_oom_kill[5m]) > 0
+      for: 0m
+      labels:
+        severity: critical
+      annotations:
+        {% raw %}
+        summary: 'OOM kill detected on {{ $labels.instance }}'
+        description: 'The kernel OOM killer has terminated a process. Check dmesg for details.'
+        {% endraw %}
+
+    # High major page faults
+    - alert: MemoryPressureHigh
+      expr: rate(node_vmstat_pgmajfault[5m]) > 100
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'High memory pressure on {{ $labels.instance }}'
+        description: 'Major page fault rate exceeds 100/sec, indicating heavy swapping or memory contention.'
+        {% endraw %}
+
+    # TCP established connections > 500
+    - alert: HighTcpConnections
+      expr: node_netstat_Tcp_CurrEstab > 500
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'High TCP connection count on {{ $labels.instance }}'
+        description: 'Over 500 established TCP connections. May indicate connection leak or DDoS.'
+        {% endraw %}
+
+    # TCP TIME_WAIT > 1000
+    - alert: TcpTimeWaitHigh
+      expr: node_sockstat_TCP_tw > 1000
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'High TCP TIME_WAIT count on {{ $labels.instance }}'
+        description: 'Over 1000 sockets in TIME_WAIT. May indicate high connection churn.'
+        {% endraw %}
+
+    # Network dropped packets
+    - alert: NetworkDroppedPackets
+      expr: rate(node_network_receive_drop_total[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'Network packets being dropped on {{ $labels.device }}'
+        description: 'Interface {{ $labels.device }} is dropping incoming packets.'
+        {% endraw %}
+
+    # File descriptor exhaustion > 80%
+    - alert: FileDescriptorExhaustion
+      expr: node_filefd_allocated / node_filefd_maximum * 100 > 80
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        {% raw %}
+        summary: 'File descriptor exhaustion on {{ $labels.instance }}'
+        description: 'Over 80% of file descriptors allocated. Services may fail to open files or sockets.'
+        {% endraw %}
+
+    # Entropy pool low
+    - alert: EntropyPoolLow
+      expr: node_entropy_avail_bits < 100
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'Low entropy on {{ $labels.instance }}'
+        description: 'Available entropy below 100 bits. Cryptographic operations may block.'
+        {% endraw %}
+
+    # Clock drift > 50ms
+    - alert: ClockDriftDetected
+      expr: abs(node_timex_offset_seconds) > 0.05
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'Clock drift detected on {{ $labels.instance }}'
+        description: 'System clock offset exceeds 50ms. May affect TLS, logging, and scheduled tasks.'
+        {% endraw %}
+
+    # Any systemd unit in failed state
+    - alert: SystemdUnitFailed
+      expr: node_systemd_unit_state{state="failed"} == 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        {% raw %}
+        summary: 'Systemd unit {{ $labels.name }} has failed'
+        description: 'The systemd unit {{ $labels.name }} entered failed state on {{ $labels.instance }}.'
+        {% endraw %}
+
+    # SSL certificate expiring within 14 days
+    - alert: SslCertExpiringSoon
+      expr: (ssl_cert_expiry_timestamp - time()) / 86400 < 14
+      for: 1h
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'SSL cert for {{ $labels.domain }} expires in {{ $value | printf "%.0f" }} days'
+        description: 'Certificate for {{ $labels.domain }} expires within 14 days. Check certbot renewal.'
+        {% endraw %}
+
+    # SSL certificate expiring within 3 days
+    - alert: SslCertExpiryCritical
+      expr: (ssl_cert_expiry_timestamp - time()) / 86400 < 3
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        {% raw %}
+        summary: 'SSL cert for {{ $labels.domain }} expires in {{ $value | printf "%.0f" }} days'
+        description: 'Certificate for {{ $labels.domain }} expires within 3 days. Immediate action required.'
+        {% endraw %}
+
+    # Prometheus scrape target down
+    - alert: PrometheusTargetDown
+      expr: up == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        {% raw %}
+        summary: 'Prometheus target {{ $labels.job }} is down'
+        description: 'Target {{ $labels.instance }} in job {{ $labels.job }} is unreachable.'
+        {% endraw %}
+
+    # Prometheus rule evaluation failures
+    - alert: PrometheusRuleEvalFailure
+      expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'Prometheus rule evaluation failures on {{ $labels.instance }}'
+        description: 'Prometheus is failing to evaluate some alerting or recording rules.'
+        {% endraw %}
+
+    # Alertmanager notification failures
+    - alert: AlertmanagerNotificationFailed
+      expr: increase(alertmanager_notifications_failed_total[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        {% raw %}
+        summary: 'Alertmanager notification failures'
+        description: 'Alertmanager is failing to send notifications via {{ $labels.integration }}.'
+        {% endraw %}

@@ -10,6 +10,12 @@
     state: started
     enabled: true
 
+- name: Ensure textfile collector directory exists
+  file:
+    path: /var/lib/node_exporter/textfile
+    state: directory
+    mode: '0755'
+
 - name: Run Node Exporter container with systemd collector support
   community.docker.docker_container:
     name: node_exporter
@@ -25,6 +31,7 @@
       - "/run/systemd:/run/systemd:ro"
       - "/run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro"
       - "/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro"
+      - "/var/lib/node_exporter/textfile:/var/lib/node_exporter/textfile:ro"
     command: >
       --path.procfs=/host/proc
       --path.sysfs=/host/sys
@@ -32,3 +39,5 @@
       --collector.systemd
       --collector.processes
       --collector.netstat
+      --collector.textfile
+      --collector.textfile.directory=/var/lib/node_exporter/textfile
