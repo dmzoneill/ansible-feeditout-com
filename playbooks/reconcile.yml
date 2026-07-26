@@ -101,6 +101,7 @@
         - apache2
         - services
         - chuckbot
+        - fio_bot
         - rclone
       when: role_to_run is not defined or role_to_run == item
 

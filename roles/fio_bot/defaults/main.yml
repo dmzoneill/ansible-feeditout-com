@@ -1,0 +1,26 @@
+---
+fio_bot_channel: "{{ slack_alerts_channel_id }}"
+fio_bot_model: "big-pickle"
+fio_bot_api_base: "https://opencode.ai/zen/v1"
+fio_bot_max_output: 3000
+fio_bot_command_timeout: 30
+fio_bot_max_history: 10
+fio_bot_github_repo: "dmzoneill/ansible-feeditout-com"
+fio_bot_idle_interval: 21600
+fio_bot_prometheus_url: "http://localhost:9090"
+fio_bot_alertmanager_url: "http://localhost:9093"
+fio_bot_alert_poll_interval: 60
+fio_bot_alert_cooldown_hours: 4
+fio_bot_alert_max_rounds: 3
+fio_bot_alert_investigation_timeout: 20
+fio_bot_server_hostname: "{{ hostname }}"
+fio_bot_server_domain: "{{ fqdn }}"
+fio_bot_ansible_dir: "/opt/ansible"
+fio_bot_kb_path: "/opt/fio-bot/knowledge.db"
+fio_bot_kb_retention_days: 180
+fio_bot_kb_context_limit: 3
+fio_bot_kb_max_rows: 5000
+fio_bot_audit_channel: "{{ slack_alerts_channel_id }}"
+fio_bot_digest_enabled: "true"
+fio_bot_digest_hour: 8
+fio_bot_idle_mention_user: "{{ user }}"

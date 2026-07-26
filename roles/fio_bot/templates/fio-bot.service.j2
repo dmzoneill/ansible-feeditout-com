@@ -1,0 +1,17 @@
+[Unit]
+Description=FIO Bot - Slack ChatOps assistant
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/fio-bot/__main__.py
+EnvironmentFile=/etc/fio-bot/fio-bot.env
+Restart=on-failure
+RestartSec=5
+RestartMaxDelaySec=300
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+---
+- name: Restart fio-bot
+  ansible.builtin.systemd:
+    name: fio-bot
+    state: restarted
+    daemon_reload: true

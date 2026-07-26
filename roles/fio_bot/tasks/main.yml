@@ -1,0 +1,72 @@
+---
+- name: Install system dependencies
+  apt:
+    name:
+      - gh
+      - python3-pip
+    state: present
+
+- name: Install Python packages for fio-bot
+  pip:
+    name:
+      - slack_bolt
+      - openai
+    state: present
+    break_system_packages: true
+
+- name: Create fio-bot directory
+  file:
+    path: /opt/fio-bot
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create fio-bot config directory
+  file:
+    path: /etc/fio-bot
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Deploy fio-bot environment file
+  template:
+    src: fio-bot.env.j2
+    dest: /etc/fio-bot/fio-bot.env
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+  notify: Restart fio-bot
+
+- name: Deploy fio-bot Python package
+  copy:
+    src: fio-bot/
+    dest: /opt/fio-bot/
+    owner: root
+    group: root
+    mode: '0644'
+    directory_mode: '0755'
+  notify: Restart fio-bot
+
+- name: Ensure __main__.py is executable
+  file:
+    path: /opt/fio-bot/__main__.py
+    mode: '0755'
+
+- name: Deploy fio-bot systemd service
+  template:
+    src: fio-bot.service.j2
+    dest: /etc/systemd/system/fio-bot.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart fio-bot
+
+- name: Enable and start fio-bot
+  ansible.builtin.systemd:
+    name: fio-bot
+    enabled: true
+    state: started
+    daemon_reload: true
