@@ -64,3 +64,30 @@
   when:
     - grub_line.changed or grub_timeout_line.changed
     - ansible_connection != 'local'
+
+- name: Check if GRUB password is already configured
+  stat:
+    path: /etc/grub.d/01_password
+  register: grub_password_file
+
+- name: Deploy GRUB password protection script
+  copy:
+    content: |
+      #!/bin/sh
+      cat << 'GRUB_EOF'
+      set superusers="admin"
+      password_pbkdf2 admin {{ grub_password_hash }}
+      GRUB_EOF
+    dest: /etc/grub.d/01_password
+    owner: root
+    group: root
+    mode: '0755'
+  when: grub_password_hash is defined
+  notify: Update GRUB
+
+- name: Ensure unrestricted boot for default entry
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT=""'
+  notify: Update GRUB

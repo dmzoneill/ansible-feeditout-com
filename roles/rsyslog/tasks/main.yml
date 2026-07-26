@@ -65,3 +65,18 @@
     name: systemd-journald
     state: restarted
   when: journald_persistent.changed
+
+- name: Deploy remote syslog forwarding config
+  copy:
+    content: |
+      # Forward all logs to remote syslog server
+      *.* @@{{ remote_syslog_server }}:{{ remote_syslog_port }}
+    dest: /etc/rsyslog.d/99-remote.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: remote_syslog_server is defined
+  notify: Restart rsyslog
+
+- name: Restart rsyslog if remote config changed
+  meta: noop

@@ -92,6 +92,8 @@
         - postfix_exporter
         - cache_exporters
         - cadvisor
+        - blackbox_exporter
+        - openvpn
         - opendkim
         - opendmarc
         - postsrsd
