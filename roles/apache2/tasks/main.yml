@@ -17,6 +17,7 @@
     - prometheus
     - grafana
     - alertmanager
+    - phpmyadmin
   loop_control:
     loop_var: htpasswd_dir
 
@@ -32,6 +33,7 @@
     - prometheus
     - grafana
     - alertmanager
+    - phpmyadmin
   loop_control:
     loop_var: htpasswd_dir
   no_log: true
