@@ -1,0 +1,8 @@
+---
+- name: Deploy apt pinning preferences
+  template:
+    src: pin-packages.j2
+    dest: /etc/apt/preferences.d/99-ansible-pinning
+    owner: root
+    group: root
+    mode: '0644'

@@ -1,0 +1,5 @@
+---
+apt_pinned_packages:
+  - { package: "linux-image-*", version: "6.12" }
+  - { package: "mariadb-server*", version: "1:11.8" }
+  - { package: "php8.4-*", version: "8.4" }

@@ -1,0 +1,9 @@
+# Ansible-managed package pinning
+# Prevent unattended major version upgrades
+
+{% for pin in apt_pinned_packages %}
+Package: {{ pin.package }}
+Pin: version {{ pin.version }}*
+Pin-Priority: {{ pin.priority | default(999) }}
+
+{% endfor %}

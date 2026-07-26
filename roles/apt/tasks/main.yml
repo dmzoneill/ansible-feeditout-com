@@ -46,6 +46,11 @@
   apt:
     autoremove: true
 
+- name: Ensure needrestart is installed
+  apt:
+    name: needrestart
+    state: present
+
 - name: Clean APT cache
   apt:
     autoclean: true

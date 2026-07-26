@@ -43,3 +43,5 @@ MAILTO="{{ cron.email }}"
 0 4 * * 6 /usr/bin/debsums --changed 2>&1 | /usr/bin/mail -s "debsums integrity check" dmz.oneill@gmail.com || true
 # MariaDB monthly table optimization
 0 3 1 * * /usr/bin/mysqlcheck --optimize --all-databases --defaults-file=/root/.my.cnf > /dev/null 2>&1
+# Kernel reboot check (daily at 5am, only reboots if kernel outdated)
+0 5 * * * /usr/sbin/needrestart -b -k 2>/dev/null | grep -q "NEEDRESTART-KSTA: 3" && /usr/bin/wall "Kernel update pending - rebooting in 1 minute" && /bin/sleep 60 && /sbin/reboot || true

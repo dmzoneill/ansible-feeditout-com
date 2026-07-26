@@ -337,3 +337,13 @@ groups:
         summary: 'Alertmanager notification failures'
         description: 'Alertmanager is failing to send notifications via {{ $labels.integration }}.'
         {% endraw %}
+
+- name: deadman
+  rules:
+    - alert: DeadMansSwitch
+      expr: vector(1)
+      labels:
+        severity: none
+      annotations:
+        summary: "Dead man's switch - monitoring is alive"
+        description: "This alert fires continuously to verify the alerting pipeline is functional."
