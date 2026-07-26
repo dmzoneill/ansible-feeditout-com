@@ -66,14 +66,6 @@ groups:
       annotations:
         summary: "chrony.service is not running"
         description: "The {% raw %}{{ $labels.name }}{% endraw %} service is currently {% raw %}{{ $labels.state }}{% endraw %} (expected: active)."
-    - alert: ChuckbotDown
-      expr: node_systemd_unit_state{name="chuckbot.service", state="active"} != 1
-      for: 10s
-      labels:
-        severity: critical
-      annotations:
-        summary: "chuckbot.service is not running"
-        description: "The {% raw %}{{ $labels.name }}{% endraw %} service is currently {% raw %}{{ $labels.state }}{% endraw %} (expected: active)."
     - alert: ClamavDaemonDown
       expr: node_systemd_unit_state{name="clamav-daemon.service", state="active"} != 1
       for: 10s
