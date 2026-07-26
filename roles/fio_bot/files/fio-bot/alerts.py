@@ -67,6 +67,7 @@ def parse_alert_from_event(event, channel_id_to_category):
     title_match = re.search(r"\[FIRING:\d+\]\s+(.+)", full_text)
     if title_match:
         alertname = title_match.group(1).strip()
+        alertname = re.sub(r"^\*?Alert:\*?\s*", "", alertname).strip()
     else:
         for att in event.get("attachments", []):
             t = att.get("title", "")

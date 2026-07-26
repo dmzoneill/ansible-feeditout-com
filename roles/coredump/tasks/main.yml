@@ -1,0 +1,26 @@
+---
+- name: Ensure coredump config directory exists
+  file:
+    path: /etc/systemd/coredump.conf.d
+    state: directory
+    mode: '0755'
+
+- name: Disable core dump storage
+  copy:
+    content: |
+      [Coredump]
+      Storage=none
+      ProcessSizeMax=0
+    dest: /etc/systemd/coredump.conf.d/disable.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Set ulimit for core dumps to 0
+  copy:
+    content: |
+      * hard core 0
+    dest: /etc/security/limits.d/99-coredump.conf
+    owner: root
+    group: root
+    mode: '0644'

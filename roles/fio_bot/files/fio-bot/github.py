@@ -11,10 +11,12 @@ log = logging.getLogger("fio-bot")
 
 
 def search_existing_issue(repo, alertname):
-    safe_name = alertname.replace('"', '\\"')
+    bare_name = re.sub(r"^\*?Alert:\*?\s*", "", alertname).strip()
+    bare_name = re.sub(r"\s*—.*$", "", bare_name).strip()
+    safe_name = bare_name.replace('"', '\\"')
     cmd = (
         f"gh issue list --repo {repo} --state open "
-        f'--search "[ALERT] {safe_name}" --json number,url --limit 1'
+        f'--search "[ALERT] {safe_name} in:title" --json number,url --limit 1'
     )
     output, exit_code = execute_command(cmd)
     if exit_code != 0 or not output.strip() or output.strip() == "[]":

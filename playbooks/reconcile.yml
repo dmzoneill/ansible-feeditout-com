@@ -66,6 +66,8 @@
         - system_cleanup
         - environment
         - ssl_hardening
+        - coredump
+        - shell_timeout
         - hostname
         - cron
         - logrotate

@@ -15,7 +15,8 @@
     dest: /etc/docker/daemon.json
     content: |
       {
-        "dns": ["8.8.8.8", "1.1.1.1"]
+        "dns": ["8.8.8.8", "1.1.1.1"],
+        "icc": false
       }
     mode: '0644'
   register: docker_daemon_json

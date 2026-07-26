@@ -37,3 +37,5 @@ MAILTO="{{ cron.email }}"
 0 5 * * * /usr/local/bin/security-report-ansible-pull.sh >> /var/log/security-reports/ansible-pull.log 2>&1
 # SSL certificate expiry metrics for Prometheus
 0 6 * * * /usr/local/bin/ssl_cert_expiry.sh
+# Docker cleanup (weekly)
+0 4 * * 0 /usr/bin/docker system prune -af --volumes > /dev/null 2>&1

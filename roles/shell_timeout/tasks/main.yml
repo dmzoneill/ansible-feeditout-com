@@ -1,0 +1,11 @@
+---
+- name: Deploy shell idle timeout
+  copy:
+    content: |
+      TMOUT={{ shell_timeout_seconds }}
+      readonly TMOUT
+      export TMOUT
+    dest: /etc/profile.d/tmout.sh
+    owner: root
+    group: root
+    mode: '0644'
