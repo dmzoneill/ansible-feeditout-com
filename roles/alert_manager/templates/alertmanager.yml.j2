@@ -35,15 +35,5 @@ receivers:
         send_resolved: true
         channel: "#alerts"
         title: '{% raw %}[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}{% endraw %}'
-        text: '{% raw %}{{ range .Alerts }}*Alert:* {{ .Labels.alertname }}{{ "\n" }}*Severity:* {{ if .Labels.severity }}{{ .Labels.severity }}{{ else }}none{{ end }}{{ "\n" }}*Description:* {{ if .Annotations.description }}{{ .Annotations.description }}{{ else if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}No description{{ end }}{{ "\n" }}*Details:*{{ "\n" }}{{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`{{ "\n" }}{{ end }}{{ end }}{% endraw %}'
-        actions:
-        - type: button
-          text: "Query :mag:"
-          url: '{% raw %}{{ (index .Alerts 0).GeneratorURL }}{% endraw %}'
-        - type: button
-          text: "Dashboard :bar_chart:"
-          url: 'https://grafana.{{ fqdn }}'
-        - type: button
-          text: "Silence :no_bell:"
-          url: '{% raw %}https://alertmanager.{% endraw %}{{ fqdn }}{% raw %}/#/silences/new?filter=%7B{{ range .CommonLabels.SortedPairs }}{{ if ne .Name "alertname" }}{{ .Name }}%3D"{{ .Value }}"%2C{{ end }}{{ end }}alertname%3D"{{ .CommonLabels.alertname }}"%7D{% endraw %}'
+        text: '{% raw %}{{ range .Alerts }}*Alert:* {{ .Labels.alertname }}{{ "\n" }}*Severity:* {{ if .Labels.severity }}{{ .Labels.severity }}{{ else }}none{{ end }}{{ "\n" }}*Description:* {{ if .Annotations.description }}{{ .Annotations.description }}{{ else if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}No description{{ end }}{{ "\n" }}{{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`{{ "\n" }}{{ end }}{{ "\n" }}{{ end }}{% endraw %}:mag: <{% raw %}{{ (index .Alerts 0).GeneratorURL }}{% endraw %}|Query>  :bar_chart: <https://grafana.{{ fqdn }}|Dashboard>  :no_bell: <{% raw %}https://alertmanager.{% endraw %}{{ fqdn }}{% raw %}/#/silences/new?filter=%7B{{ range .CommonLabels.SortedPairs }}{{ if ne .Name "alertname" }}{{ .Name }}%3D"{{ .Value }}"%2C{{ end }}{{ end }}alertname%3D"{{ .CommonLabels.alertname }}"%7D{% endraw %}|Silence>'
 {% endif %}
