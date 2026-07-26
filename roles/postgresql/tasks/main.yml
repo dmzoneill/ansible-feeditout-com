@@ -1,0 +1,78 @@
+---
+# roles/postgresql/tasks/main.yml
+
+- name: Install PostgreSQL
+  apt:
+    name: postgresql
+    state: present
+
+- name: Ensure systemd override directory exists
+  file:
+    path: /etc/systemd/system/postgresql.service.d
+    state: directory
+    mode: "0755"
+
+- name: Deploy systemd override for restart-on-failure
+  copy:
+    dest: /etc/systemd/system/postgresql.service.d/override.conf
+    content: |
+      [Service]
+      Restart=on-failure
+      RestartSec=5
+    mode: "0644"
+  notify:
+    - Restart PostgreSQL
+
+- name: Deploy pg_hba.conf
+  template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/{{ postgresql_version | default('16') }}/main/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: "0640"
+  notify:
+    - Restart PostgreSQL
+
+- meta: flush_handlers
+
+- name: Enable and start PostgreSQL
+  systemd:
+    name: postgresql
+    enabled: true
+    state: started
+
+- name: Check if fail2counter database exists
+  command: psql -tAc "SELECT 1 FROM pg_database WHERE datname='fail2counter'"
+  become: true
+  become_user: postgres
+  register: pg_db_check
+  changed_when: false
+
+- name: Create fail2counter database
+  command: createdb fail2counter
+  become: true
+  become_user: postgres
+  when: pg_db_check.stdout != "1"
+
+- name: Ensure fail2counter user exists
+  command: >
+    psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='fail2counter'"
+  become: true
+  become_user: postgres
+  register: pg_user_check
+  changed_when: false
+
+- name: Create fail2counter user
+  command: >
+    psql -c "CREATE ROLE fail2counter LOGIN"
+  become: true
+  become_user: postgres
+  when: pg_user_check.stdout != "1"
+
+- name: Grant fail2counter user access to fail2counter database
+  command: >
+    psql -c "GRANT ALL PRIVILEGES ON DATABASE fail2counter TO fail2counter"
+  become: true
+  become_user: postgres
+  register: pg_grant
+  changed_when: "'GRANT' in pg_grant.stdout"

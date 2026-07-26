@@ -63,6 +63,9 @@
         - ansible_pull
         - swap
         - clean
+        - system_cleanup
+        - environment
+        - ssl_hardening
         - hostname
         - cron
         - logrotate
@@ -93,6 +96,7 @@
         - sshd
         - pam
         - network_manager
+        - postgresql
         - mysql
         - memcached
         - php_fpm

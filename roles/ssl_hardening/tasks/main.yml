@@ -1,0 +1,56 @@
+---
+- name: Ensure ca-certificates package is installed
+  apt:
+    name: ca-certificates
+    state: present
+
+- name: Run update-ca-certificates if bundle missing
+  command: update-ca-certificates
+  args:
+    creates: /etc/ssl/certs/ca-certificates.crt
+  register: ca_update_result
+
+- name: Check if system_default_sect exists in openssl.cnf
+  command: grep -c '^\[system_default_sect\]' /etc/ssl/openssl.cnf
+  register: system_default_sect_check
+  changed_when: false
+  failed_when: false
+
+- name: Add system_default_sect section if missing
+  lineinfile:
+    path: /etc/ssl/openssl.cnf
+    line: "[system_default_sect]"
+    insertafter: EOF
+  when: system_default_sect_check.rc != 0
+
+- name: Check current MinProtocol value
+  command: grep -E '^MinProtocol\s*=' /etc/ssl/openssl.cnf
+  register: min_protocol_check
+  changed_when: false
+  failed_when: false
+
+- name: Set MinProtocol under system_default_sect
+  lineinfile:
+    path: /etc/ssl/openssl.cnf
+    regexp: '^MinProtocol\s*='
+    line: "MinProtocol = {{ ssl_min_protocol }}"
+    insertafter: '^\[system_default_sect\]'
+  when: >
+    min_protocol_check.rc != 0 or
+    ('MinProtocol = ' ~ ssl_min_protocol) not in min_protocol_check.stdout
+
+- name: Check current CipherString value
+  command: grep -E '^CipherString\s*=' /etc/ssl/openssl.cnf
+  register: cipher_string_check
+  changed_when: false
+  failed_when: false
+
+- name: Set CipherString under system_default_sect
+  lineinfile:
+    path: /etc/ssl/openssl.cnf
+    regexp: '^CipherString\s*='
+    line: "CipherString = {{ ssl_cipher_string }}"
+    insertafter: '^MinProtocol\s*='
+  when: >
+    cipher_string_check.rc != 0 or
+    ('CipherString = ' ~ ssl_cipher_string) not in cipher_string_check.stdout

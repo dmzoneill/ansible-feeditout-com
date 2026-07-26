@@ -1,0 +1,10 @@
+---
+- name: Remove leftover desktop/GUI packages
+  apt:
+    name: "{{ system_cleanup_packages }}"
+    state: absent
+  failed_when: false
+
+- name: Autoremove unused dependencies
+  apt:
+    autoremove: yes

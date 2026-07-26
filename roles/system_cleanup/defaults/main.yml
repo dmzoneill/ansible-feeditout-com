@@ -1,0 +1,15 @@
+---
+system_cleanup_packages:
+  - bluez
+  - bluetooth
+  - xfce4
+  - pulseaudio
+  - pipewire
+  - timidity
+  - sane-utils
+  - libsane-common
+  - openni2-utils
+  - perlbal
+  - w3m
+  - swtpm
+  - swtpm-tools

@@ -13,3 +13,34 @@
   apt:
     name: tripwire
     state: absent
+
+- name: Ensure ufw is not installed
+  apt:
+    name: ufw
+    state: absent
+
+- name: Ensure exim4 packages are not installed
+  apt:
+    name:
+      - exim4-base
+      - exim4-config
+      - exim4-daemon-light
+    state: absent
+
+- name: Ensure monit is not installed
+  apt:
+    name: monit
+    state: absent
+
+- name: Ensure libvirt/qemu packages are not installed
+  apt:
+    name:
+      - libvirt-daemon-system
+      - qemu-system-x86
+      - qemu-utils
+    state: absent
+
+- name: Ensure privoxy is not installed
+  apt:
+    name: privoxy
+    state: absent
