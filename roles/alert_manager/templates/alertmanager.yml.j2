@@ -29,3 +29,29 @@ receivers:
         send_resolved: true
         parse_mode: HTML
 {% endif %}
+{% if slack_webhook_url is defined %}
+    slack_configs:
+      - api_url: "{{ slack_webhook_url }}"
+        send_resolved: true
+        channel: "#alerts"
+        title: '{% raw %}[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}{% endraw %}'
+        text: >-
+          {% raw %}{{ range .Alerts }}
+          *Alert:* {{ .Labels.alertname }}
+          *Severity:* {{ .Labels.severity | default "none" }}
+          *Description:* {{ .Annotations.description | default .Annotations.summary | default "No description" }}
+          *Details:*
+          {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+          {{ end }}
+          {{ end }}{% endraw %}
+        actions:
+          - type: button
+            text: "Query"
+            url: '{% raw %}{{ (index .Alerts 0).GeneratorURL }}{% endraw %}'
+          - type: button
+            text: "Dashboard"
+            url: 'https://grafana.{{ fqdn }}'
+          - type: button
+            text: "Silence"
+            url: '{% raw %}https://alertmanager.{% endraw %}{{ fqdn }}{% raw %}/#/silences/new?filter=%7B{{ range .CommonLabels.SortedPairs }}{{ if ne .Name "alertname" }}{{ .Name }}%3D"{{ .Value }}"%2C{{ end }}{{ end }}alertname%3D"{{ .CommonLabels.alertname }}"%7D{% endraw %}'
+{% endif %}
