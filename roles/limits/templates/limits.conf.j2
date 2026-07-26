@@ -1,0 +1,6 @@
+# /etc/security/limits.conf - Ansible managed
+#
+# <domain> <type> <item> <value>
+{% for limit in security_limits %}
+{{ "%-20s %-8s %-16s %s" | format(limit.domain, limit.type, limit.item, limit.value) }}
+{% endfor %}

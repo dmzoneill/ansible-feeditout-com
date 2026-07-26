@@ -69,6 +69,7 @@
         - coredump
         - shell_timeout
         - login_defs
+        - limits
         - cron_access
         - hostname
         - cron

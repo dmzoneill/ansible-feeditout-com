@@ -2,7 +2,7 @@
 set -uo pipefail  # Do not use -e so we can handle errors gracefully
 
 # Configurable variables
-SRC_PATHS="/etc /opt /root /home /usr/local /srv /var/log /boot /var/lib/mysql"
+SRC_PATHS="/etc /opt /root /home /usr/local /srv /var/log /boot /var/lib/mysql /var/backups"
 STAGING="/tmp/backup-staging"
 BACKUP_ROOT="/tmp/system-backup"
 TAR_FILE="$BACKUP_ROOT/system.tar.gz"
@@ -22,6 +22,13 @@ echo "Using backup destination: $DEST" | tee -a "$LOGFILE"
 mkdir -p "$BACKUP_ROOT/mysqldump"
 mkdir -p "$BACKUP_ROOT/pgdump"
 mkdir -p "$STAGING"
+
+# Export system state for disaster recovery
+mkdir -p /var/backups/system-state
+dpkg --get-selections > /var/backups/system-state/dpkg-selections.txt
+systemctl list-unit-files --type=service --state=enabled --no-pager > /var/backups/system-state/enabled-services.txt
+ip addr show > /var/backups/system-state/ip-addresses.txt
+crontab -l > /var/backups/system-state/root-crontab.txt 2>/dev/null || true
 
 # Dump and gzip MySQL databases
 echo "Dumping and compressing MySQL databases..." | tee -a "$LOGFILE"

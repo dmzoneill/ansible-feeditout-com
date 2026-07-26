@@ -1,0 +1,6 @@
+---
+security_limits:
+  - { domain: "*", type: "hard", item: "core", value: "0" }
+  - { domain: "*", type: "hard", item: "maxlogins", value: "10" }
+  - { domain: "root", type: "soft", item: "nofile", value: "65536" }
+  - { domain: "root", type: "hard", item: "nofile", value: "65536" }
