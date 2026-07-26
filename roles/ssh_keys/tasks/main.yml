@@ -1,0 +1,22 @@
+---
+- name: Ensure .ssh directory exists for managed users
+  file:
+    path: "/home/{{ ssh_key_entry.user }}/.ssh"
+    state: directory
+    owner: "{{ ssh_key_entry.user }}"
+    group: "{{ ssh_key_entry.user }}"
+    mode: '0700'
+  loop: "{{ ssh_authorized_keys }}"
+  loop_control:
+    loop_var: ssh_key_entry
+
+- name: Deploy authorized_keys for managed users
+  authorized_key:
+    user: "{{ ssh_key_entry.user }}"
+    key: "{{ ssh_key_entry.key }}"
+    state: present
+    exclusive: "{{ ssh_key_entry.exclusive | default(true) }}"
+  loop: "{{ ssh_authorized_keys }}"
+  loop_control:
+    loop_var: ssh_key_entry
+  no_log: true

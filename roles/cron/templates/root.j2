@@ -39,3 +39,7 @@ MAILTO="{{ cron.email }}"
 0 6 * * * /usr/local/bin/ssl_cert_expiry.sh
 # Docker cleanup (weekly)
 0 4 * * 0 /usr/bin/docker system prune -af --volumes > /dev/null 2>&1
+# Package integrity check (weekly)
+0 4 * * 6 /usr/bin/debsums --changed 2>&1 | /usr/bin/mail -s "debsums integrity check" dmz.oneill@gmail.com || true
+# MariaDB monthly table optimization
+0 3 1 * * /usr/bin/mysqlcheck --optimize --all-databases --defaults-file=/root/.my.cnf > /dev/null 2>&1

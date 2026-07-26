@@ -98,6 +98,7 @@
         - wayland
         - grub
         - sshd
+        - ssh_keys
         - pam
         - network_manager
         - postgresql
