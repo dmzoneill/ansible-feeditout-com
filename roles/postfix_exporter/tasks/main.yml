@@ -1,0 +1,15 @@
+---
+- name: Run postfix_exporter container
+  community.docker.docker_container:
+    name: postfix_exporter
+    image: kumina/postfix-exporter:latest
+    restart_policy: always
+    state: started
+    network_mode: host
+    volumes:
+      - "/var/log:/var/log:ro"
+      - "/var/spool/postfix:/var/spool/postfix:ro"
+    command: >
+      --postfix.logfile_path=/var/log/mail.log
+      --postfix.showq_path=/var/spool/postfix/public/showq
+      --web.listen-address=:9154

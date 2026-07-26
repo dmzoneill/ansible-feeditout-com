@@ -1,0 +1,25 @@
+---
+- name: Run redis_exporter container
+  community.docker.docker_container:
+    name: redis_exporter
+    image: oliver006/redis_exporter:v1.63.0
+    restart_policy: always
+    state: started
+    network_mode: host
+    env:
+      REDIS_ADDR: "redis://127.0.0.1:6379"
+      REDIS_PASSWORD: "{{ redis_password }}"
+    command: >
+      --web.listen-address=:9121
+  no_log: true
+
+- name: Run memcached_exporter container
+  community.docker.docker_container:
+    name: memcached_exporter
+    image: prom/memcached-exporter:v0.14.4
+    restart_policy: always
+    state: started
+    network_mode: host
+    command: >
+      --memcached.address=127.0.0.1:11211
+      --web.listen-address=:9150

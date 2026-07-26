@@ -1,0 +1,24 @@
+---
+- name: Run mysqld_exporter container
+  community.docker.docker_container:
+    name: mysqld_exporter
+    image: prom/mysqld-exporter:v0.16.0
+    restart_policy: always
+    state: started
+    network_mode: host
+    env:
+      DATA_SOURCE_NAME: "exporter:{{ mysqld_exporter_password }}@(127.0.0.1:3306)/"
+    command: >
+      --collect.global_status
+      --collect.global_variables
+      --collect.info_schema.innodb_metrics
+      --collect.info_schema.processlist
+  no_log: true
+
+- name: Ensure mysqld_exporter MySQL user exists
+  command: >
+    mysql -u root -e "CREATE USER IF NOT EXISTS 'exporter'@'localhost' IDENTIFIED BY '{{ mysqld_exporter_password }}';
+    GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'localhost';
+    FLUSH PRIVILEGES;"
+  changed_when: false
+  no_log: true

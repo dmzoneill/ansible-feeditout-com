@@ -1,0 +1,2 @@
+---
+mysqld_exporter_password: "{{ mysql_exporter_pass | default('exporter') }}"

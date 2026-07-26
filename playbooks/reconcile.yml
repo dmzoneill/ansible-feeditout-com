@@ -88,6 +88,10 @@
         - rsyslog
         - motd
         - node_exporter
+        - mysqld_exporter
+        - postfix_exporter
+        - cache_exporters
+        - cadvisor
         - opendkim
         - opendmarc
         - postsrsd
