@@ -38,8 +38,8 @@ receivers:
         text: >-
           {% raw %}{{ range .Alerts }}
           *Alert:* {{ .Labels.alertname }}
-          *Severity:* {{ .Labels.severity | default "none" }}
-          *Description:* {{ .Annotations.description | default .Annotations.summary | default "No description" }}
+          *Severity:* {{ if .Labels.severity }}{{ .Labels.severity }}{{ else }}none{{ end }}
+          *Description:* {{ if .Annotations.description }}{{ .Annotations.description }}{{ else if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}No description{{ end }}
           *Details:*
           {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
           {{ end }}
