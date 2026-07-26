@@ -113,6 +113,7 @@
     owner: redis
     group: redis
     mode: '0755'
+  changed_when: false
 
 - name: Copy full webdis.json
   template:
