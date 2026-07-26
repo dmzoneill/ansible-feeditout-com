@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+
+REPORT_DIR="/var/log/security-reports"
+HOSTNAME=$(hostname)
+DATE=$(date +%Y-%m-%d)
+REPORT="$REPORT_DIR/lynis-report-$DATE.gz"
+
+lynis audit system --no-colors --quiet 2>&1 | gzip > "$REPORT"
+
+/usr/local/bin/slack-upload-report "$REPORT" "Lynis Audit - $HOSTNAME - $DATE"
+
+find "$REPORT_DIR" -name "lynis-report-*.gz" -mtime +7 -delete

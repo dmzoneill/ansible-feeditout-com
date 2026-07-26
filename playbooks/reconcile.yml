@@ -71,6 +71,7 @@
         - fail2ban
         - fail2counter
         - clamav
+        - security_reports
         - chkrootkit
         - rsyslog
         - motd

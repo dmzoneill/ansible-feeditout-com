@@ -1,0 +1,13 @@
+#!/bin/bash
+set -uo pipefail
+
+REPORT_DIR="/var/log/security-reports"
+HOSTNAME=$(hostname)
+DATE=$(date +%Y-%m-%d)
+REPORT="$REPORT_DIR/aide-report-$DATE.gz"
+
+aide --check --config=/etc/aide/aide.conf 2>&1 | gzip > "$REPORT" || true
+
+/usr/local/bin/slack-upload-report "$REPORT" "AIDE Integrity Check - $HOSTNAME - $DATE"
+
+find "$REPORT_DIR" -name "aide-report-*.gz" -mtime +7 -delete

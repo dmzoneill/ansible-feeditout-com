@@ -41,6 +41,9 @@ ansible_pull_interval_minutes: 30
 ansible_pull_expected_ip: "{{ ipv4_addr }}"
 ansible_pull_email: "{{ email }}"
 
+# security_reports
+slack_alerts_channel_id: "C0BJLKJG9U1"
+
 # php_fpm
 php_fpm_user: "{{ user }}"
 
@@ -134,7 +137,6 @@ disable_services:
   - "cyrus-imapd.service"
   - "geoclue.service"
   - "iio-sensor-proxy.service"
-  - "lynis.service"
   - "man-db.service"
   - "packagekit.service"
   - "packagekit-offline-update.service"
@@ -440,6 +442,10 @@ logrotate_configs:
   - name: lynis
     path: /var/log/lynis*.log
     options: [weekly, rotate 2, compress, missingok, notifempty]
+
+  - name: security-reports
+    path: /var/log/security-reports/*.log
+    options: [weekly, rotate 4, compress, missingok, notifempty]
 
   - name: mail
     path: /var/log/mail.log

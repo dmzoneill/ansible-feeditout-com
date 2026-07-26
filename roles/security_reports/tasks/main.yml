@@ -1,0 +1,101 @@
+---
+- name: Install jq for JSON parsing in uploader
+  apt:
+    name: jq
+    state: present
+
+- name: Install Lynis security auditing tool
+  apt:
+    name: lynis
+    state: present
+
+- name: Unmask lynis.service if previously masked
+  ansible.builtin.systemd:
+    name: lynis.service
+    masked: false
+  failed_when: false
+
+- name: Install OpenSCAP scanner
+  apt:
+    name:
+      - openscap-scanner
+      - libopenscap8
+    state: present
+
+- name: Search for available SSG Debian packages
+  shell: apt-cache search '^ssg-debian' || true
+  register: ssg_available
+  changed_when: false
+
+- name: Install SSG content (Debian-specific or generic)
+  apt:
+    name: "{{ 'ssg-debian13' if 'ssg-debian13' in ssg_available.stdout else 'scap-security-guide' }}"
+    state: present
+  register: ssg_install
+  failed_when: false
+
+- name: Create security reports output directory
+  file:
+    path: /var/log/security-reports
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+
+- name: Create security reports config directory
+  file:
+    path: /etc/security-reports
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Deploy Slack bot token environment file
+  template:
+    src: security-reports-env.j2
+    dest: /etc/security-reports/env
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+
+- name: Deploy Slack file uploader script
+  template:
+    src: slack-upload-report.sh.j2
+    dest: /usr/local/bin/slack-upload-report
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy security scanner report scripts
+  template:
+    src: "security-report-{{ scanner }}.sh.j2"
+    dest: "/usr/local/bin/security-report-{{ scanner }}.sh"
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - lynis
+    - clamav
+    - aide
+    - openscap
+    - ansible-pull
+  loop_control:
+    loop_var: scanner
+
+- name: Check if AIDE database exists
+  stat:
+    path: /var/lib/aide/aide.db
+  register: aide_db
+
+- name: Initialize AIDE database if missing
+  command: aide --init --config=/etc/aide/aide.conf
+  when: not aide_db.stat.exists
+  register: aide_init
+
+- name: Copy new AIDE database to active location
+  copy:
+    src: /var/lib/aide/aide.db.new
+    dest: /var/lib/aide/aide.db
+    remote_src: true
+  when: not aide_db.stat.exists and aide_init is changed

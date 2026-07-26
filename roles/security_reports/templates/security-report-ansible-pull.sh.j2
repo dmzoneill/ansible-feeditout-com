@@ -1,0 +1,20 @@
+#!/bin/bash
+set -uo pipefail
+
+REPORT_DIR="/var/log/security-reports"
+HOSTNAME=$(hostname)
+DATE=$(date +%Y-%m-%d_%H%M)
+REPORT="$REPORT_DIR/ansible-pull-report-$DATE.gz"
+SOURCE="/var/log/ansible-pull.log"
+
+if [ ! -s "$SOURCE" ]; then
+    echo "No ansible-pull log content to report." | gzip > "$REPORT"
+    /usr/local/bin/slack-upload-report "$REPORT" "Ansible-Pull Report - $HOSTNAME - $DATE (empty)"
+    exit 0
+fi
+
+gzip -c "$SOURCE" > "$REPORT"
+
+/usr/local/bin/slack-upload-report "$REPORT" "Ansible-Pull Report - $HOSTNAME - $DATE"
+
+find "$REPORT_DIR" -name "ansible-pull-report-*.gz" -mtime +7 -delete

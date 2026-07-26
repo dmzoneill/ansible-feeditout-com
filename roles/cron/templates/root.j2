@@ -27,7 +27,13 @@ MAILTO="{{ cron.email }}"
 */15 * * * * /usr/bin/ansible-playbook /opt/ansible/playbooks/disaster_recovery.yml > /tmp/iptables_recovery.log 2>&1
 15 3 * * * /home/dave/bin/certbot.sh
 0 3 * * * /etc/apache2/create_mmap.sh
-0 1 * * * /usr/bin/aide -c /etc/aide/aide.conf -u && cp /var/lib/aide/aide.db{.new,}
 5 * * * * /usr/bin/journalctl --since "1 hour ago" | /bin/grep -i "The MAIL FROM domain"
 10 * * * * /usr/bin/journalctl --since "1 hour ago" | /bin/grep -i "failure"
 0 3 * * 0 /opt/fail2counter/refresh_exploits.sh >> /var/log/fail2counter_refresh.log 2>&1
+# Security scan reports (staggered, uploaded to Slack)
+0 1 * * * /usr/local/bin/security-report-aide.sh >> /var/log/security-reports/aide.log 2>&1
+30 1 * * * /usr/bin/aide -c /etc/aide/aide.conf -u && cp /var/lib/aide/aide.db{.new,}
+0 2 * * * /usr/local/bin/security-report-lynis.sh >> /var/log/security-reports/lynis.log 2>&1
+30 2 * * * /usr/local/bin/security-report-openscap.sh >> /var/log/security-reports/openscap.log 2>&1
+0 3 * * * /usr/local/bin/security-report-clamav.sh >> /var/log/security-reports/clamav.log 2>&1
+0 5 * * * /usr/local/bin/security-report-ansible-pull.sh >> /var/log/security-reports/ansible-pull.log 2>&1

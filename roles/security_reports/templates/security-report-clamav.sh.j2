@@ -1,0 +1,21 @@
+#!/bin/bash
+set -uo pipefail
+
+REPORT_DIR="/var/log/security-reports"
+HOSTNAME=$(hostname)
+DATE=$(date +%Y-%m-%d)
+REPORT="$REPORT_DIR/clamav-report-$DATE.gz"
+
+timeout 3600 clamscan \
+    --recursive \
+    --infected \
+    --suppress-ok-results \
+    --exclude-dir=/proc \
+    --exclude-dir=/sys \
+    --exclude-dir=/dev \
+    --exclude-dir=/run \
+    /home /var/www /tmp /opt 2>&1 | gzip > "$REPORT" || true
+
+/usr/local/bin/slack-upload-report "$REPORT" "ClamAV Scan - $HOSTNAME - $DATE"
+
+find "$REPORT_DIR" -name "clamav-report-*.gz" -mtime +7 -delete

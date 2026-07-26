@@ -1,0 +1,67 @@
+#!/bin/bash
+set -euo pipefail
+
+# Slack files.upload v2 (three-step) uploader
+# Usage: slack-upload-report <file-path> <title> [initial-comment]
+
+LOGFILE="/var/log/security-reports/upload.log"
+
+source /etc/security-reports/env
+
+FILE_PATH="${1:?Usage: $0 <file-path> <title> [comment]}"
+TITLE="${2:?Usage: $0 <file-path> <title> [comment]}"
+COMMENT="${3:-$TITLE}"
+
+if [ ! -f "$FILE_PATH" ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: File not found: $FILE_PATH" >> "$LOGFILE"
+    exit 1
+fi
+
+FILENAME=$(basename "$FILE_PATH")
+FILE_SIZE=$(stat -c%s "$FILE_PATH")
+
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOGFILE"; }
+
+log "Uploading $FILE_PATH ($FILE_SIZE bytes) as '$TITLE'"
+
+# Step 1: Get upload URL
+STEP1=$(curl -s -X POST "https://slack.com/api/files.getUploadURLExternal" \
+    -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "filename=$FILENAME&length=$FILE_SIZE")
+
+UPLOAD_URL=$(echo "$STEP1" | jq -r '.upload_url // empty')
+FILE_ID=$(echo "$STEP1" | jq -r '.file_id // empty')
+
+if [ -z "$UPLOAD_URL" ] || [ -z "$FILE_ID" ]; then
+    log "ERROR: Step 1 failed: $STEP1"
+    exit 1
+fi
+
+log "Step 1 OK: file_id=$FILE_ID"
+
+# Step 2: Upload file content
+STEP2_HTTP=$(curl -s -o /dev/null -w "%{http_code}" \
+    -X POST "$UPLOAD_URL" \
+    -F "file=@$FILE_PATH")
+
+if [ "$STEP2_HTTP" != "200" ]; then
+    log "ERROR: Step 2 failed with HTTP $STEP2_HTTP"
+    exit 1
+fi
+
+log "Step 2 OK: file uploaded"
+
+# Step 3: Complete upload and share to channel
+STEP3=$(curl -s -X POST "https://slack.com/api/files.completeUploadExternal" \
+    -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d "{\"files\":[{\"id\":\"$FILE_ID\",\"title\":\"$TITLE\"}],\"channel_id\":\"$SLACK_CHANNEL_ID\",\"initial_comment\":\"$COMMENT\"}")
+
+OK=$(echo "$STEP3" | jq -r '.ok // empty')
+if [ "$OK" != "true" ]; then
+    log "ERROR: Step 3 failed: $STEP3"
+    exit 1
+fi
+
+log "SUCCESS: Uploaded $FILENAME (file_id=$FILE_ID) to channel $SLACK_CHANNEL_ID"

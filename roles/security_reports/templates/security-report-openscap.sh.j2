@@ -1,0 +1,32 @@
+#!/bin/bash
+set -uo pipefail
+
+REPORT_DIR="/var/log/security-reports"
+HOSTNAME=$(hostname)
+DATE=$(date +%Y-%m-%d)
+REPORT="$REPORT_DIR/openscap-report-$DATE.html.gz"
+
+SSG_DS=""
+for ds in /usr/share/xml/scap/ssg/content/ssg-debian*-ds.xml; do
+    [ -f "$ds" ] && SSG_DS="$ds" && break
+done
+
+if [ -z "$SSG_DS" ]; then
+    echo "No SSG Debian datastream found. Skipping OpenSCAP scan." | gzip > "$REPORT"
+    /usr/local/bin/slack-upload-report "$REPORT" "OpenSCAP - $HOSTNAME - $DATE (SKIPPED - no SSG content)"
+    exit 0
+fi
+
+HTML_REPORT=$(mktemp /tmp/oscap-report-XXXX.html)
+
+oscap xccdf eval \
+    --profile xccdf_org.ssgproject.content_profile_standard \
+    --report "$HTML_REPORT" \
+    "$SSG_DS" 2>&1 || true
+
+gzip -c "$HTML_REPORT" > "$REPORT"
+rm -f "$HTML_REPORT"
+
+/usr/local/bin/slack-upload-report "$REPORT" "OpenSCAP Compliance - $HOSTNAME - $DATE"
+
+find "$REPORT_DIR" -name "openscap-report-*.gz" -mtime +7 -delete
