@@ -59,7 +59,9 @@ def _discover_alert_channels(bot):
         alert_channels = {}
         for ch in channels:
             name = ch.get("name", "")
-            if name.startswith("alert-") and name != "alert-audit":
+            if name == "alerts":
+                alert_channels["general"] = ch["id"]
+            elif name.startswith("alert-") and name != "alert-audit":
                 category = name.removeprefix("alert-").replace("-", "_")
                 alert_channels[category] = ch["id"]
         bot.config.alert_channels = alert_channels
