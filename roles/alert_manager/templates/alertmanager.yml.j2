@@ -38,14 +38,17 @@ receivers:
         text: '{% raw %}{{ range .Alerts }}*Alert:* {{ .Labels.alertname }}{{ "\n" }}*Severity:* {{ if .Labels.severity }}{{ .Labels.severity }}{{ else }}none{{ end }}{{ "\n" }}*Description:* {{ if .Annotations.description }}{{ .Annotations.description }}{{ else if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}No description{{ end }}{{ "\n" }}{{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`{{ "\n" }}{{ end }}{{ end }}{% endraw %}'
         actions:
           - type: button
+            text: "Runbook :notebook:"
+            url: '{% raw %}https://github.com/dmzoneill/ansible-feeditout-com/blob/main/docs/runbooks/{{ .CommonLabels.alertname }}.md{% endraw %}'
+          - type: button
             text: "Query :mag:"
             url: '{% raw %}{{ (index .Alerts 0).GeneratorURL }}{% endraw %}'
           - type: button
             text: "Dashboard :bar_chart:"
             url: 'https://grafana.{{ fqdn }}'
           - type: button
-            text: "Alert Definition :triangular_flag_on_post:"
-            url: 'https://prometheus.{{ fqdn }}/rules'
+            text: "Prometheus :fire:"
+            url: 'https://prometheus.{{ fqdn }}'
           - type: button
             text: "Silence :no_bell:"
             url: '{% raw %}https://alertmanager.{% endraw %}{{ fqdn }}{% raw %}/#/silences/new?filter=%7B{{ range .CommonLabels.SortedPairs }}{{ if ne .Name "alertname" }}{{ .Name }}%3D"{{ .Value }}"%2C{{ end }}{{ end }}alertname%3D"{{ .CommonLabels.alertname }}"%7D{% endraw %}'
