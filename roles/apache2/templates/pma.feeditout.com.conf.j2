@@ -1,0 +1,6 @@
+<Location />
+    AuthType Basic
+    AuthName "Restricted Access"
+    AuthUserFile /home/{{ user }}/www/{{ vhost.document_root }}/.htpasswd
+    Require valid-user
+</Location>
