@@ -18,14 +18,16 @@
     dest: /etc/postfix/
     owner: root
     group: root
-    mode: '0644'
     directory_mode: '0755'
   register: postfix_file_copy_result
 
 - name: Restrict permissions on sasl_passwd
   file:
     path: /etc/postfix/sasl_passwd
+    owner: root
+    group: root
     mode: '0600'
+  changed_when: false
 
 - name: Copy mail configuration to /etc/mail
   copy:
@@ -180,6 +182,7 @@
 - name: Update sni and certs
   command: /usr/bin/postfix-updatecerts
   when: postfix_files_changed | default(false)
+  changed_when: false
 
 # --- Restart Postfix Only If Files Changed ---
 

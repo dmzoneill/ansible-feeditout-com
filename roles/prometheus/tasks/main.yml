@@ -158,14 +158,6 @@
   command: /usr/local/bin/ssl_cert_expiry.sh
   changed_when: false
 
-- name: Add SSL cert expiry cron job
-  cron:
-    name: "ssl_cert_expiry_collector"
-    minute: "0"
-    hour: "6"
-    job: "/usr/local/bin/ssl_cert_expiry.sh"
-    user: root
-
 - name: Copy Prometheus config
   ansible.builtin.template:
     src: prometheus.yml.j2

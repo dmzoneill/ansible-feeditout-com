@@ -11,11 +11,6 @@
     path: /etc/apt/sources.list.d/nodesource.list
     state: absent
 
-- name: Remove old Grafana repo config
-  file:
-    path: /etc/apt/sources.list.d/grafana.list
-    state: absent
-
 # Add Grafana repo with modern signed-by keyring
 - name: Download Grafana GPG key to keyrings
   get_url:
@@ -46,7 +41,6 @@
     path: "{{ metasploit_old_file }}"
     state: absent
   loop:
-    - /etc/apt/sources.list.d/metasploit.list
     - /etc/apt/sources.list.d/metasploit-framework.list
     - /etc/apt/sources.list.d/metasploit.sources
     - /etc/apt/sources.list.d/metasploit-framework.sources

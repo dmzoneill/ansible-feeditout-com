@@ -141,9 +141,13 @@ def sync_ansible_chains(tool, rules_dict):
         for rule in to_add:
             print(f"Adding rule: {rule}")
             run(f"/sbin/{tool} {rule}")
+            _changes[0] = True
         for rule in to_remove:
             print(f"Removing rule: {rule}")
             run(f"/sbin/{tool} {rule.replace('-A', '-D', 1)}")
+            _changes[0] = True
+
+_changes = [False]
 
 def apply_rules(tool, rules_dict):
     for chain in rules_dict:
@@ -190,6 +194,9 @@ def main():
     for tool in ("iptables", "ip6tables"):
         apply_rules(tool, rules)
         apply_policies(tool, policies.get("ipv6" if tool == "ip6tables" else "ipv4", {}))
+
+    if not _changes[0]:
+        print("No changes")
 
 if __name__ == "__main__":
     main()

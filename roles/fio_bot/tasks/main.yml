@@ -46,14 +46,8 @@
     dest: /opt/fio-bot/
     owner: root
     group: root
-    mode: '0644'
     directory_mode: '0755'
   notify: Restart fio-bot
-
-- name: Ensure __main__.py is executable
-  file:
-    path: /opt/fio-bot/__main__.py
-    mode: '0755'
 
 - name: Deploy fio-bot systemd service
   template:

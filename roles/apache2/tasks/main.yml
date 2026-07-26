@@ -188,7 +188,7 @@
   loop: "{{ apache_vhosts }}"
   loop_control:
     loop_var: vhost
-  when: not vhost.secure
+  when: not vhost.secure and not (vhost.redirect_to_www | default(false))
   notify: Restart Apache2
 
 - name: Create secure vhost files
@@ -199,7 +199,7 @@
   loop: "{{ apache_vhosts }}"
   loop_control:
     loop_var: vhost
-  when: vhost.secure
+  when: vhost.secure and not (vhost.redirect_to_www | default(false))
   notify: Restart Apache2
 
 - name: Create www redirect vhost files
@@ -236,7 +236,9 @@
   loop: "{{ existing_confs.files }}"
   loop_control:
     loop_var: conf
-  when: (conf.path | basename) not in (apache_vhosts | map(attribute='conf_name') | list)
+  when:
+    - (conf.path | basename) not in (apache_vhosts | map(attribute='conf_name') | list)
+    - (conf.path | basename) != '000-default.conf'
 
 - name: Disable broken Apache modules by removing .load files
   file:

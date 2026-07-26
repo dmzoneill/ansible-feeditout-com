@@ -193,7 +193,7 @@
   become_user: postgres
   command: psql -d fail2counter -f /opt/fail2counter/schema.sql
   register: pg_schema_result
-  changed_when: "'CREATE' in pg_schema_result.stdout"
+  changed_when: "'CREATE' in pg_schema_result.stdout and 'already exists' not in pg_schema_result.stderr"
   failed_when: false
 
 - name: Grant fail2counter ownership on all tables
