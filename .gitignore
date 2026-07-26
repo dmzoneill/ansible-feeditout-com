@@ -7,3 +7,4 @@ backups/*
 backup/*
 dns/*bak*
 .ansible/
+.claude/
