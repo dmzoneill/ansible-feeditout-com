@@ -138,6 +138,14 @@
 # #   when: prometheus_tls_enabled
 # #   notify: Restart Prometheus
 
+- name: Ensure textfile collector directory exists for SSL metrics
+  ansible.builtin.file:
+    path: /var/lib/node_exporter/textfile
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Deploy SSL cert expiry collector script
   copy:
     src: ssl_cert_expiry.sh

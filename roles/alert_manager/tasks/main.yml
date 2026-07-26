@@ -81,13 +81,15 @@
 
 - name: Copy Alertmanager binaries
   ansible.builtin.copy:
-    src: "{{ alertmanager_extract_path }}/{{ item }}"
-    dest: "/usr/local/bin/{{ item }}"
+    src: "{{ alertmanager_extract_path }}/{{ alertmanager_binary }}"
+    dest: "/usr/local/bin/{{ alertmanager_binary }}"
     remote_src: yes
     mode: '0755'
   loop:
     - alertmanager
     - amtool
+  loop_control:
+    loop_var: alertmanager_binary
 
 - name: Deploy alertmanager config
   ansible.builtin.template:

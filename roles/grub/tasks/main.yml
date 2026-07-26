@@ -61,4 +61,6 @@
   reboot:
     msg: "Rebooting to apply GRUB changes"
     pre_reboot_delay: 5
-  when: grub_line.changed or grub_timeout_line.changed
+  when:
+    - grub_line.changed or grub_timeout_line.changed
+    - ansible_connection != 'local'

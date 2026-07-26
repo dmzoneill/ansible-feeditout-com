@@ -102,6 +102,18 @@
   register: git_hash_before
   changed_when: false
 
+- name: Ensure on main branch before pull (as {{ user }})
+  become: true
+  become_user: "{{ user }}"
+  command: git checkout main
+  args:
+    chdir: /opt/Chuckbot
+  changed_when: false
+  failed_when: false
+  when:
+    - git_dirty.stdout == ""
+    - git_remote.stdout | default('') == "git@github.com:dmzoneill/Chuckbot.git"
+
 - name: Pull latest from origin with rebase (as {{ user }})
   become: true
   become_user: "{{ user }}"
