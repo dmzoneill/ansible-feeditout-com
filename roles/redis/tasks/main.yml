@@ -110,17 +110,25 @@
   file:
     path: /var/run/webdis
     state: directory
-    owner: redis
-    group: redis
+    owner: webdis
+    group: webdis
     mode: '0755'
   changed_when: false
+
+- name: Ensure webdis log directory exists
+  file:
+    path: /var/log/webdis
+    state: directory
+    owner: webdis
+    group: webdis
+    mode: '0750'
 
 - name: Copy full webdis.json
   template:
     src: webdis.json.j2
     dest: /etc/webdis/webdis.json
-    owner: redis
-    group: redis
+    owner: root
+    group: webdis
     mode: "0640"
   no_log: true
   notify:

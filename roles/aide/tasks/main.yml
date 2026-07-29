@@ -1,4 +1,33 @@
 ---
+- name: Stop and disable orphaned dailyaidecheck timer
+  ansible.builtin.systemd:
+    name: dailyaidecheck.timer
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Stop and disable orphaned dailyaidecheck service
+  ansible.builtin.systemd:
+    name: dailyaidecheck.service
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Remove orphaned dailyaidecheck systemd units
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/systemd/system/dailyaidecheck.service
+    - /etc/systemd/system/dailyaidecheck.timer
+    - /etc/systemd/system/dailyaidecheck-buildcache.service
+  register: aide_cleanup
+
+- name: Reload systemd after dailyaidecheck cleanup
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: aide_cleanup.changed
+
 - name: Ensure AIDE is installed
   ansible.builtin.package:
     name: aide

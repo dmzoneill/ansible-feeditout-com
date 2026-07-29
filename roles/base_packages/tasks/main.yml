@@ -32,6 +32,14 @@
     path: /usr/local/bin/perlindex
     state: absent
 
+- name: Purge orphaned PCP packages
+  apt:
+    name:
+      - pcp
+      - pcp-conf
+    state: absent
+    purge: true
+
 - name: Show summary of batch install results
   debug:
     msg: |

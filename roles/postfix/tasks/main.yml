@@ -108,18 +108,6 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: Check if postfix instance directory exists
-  stat:
-    path: /etc/postfix-
-  register: postfix_instance_dir
-
-- name: Enable and start postfix@- instance
-  ansible.builtin.systemd:
-    name: "postfix@-"
-    enabled: true
-    state: started
-  when: postfix_instance_dir.stat.exists
-
 # --- Cert Hook Script ---
 
 - name: Install postfix-updatecerts script from static file
