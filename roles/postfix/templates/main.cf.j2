@@ -88,6 +88,7 @@ header_size_limit = 4096000
 bounce_template_file = /etc/postfix/bounce/bounce.cf
 header_checks = pcre:/etc/postfix/header_checks
 maximal_queue_lifetime = 5d
-bounce_queue_lifetime = 5d
+bounce_queue_lifetime = 1d
+default_destination_rate_delay = 5s
 
 debug_peer_list =
