@@ -3,7 +3,6 @@ system_cleanup_packages:
   - bluez
   - bluetooth
   - xfce4
-  - pulseaudio
   - pipewire
   - timidity
   - sane-utils

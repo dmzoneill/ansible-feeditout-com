@@ -140,11 +140,16 @@ def sync_ansible_chains(tool, rules_dict):
 
         for rule in to_add:
             print(f"Adding rule: {rule}")
-            run(f"/sbin/{tool} {rule}")
+            tokens = shlex.split(rule)
+            safe_cmd = " ".join(shlex.quote(t) for t in tokens)
+            run(f"/sbin/{tool} {safe_cmd}")
             _changes[0] = True
         for rule in to_remove:
             print(f"Removing rule: {rule}")
-            run(f"/sbin/{tool} {rule.replace('-A', '-D', 1)}")
+            delete_rule = rule.replace("-A", "-D", 1)
+            tokens = shlex.split(delete_rule)
+            safe_cmd = " ".join(shlex.quote(t) for t in tokens)
+            run(f"/sbin/{tool} {safe_cmd}")
             _changes[0] = True
 
 _changes = [False]

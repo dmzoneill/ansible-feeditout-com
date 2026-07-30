@@ -89,6 +89,8 @@
     GIT_EDITOR=true git commit -m "Local dirty state commit" || echo "Nothing to commit"
   args:
     chdir: /opt/Chuckbot
+  register: chuckbot_commit
+  changed_when: "'Nothing to commit' not in chuckbot_commit.stdout"
   when:
     - git_dirty.stdout != ""
     - git_ahead.stdout is not search('ahead')

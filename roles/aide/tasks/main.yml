@@ -1,25 +1,19 @@
 ---
-- name: Stop and disable orphaned dailyaidecheck timer
+- name: Mask orphaned dailyaidecheck units (package-shipped, cannot delete)
   ansible.builtin.systemd:
-    name: dailyaidecheck.timer
-    state: stopped
+    name: "{{ item }}"
+    masked: true
     enabled: false
+  loop:
+    - dailyaidecheck.service
+    - dailyaidecheck.timer
   failed_when: false
 
-- name: Stop and disable orphaned dailyaidecheck service
-  ansible.builtin.systemd:
-    name: dailyaidecheck.service
-    state: stopped
-    enabled: false
-  failed_when: false
-
-- name: Remove orphaned dailyaidecheck systemd units
+- name: Remove orphaned dailyaidecheck overrides
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   loop:
-    - /etc/systemd/system/dailyaidecheck.service
-    - /etc/systemd/system/dailyaidecheck.timer
     - /etc/systemd/system/dailyaidecheck-buildcache.service
   register: aide_cleanup
 
