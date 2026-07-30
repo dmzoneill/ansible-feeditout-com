@@ -135,6 +135,24 @@
   notify: Restart Prometheus
   tags: prometheus
 
+- name: Find unmanaged Prometheus rule files
+  ansible.builtin.find:
+    paths: /etc/prometheus/rules
+    patterns: "*.yml"
+    excludes:
+      - system_alert_rules.yml
+      - systemd_alert_rules.yml
+  register: unmanaged_rules
+  tags: prometheus
+
+- name: Remove unmanaged Prometheus rule files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ unmanaged_rules.files }}"
+  notify: Restart Prometheus
+  tags: prometheus
+
 # #   when: prometheus_tls_enabled
 # #   notify: Restart Prometheus
 
