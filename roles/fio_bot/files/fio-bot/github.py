@@ -3,6 +3,7 @@
 import json
 import logging
 import re
+import subprocess
 from datetime import datetime, timezone
 
 from executor import execute_command
@@ -10,24 +11,37 @@ from executor import execute_command
 log = logging.getLogger("fio-bot")
 
 
+def _gh_json(args):
+    """Run gh with JSON output, bypassing the PTY wrapper that corrupts JSON."""
+    try:
+        result = subprocess.run(
+            ["gh"] + args,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode != 0:
+            log.warning("gh exited %d: %s", result.returncode, result.stderr.strip())
+            return None
+        return json.loads(result.stdout) if result.stdout.strip() else None
+    except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError) as exc:
+        log.warning("gh JSON call failed: %s", exc)
+        return None
+
+
 def search_existing_issue(repo, alertname):
     bare_name = re.sub(r"^\*?Alert:\*?\s*", "", alertname).strip()
     bare_name = re.sub(r"\s*—.*$", "", bare_name).strip()
     prefix = f"[ALERT] {bare_name}"
-    cmd = (
-        f"gh issue list --repo {repo} --state open "
-        f'--label "alert" --json number,url,title --limit 100'
-    )
-    output, exit_code = execute_command(cmd)
-    if exit_code != 0 or not output.strip() or output.strip() == "[]":
+    issues = _gh_json([
+        "issue", "list", "--repo", repo, "--state", "open",
+        "--label", "alert", "--json", "number,url,title", "--limit", "100",
+    ])
+    if not issues:
         return None
-    try:
-        issues = json.loads(output.strip())
-        for issue in issues:
-            if issue.get("title", "").startswith(prefix):
-                return (issue["number"], issue["url"])
-    except (json.JSONDecodeError, KeyError, IndexError):
-        pass
+    for issue in issues:
+        if issue.get("title", "").startswith(prefix):
+            return (issue["number"], issue["url"])
     return None
 
 
