@@ -381,6 +381,15 @@ domains:
     loglevel: warn
     enabled: true
 
+  - domain: seedarr.net
+    document_root: seedarr.net
+    virtual_hosts:
+      - name: www.seedarr.net
+        document_root: seedarr.net
+        enabled: true
+    loglevel: warn
+    enabled: true
+
 # logrotate
 logrotate_configs:
   - name: auth
