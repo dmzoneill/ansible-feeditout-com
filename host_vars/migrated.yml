@@ -390,6 +390,15 @@ domains:
     loglevel: warn
     enabled: true
 
+  - domain: leecharr.net
+    document_root: leecharr.net
+    virtual_hosts:
+      - name: www.leecharr.net
+        document_root: leecharr.net
+        enabled: true
+    loglevel: warn
+    enabled: true
+
 # logrotate
 logrotate_configs:
   - name: auth
