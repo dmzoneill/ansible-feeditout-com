@@ -23,13 +23,20 @@
 
 - name: Check if Docker service exists
   stat:
-    path: /usr/bin/dockerd
+    path: /usr/sbin/dockerd
   register: dockerd_binary
+
+- name: Check if Docker service exists in /usr/bin
+  stat:
+    path: /usr/bin/dockerd
+  register: dockerd_bin_binary
+  when: not dockerd_binary.stat.exists
 
 - name: Restart Docker to restore NAT/FORWARD chains after iptables sync
   systemd:
     name: docker
     state: restarted
   when:
-    - dockerd_binary.stat.exists
+    - dockerd_binary.stat.exists or (dockerd_bin_binary.stat.exists | default(false))
     - iptables_result.changed
+
