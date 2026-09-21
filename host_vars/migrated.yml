@@ -630,6 +630,18 @@ iptables:
         dport: 6380
         jump: ACCEPT
 
+      - proto: tcp
+        dport: 8080
+        jump: ACCEPT
+
+      - proto: tcp
+        dport: 51413
+        jump: ACCEPT
+
+      - proto: udp
+        dport: 51413
+        jump: ACCEPT
+
     ANSIBLE_OUTPUT:
       - proto: all
         ctstate: NEW,RELATED,ESTABLISHED
