@@ -20,6 +20,4 @@ rules:
 
 ignore: |
   .github/
-  roles/grafana/files/
-  roles/grafana/templates/
   dns/

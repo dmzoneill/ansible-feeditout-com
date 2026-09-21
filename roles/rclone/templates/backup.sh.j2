@@ -40,12 +40,6 @@ if command -v pg_dump &> /dev/null; then
   sudo -u postgres pg_dumpall | gzip -9 > "$BACKUP_ROOT/pgdump/all_postgres.sql.gz"
 fi
 
-# Dump LiteLLM PostgreSQL (Docker)
-if docker ps --format '{{ '{{' }}.Names{{ '}}' }}' | grep -q litellm-db; then
-  echo "Dumping LiteLLM PostgreSQL from Docker..." | tee -a "$LOGFILE"
-  docker exec litellm-db pg_dumpall -U llmproxy | gzip -9 > "$BACKUP_ROOT/pgdump/litellm.sql.gz"
-fi
-
 # Include PostgreSQL dumps in staging
 cp -r "$BACKUP_ROOT/pgdump" "$STAGING/pgdump" 2>/dev/null || true
 

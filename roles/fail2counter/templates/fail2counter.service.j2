@@ -24,8 +24,8 @@ Environment="FAIL2COUNTER_DSN=host=/var/run/postgresql dbname=fail2counter user=
 Environment=ANTHROPIC_VERTEX_PROJECT_ID={{ anthropic_vertex_project_id | default('itpc-gcp-ansible-pe-eng-claude') }}
 Environment=ANTHROPIC_VERTEX_REGION={{ anthropic_vertex_region | default('us-east5') }}
 Environment=GOOGLE_APPLICATION_CREDENTIALS={{ google_application_credentials | default('/opt/fail2counter/gcp-sa-key.json') }}
-{% if litellm_claude_model is defined %}
-Environment=ANTHROPIC_MODEL={{ litellm_claude_model }}
+{% if anthropic_model is defined or litellm_claude_model is defined %}
+Environment=ANTHROPIC_MODEL={{ anthropic_model | default(litellm_claude_model) }}
 {% endif %}
 
 # CAP_SYS_ADMIN: required for setns() via 'ip netns exec' to enter VPN namespace

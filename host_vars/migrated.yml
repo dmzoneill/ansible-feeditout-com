@@ -17,11 +17,6 @@ ipv6_dns1: "2606:4700:4700::1111"
 ipv6_dns2: "2001:4860:4860::8888"
 loopback_ip: "127.0.1.1"
 
-# vnc
-vnc_user: dave
-# UNUSED - consider removing
-vnc_display: 1
-
 # cockpit
 cockpit_packages:
   - cockpit
@@ -119,13 +114,8 @@ unban_ips:
 # fail2counter / Vertex AI
 anthropic_vertex_project_id: "itpc-gcp-ansible-pe-eng-claude"
 anthropic_vertex_region: "us-east5"
+anthropic_model: "claude-opus-4-6"
 google_application_credentials: "/opt/fail2counter/gcp-sa-key.json"
-
-# litellm
-litellm_gcp_project_id: "itpc-gcp-ansible-pe-eng-claude"
-litellm_gcp_location: "us-east5"
-litellm_port: 4000
-litellm_claude_model: "claude-opus-4-6"
 
 # saslauthd
 saslauthd_mechanism: "pam"
@@ -307,22 +297,6 @@ domains:
       - name: pma.fio.ie
         document_root: phpmyadmin
         enabled: true
-      - name: prometheus.fio.ie
-        document_root: prometheus
-        enabled: true
-        custom_config: true
-      - name: alertmanager.fio.ie
-        document_root: alertmanager
-        enabled: true
-        custom_config: true
-      - name: grafana.fio.ie
-        document_root: grafana
-        enabled: true
-        custom_config: true
-      - name: llm.fio.ie
-        document_root: litellm
-        enabled: true
-        custom_config: true
     loglevel: warn
     enabled: true
 
@@ -353,22 +327,6 @@ domains:
       - name: pma.feeditout.com
         document_root: phpmyadmin
         enabled: true
-      - name: prometheus.feeditout.com
-        document_root: prometheus
-        enabled: true
-        custom_config: true
-      - name: alertmanager.feeditout.com
-        document_root: alertmanager
-        enabled: true
-        custom_config: true
-      - name: grafana.feeditout.com
-        document_root: grafana
-        enabled: true
-        custom_config: true
-      - name: llm.feeditout.com
-        document_root: litellm
-        enabled: true
-        custom_config: true
     loglevel: warn
     enabled: true
 
@@ -603,10 +561,6 @@ iptables:
         jump: ACCEPT
 
       - proto: tcp
-        dport: 2222
-        jump: ACCEPT
-
-      - proto: tcp
         dport: 80
         jump: ACCEPT
 
@@ -652,21 +606,3 @@ iptables:
         jump: LOG
         log_prefix: IPT
         log_level: 4
-
-prometheus_version: "2.51.2"
-prometheus_extracted_dir: "prometheus-2.51.2.linux-amd64"
-prometheus_download_url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/{{ prometheus_extracted_dir }}.tar.gz"
-prometheus_alertmanager_enabled: true
-prometheus_alertmanager_targets:
-  - "localhost:9093"
-prometheus_tls_enabled: false
-# UNUSED - consider removing (TLS config is commented out in prometheus role)
-prometheus_tls_cert_file: /etc/letsencrypt/live/{{ fqdn }}/fullchain.pem
-# UNUSED - consider removing (TLS config is commented out in prometheus role)
-prometheus_tls_key_file: /etc/letsencrypt/live/{{ fqdn }}/privkey.pem
-
-alertmanager_email_enabled: true
-alertmanager_version: "0.27.0"
-alertmanager_arch: "linux-amd64"
-alertmanager_email_to: "{{ email }}"
-alertmanager_email_from: "root@{{ fqdn }}"
