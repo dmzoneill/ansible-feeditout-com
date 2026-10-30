@@ -33,8 +33,11 @@
 
     - name: Rsync www from old to migrated using sshpass and vault password
       shell: >
-        sshpass -p "{{ ansible_become_password }}"
+        sshpass -e
         rsync -az -e "ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no"
         /home/dave/www/
         dave@{{ hostvars['new']['ansible_host'] | default('new') }}:/home/dave/www/
+      environment:
+        SSHPASS: "{{ ansible_become_password }}"
+      no_log: true
       become: false
