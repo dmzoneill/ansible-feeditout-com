@@ -4,7 +4,6 @@ import importlib
 import logging
 import re
 import sqlite3
-import subprocess
 
 import audit
 import knowledge
@@ -17,12 +16,11 @@ OpenAIError = importlib.import_module("openai").OpenAIError
 SlackApiError = importlib.import_module("slack_sdk.errors").SlackApiError
 
 # What a /fio subcommand can raise: Slack, the LLM, the knowledge DB,
-# subprocess/OS I/O, and malformed arguments or data.
+# OS I/O, and malformed arguments or data.
 COMMAND_ERRORS = (
     SlackApiError,
     OpenAIError,
     sqlite3.Error,
-    subprocess.SubprocessError,
     OSError,
     ValueError,
     KeyError,
