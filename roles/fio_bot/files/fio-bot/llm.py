@@ -166,12 +166,12 @@ def fetch_thread_context(client, channel, thread_ts):
 def _get_system_prompt(bot):
     """System prompt with live alert status and personality prepended."""
     prompt = system_prompt(bot.config) + monitoring_reference(bot.config)
-    with bot.alert_summary_lock:
-        alert_ctx = bot.alert_summary
+    with bot.alerts.summary_lock:
+        alert_ctx = bot.alerts.summary
     if alert_ctx:
         prompt += ALERT_HEADER + alert_ctx + ALERT_FOOTER
-    with bot.personality_lock:
-        personality = bot.personality
+    with bot.chat.personality_lock:
+        personality = bot.chat.personality
     if personality:
         prompt = personality + "\n\n" + prompt
     return prompt
@@ -274,8 +274,8 @@ def chat_with_llm(bot, thread_key, thread_ts, user_message, channel=None):
         channel = bot.config.channel
     cfg = bot.config
 
-    with bot.conversations_lock:
-        history = bot.conversations[thread_key]
+    with bot.chat.conversations_lock:
+        history = bot.chat.conversations[thread_key]
         history.append({"role": "user", "content": user_message})
         _trim_history(history, cfg.max_history)
         messages = [{"role": "system", "content": _get_system_prompt(bot)}, *history]
@@ -306,8 +306,8 @@ def chat_with_llm(bot, thread_key, thread_ts, user_message, channel=None):
 
     final_response = "\n\n".join(response_parts)
 
-    with bot.conversations_lock:
-        history = bot.conversations[thread_key]
+    with bot.chat.conversations_lock:
+        history = bot.chat.conversations[thread_key]
         history.append({"role": "assistant", "content": final_response})
         _trim_history(history, cfg.max_history)
 

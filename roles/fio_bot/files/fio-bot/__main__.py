@@ -57,26 +57,36 @@ THREAD_CONTEXT_PROMPT = (
 
 
 @dataclass
-class Bot:  # pylint: disable=too-many-instance-attributes
-    """Shared bot state passed to every handler and background thread.
+class AlertState:
+    """Alert summary, investigation queue and cooldowns, each with its lock."""
 
-    Each piece of shared state is paired with its own lock, so the
-    attribute count is inherent to the design.
-    """
+    summary: str = ""
+    summary_lock: threading.Lock = field(default_factory=threading.Lock)
+    pending: queue.Queue = field(default_factory=queue.Queue)
+    cooldowns: dict = field(default_factory=dict)
+    cooldowns_lock: threading.Lock = field(default_factory=threading.Lock)
+
+
+@dataclass
+class ChatState:
+    """Per-thread conversation history and the custom personality."""
+
+    conversations: dict = field(default_factory=lambda: defaultdict(list))
+    conversations_lock: threading.Lock = field(default_factory=threading.Lock)
+    personality: str = ""
+    personality_lock: threading.Lock = field(default_factory=threading.Lock)
+
+
+@dataclass
+class Bot:
+    """Shared bot state passed to every handler and background thread."""
 
     app: Any
     llm: Any
     config: config.Config
     bot_user_id: str = ""
-    conversations: dict = field(default_factory=lambda: defaultdict(list))
-    conversations_lock: threading.Lock = field(default_factory=threading.Lock)
-    alert_summary: str = ""
-    alert_summary_lock: threading.Lock = field(default_factory=threading.Lock)
-    alert_queue: queue.Queue = field(default_factory=queue.Queue)
-    alert_cooldowns: dict = field(default_factory=dict)
-    alert_cooldowns_lock: threading.Lock = field(default_factory=threading.Lock)
-    personality: str = ""
-    personality_lock: threading.Lock = field(default_factory=threading.Lock)
+    alerts: AlertState = field(default_factory=AlertState)
+    chat: ChatState = field(default_factory=ChatState)
     db: object = None
 
 
@@ -176,15 +186,15 @@ def _handle_dm(bot, event, say, text):
     text = _strip_mention(bot, text)
     try:
         if text.lower() == "reset":
-            with bot.personality_lock:
-                bot.personality = ""
+            with bot.chat.personality_lock:
+                bot.chat.personality = ""
             personality_mod.save(bot.config.personality_file, None)
             say(text="Personality reset to default FIO Bot.", channel=channel)
             log.info("Personality reset by %s", user)
             return
         saved = personality_mod.save(bot.config.personality_file, text) or ""
-        with bot.personality_lock:
-            bot.personality = saved
+        with bot.chat.personality_lock:
+            bot.chat.personality = saved
         say(text=f"Personality set to:\n> {text}", channel=channel)
         log.info("Personality set by %s: %s", user, text[:100])
     except (*SLACK_ERRORS, OSError) as e:
@@ -354,22 +364,22 @@ def main():
     llm_client = OpenAI(api_key=cfg.opencode_api_key, base_url=cfg.api_base)
 
     bot = Bot(app=app, llm=llm_client, config=cfg)
-    bot.personality = personality_mod.load(cfg.personality_file) or ""
+    bot.chat.personality = personality_mod.load(cfg.personality_file) or ""
     bot.db = knowledge.init_db(cfg.knowledge_db_path)
 
     auth = app.client.auth_test()
     bot.bot_user_id = str(auth["user_id"])
     log.info("FIO Bot started as %s (%s)", auth["user"], bot.bot_user_id)
     log.info("Listening in channel %s, model %s", cfg.channel, cfg.model)
-    if bot.personality:
-        log.info("Active personality: %s", bot.personality[:100])
+    if bot.chat.personality:
+        log.info("Active personality: %s", bot.chat.personality[:100])
 
     _discover_alert_channels(bot)
 
     # fetch_alert_summary reports Alertmanager failures in its return value.
     initial = alerts.fetch_alert_summary(cfg)
-    with bot.alert_summary_lock:
-        bot.alert_summary = initial
+    with bot.alerts.summary_lock:
+        bot.alerts.summary = initial
     log.info("Initial alert summary: %s", initial[:200])
 
     _register_handlers(bot)

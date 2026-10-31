@@ -20,7 +20,7 @@ def _run_and_respond(cmd, respond, title, cfg):
     )
 
 
-def _cmd_status(bot, args, respond):
+def _cmd_status(bot, _args, respond):
     _run_and_respond(
         "uptime; echo '---'; free -h; echo '---'; cat /proc/loadavg",
         respond,
@@ -29,7 +29,7 @@ def _cmd_status(bot, args, respond):
     )
 
 
-def _cmd_top(bot, args, respond):
+def _cmd_top(bot, _args, respond):
     _run_and_respond(
         "ps aux --sort=-%cpu | head -11",
         respond,
@@ -38,11 +38,11 @@ def _cmd_top(bot, args, respond):
     )
 
 
-def _cmd_uptime(bot, args, respond):
+def _cmd_uptime(bot, _args, respond):
     _run_and_respond("uptime -p", respond, "Uptime", bot.config)
 
 
-def _cmd_temp(bot, args, respond):
+def _cmd_temp(bot, _args, respond):
     _run_and_respond(
         "sensors 2>/dev/null | grep -E 'Core|temp'"
         " || cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null"
@@ -54,11 +54,9 @@ def _cmd_temp(bot, args, respond):
     )
 
 
-def _cmd_memory(bot, args, respond):
+def _cmd_memory(bot, _args, respond):
     _run_and_respond(
-        "free -h && echo '---'"
-        " && vmstat -s | head -10"
-        " || echo 'vmstat not available'",
+        "free -h && echo '---' && vmstat -s | head -10 || echo 'vmstat not available'",
         respond,
         "Memory",
         bot.config,
@@ -81,7 +79,7 @@ def _cmd_journal(bot, args, respond):
     _run_and_respond(cmd, respond, title, bot.config)
 
 
-def _cmd_disk(bot, args, respond):
+def _cmd_disk(bot, _args, respond):
     _run_and_respond(
         "df -h -x devtmpfs -x tmpfs 2>/dev/null || df -h",
         respond,
@@ -90,7 +88,7 @@ def _cmd_disk(bot, args, respond):
     )
 
 
-def _cmd_containers(bot, args, respond):
+def _cmd_containers(bot, _args, respond):
     _run_and_respond(
         "docker ps --format 'table {{.Names}}\\t{{.Status}}\\t{{.Ports}}'",
         respond,
@@ -127,7 +125,13 @@ def _cmd_inspect(bot, args, respond):
         )
         return
     name = _safe_arg(args.split()[0])
-    fmt = "Name: {{.Name}}\\nImage: {{.Config.Image}}\\nState: {{.State.Status}}\\nCreated: {{.Created}}\\nPorts: {{.HostConfig.PortBindings}}"
+    fmt = (
+        "Name: {{.Name}}\\n"
+        "Image: {{.Config.Image}}\\n"
+        "State: {{.State.Status}}\\n"
+        "Created: {{.Created}}\\n"
+        "Ports: {{.HostConfig.PortBindings}}"
+    )
     _run_and_respond(
         f"docker inspect {name} --format '{fmt}'",
         respond,
@@ -136,7 +140,7 @@ def _cmd_inspect(bot, args, respond):
     )
 
 
-def _cmd_images(bot, args, respond):
+def _cmd_images(bot, _args, respond):
     _run_and_respond(
         "docker images --format 'table {{.Repository}}\\t{{.Tag}}\\t{{.Size}}\\t{{.CreatedSince}}'",
         respond,
@@ -153,7 +157,12 @@ def _cmd_restart_container(bot, args, respond):
         )
         return
     name = _safe_arg(args.split()[0])
-    _run_and_respond(f"docker restart {name}", respond, f"Restart -- {name}", bot.config)
+    _run_and_respond(
+        f"docker restart {name}",
+        respond,
+        f"Restart -- {name}",
+        bot.config,
+    )
 
 
 def _cmd_stop_container(bot, args, respond):
@@ -181,9 +190,9 @@ def _cmd_start_container(bot, args, respond):
 # --- Monitoring ---
 
 
-def _cmd_alerts(bot, args, respond):
-    with bot.alert_summary_lock:
-        summary = bot.alert_summary
+def _cmd_alerts(bot, _args, respond):
+    with bot.alerts.summary_lock:
+        summary = bot.alerts.summary
     if not summary:
         summary = "No alert data available yet."
     respond(response_type="in_channel", text=f"*Alerts*\n{summary}")
@@ -192,7 +201,7 @@ def _cmd_alerts(bot, args, respond):
 # --- Security ---
 
 
-def _cmd_banned(bot, args, respond):
+def _cmd_banned(bot, _args, respond):
     _run_and_respond(
         "fail2ban-client status sshd 2>/dev/null || echo 'fail2ban not running'",
         respond,
@@ -217,7 +226,7 @@ def _cmd_unban(bot, args, respond):
     )
 
 
-def _cmd_audit(bot, args, respond):
+def _cmd_audit(bot, _args, respond):
     _run_and_respond(
         "ausearch -ts recent -m USER_AUTH,USER_LOGIN --interpret 2>/dev/null"
         " | tail -20 || echo 'No recent auth events'",
@@ -227,7 +236,7 @@ def _cmd_audit(bot, args, respond):
     )
 
 
-def _cmd_firewall(bot, args, respond):
+def _cmd_firewall(bot, _args, respond):
     _run_and_respond(
         "iptables -L ANSIBLE_INPUT -n 2>/dev/null || echo 'ANSIBLE_INPUT chain not found'",
         respond,
@@ -236,7 +245,7 @@ def _cmd_firewall(bot, args, respond):
     )
 
 
-def _cmd_fail2ban(bot, args, respond):
+def _cmd_fail2ban(bot, _args, respond):
     _run_and_respond(
         "fail2ban-client status 2>/dev/null || echo 'fail2ban not running'",
         respond,
@@ -248,7 +257,7 @@ def _cmd_fail2ban(bot, args, respond):
 # --- Services ---
 
 
-def _cmd_services(bot, args, respond):
+def _cmd_services(bot, _args, respond):
     output, _ = execute_command(
         "systemctl list-units --state=failed --no-pager --no-legend",
         bot.config.command_timeout,
@@ -261,7 +270,8 @@ def _cmd_services(bot, args, respond):
         )
     else:
         respond(
-            response_type="in_channel", text=f"*Failed Services*\n```\n{output}\n```"
+            response_type="in_channel",
+            text=f"*Failed Services*\n```\n{output}\n```",
         )
 
 
@@ -284,15 +294,15 @@ def _cmd_service(bot, args, respond):
 # --- Network ---
 
 
-def _cmd_network(bot, args, respond):
+def _cmd_network(bot, _args, respond):
     _run_and_respond("ip addr show", respond, "Network Interfaces", bot.config)
 
 
-def _cmd_ports(bot, args, respond):
+def _cmd_ports(bot, _args, respond):
     _run_and_respond("ss -tlnp", respond, "Listening Ports", bot.config)
 
 
-def _cmd_dns(bot, args, respond):
+def _cmd_dns(bot, _args, respond):
     _run_and_respond(
         "cat /etc/resolv.conf",
         respond,
@@ -301,10 +311,9 @@ def _cmd_dns(bot, args, respond):
     )
 
 
-def _cmd_ntp(bot, args, respond):
+def _cmd_ntp(bot, _args, respond):
     _run_and_respond(
-        "chronyc tracking 2>/dev/null"
-        " || timedatectl show --property=NTPSynchronized --value",
+        "chronyc tracking 2>/dev/null || timedatectl show --property=NTPSynchronized --value",
         respond,
         "NTP Sync",
         bot.config,
@@ -314,10 +323,9 @@ def _cmd_ntp(bot, args, respond):
 # --- Updates & maintenance ---
 
 
-def _cmd_updates(bot, args, respond):
+def _cmd_updates(bot, _args, respond):
     _run_and_respond(
-        "apt list --upgradable 2>/dev/null | head -30"
-        " || echo 'System up to date'",
+        "apt list --upgradable 2>/dev/null | head -30 || echo 'System up to date'",
         respond,
         "Pending Updates",
         bot.config,
@@ -327,7 +335,7 @@ def _cmd_updates(bot, args, respond):
 # --- Infrastructure ---
 
 
-def _cmd_certs(bot, args, respond):
+def _cmd_certs(bot, _args, respond):
     _run_and_respond(
         "certbot certificates 2>/dev/null || echo 'certbot not installed'",
         respond,
@@ -336,7 +344,7 @@ def _cmd_certs(bot, args, respond):
     )
 
 
-def _cmd_postfix(bot, args, respond):
+def _cmd_postfix(bot, _args, respond):
     _run_and_respond(
         "postqueue -p 2>/dev/null || echo 'postfix not running'",
         respond,
@@ -345,7 +353,7 @@ def _cmd_postfix(bot, args, respond):
     )
 
 
-def _cmd_issues(bot, args, respond):
+def _cmd_issues(bot, _args, respond):
     _run_and_respond(
         f"gh issue list --repo {bot.config.github_repo} --label alert --state open",
         respond,
@@ -357,7 +365,7 @@ def _cmd_issues(bot, args, respond):
 # --- Web stack ---
 
 
-def _cmd_apache(bot, args, respond):
+def _cmd_apache(bot, _args, respond):
     _run_and_respond(
         "apachectl -S 2>&1 || echo 'Apache not running'",
         respond,
@@ -366,7 +374,7 @@ def _cmd_apache(bot, args, respond):
     )
 
 
-def _cmd_mysql(bot, args, respond):
+def _cmd_mysql(bot, _args, respond):
     _run_and_respond(
         "mysqladmin status 2>/dev/null || echo 'MySQL not running'",
         respond,
@@ -375,17 +383,16 @@ def _cmd_mysql(bot, args, respond):
     )
 
 
-def _cmd_php_fpm(bot, args, respond):
+def _cmd_php_fpm(bot, _args, respond):
     _run_and_respond(
-        "systemctl status php8.4-fpm --no-pager -l 2>&1 | head -15"
-        " || echo 'php8.4-fpm not found'",
+        "systemctl status php8.4-fpm --no-pager -l 2>&1 | head -15 || echo 'php8.4-fpm not found'",
         respond,
         "PHP-FPM Status",
         bot.config,
     )
 
 
-def _cmd_domains(bot, args, respond):
+def _cmd_domains(bot, _args, respond):
     _run_and_respond(
         "apachectl -S 2>&1 | grep -E 'port|namevhost' || echo 'No domains configured'",
         respond,
@@ -394,27 +401,26 @@ def _cmd_domains(bot, args, respond):
     )
 
 
-def _cmd_redis(bot, args, respond):
+def _cmd_redis(bot, _args, respond):
     _run_and_respond(
-        "redis-cli -a $REDIS_AUTH info server 2>/dev/null | head -20"
-        " || echo 'Redis not running'",
+        "redis-cli -a $REDIS_AUTH info server 2>/dev/null | head -20 || echo 'Redis not running'",
         respond,
         "Redis Server Info",
         bot.config,
     )
 
 
-def _cmd_ssl(bot, args, respond):
+def _cmd_ssl(bot, _args, respond):
+    cert = "/etc/letsencrypt/live/fio.ie/cert.pem"
     _run_and_respond(
-        "openssl x509 -in /etc/letsencrypt/live/fio.ie/cert.pem -noout -dates 2>/dev/null"
-        " || echo 'SSL cert not found'",
+        f"openssl x509 -in {cert} -noout -dates 2>/dev/null || echo 'SSL cert not found'",
         respond,
         "SSL Certificate Dates (fio.ie)",
         bot.config,
     )
 
 
-def _cmd_clamav(bot, args, respond):
+def _cmd_clamav(bot, _args, respond):
     _run_and_respond(
         "systemctl status clamav-freshclam --no-pager -l 2>&1 | head -10"
         " && echo '---'"
@@ -426,7 +432,7 @@ def _cmd_clamav(bot, args, respond):
     )
 
 
-def _cmd_aide(bot, args, respond):
+def _cmd_aide(bot, _args, respond):
     _run_and_respond(
         "ls -lt /var/log/aide/ 2>/dev/null | head -5"
         " && echo '---'"
@@ -441,9 +447,9 @@ def _cmd_aide(bot, args, respond):
 # --- Bot management ---
 
 
-def _cmd_personality(bot, args, respond):
-    with bot.personality_lock:
-        p = bot.personality
+def _cmd_personality(bot, _args, respond):
+    with bot.chat.personality_lock:
+        p = bot.chat.personality
     if p:
         respond(response_type="in_channel", text=f"*Current Personality*\n> {p}")
     else:
@@ -470,7 +476,7 @@ def _cmd_ask(bot, args, respond, command):
         respond(response_type="in_channel", text=f"Error: {e}", replace_original=False)
 
 
-def _cmd_version(bot, args, respond):
+def _cmd_version(bot, _args, respond):
     _run_and_respond(
         f"git -C {bot.config.ansible_dir} log -1 --format='%h %s (%cr)'"
         " && echo '---'"
@@ -481,7 +487,7 @@ def _cmd_version(bot, args, respond):
     )
 
 
-def _cmd_pull(bot, args, respond):
+def _cmd_pull(bot, _args, respond):
     _run_and_respond(
         f"git -C {bot.config.ansible_dir} pull",
         respond,
@@ -490,7 +496,7 @@ def _cmd_pull(bot, args, respond):
     )
 
 
-def _cmd_deploy(bot, args, respond):
+def _cmd_deploy(_bot, _args, respond):
     respond(response_type="in_channel", text=":rocket: Starting deploy...")
     cmd = (
         "systemd-run --no-block --unit=fio-bot-deploy"
@@ -507,10 +513,7 @@ def _cmd_deploy(bot, args, respond):
     if exit_code == 0:
         respond(
             response_type="in_channel",
-            text=(
-                "Deploy started. Bot will restart shortly.\n"
-                "Check `/fio deploy-log` for output."
-            ),
+            text="Deploy started. Bot will restart shortly.\nCheck `/fio deploy-log` for output.",
             replace_original=False,
         )
     else:
@@ -521,17 +524,16 @@ def _cmd_deploy(bot, args, respond):
         )
 
 
-def _cmd_deploy_log(bot, args, respond):
+def _cmd_deploy_log(bot, _args, respond):
     _run_and_respond(
-        "journalctl -u fio-bot-deploy --no-pager -n 30 2>&1"
-        " || echo 'No deploy logs found'",
+        "journalctl -u fio-bot-deploy --no-pager -n 30 2>&1 || echo 'No deploy logs found'",
         respond,
         "Deploy Log",
         bot.config,
     )
 
 
-def _cmd_restart(bot, args, respond):
+def _cmd_restart(_bot, _args, respond):
     respond(
         response_type="in_channel",
         text=":arrows_counterclockwise: Restarting fio-bot...",
@@ -560,10 +562,9 @@ def _cmd_knowledge(bot, args, respond):
             findings = inv.get("findings", "")
             if len(findings) > 200:
                 findings = findings[:200] + "..."
-            lines.append(
-                f"*{inv['created_at']}* -- {inv.get('severity', '?')}"
-                f" / {inv.get('instance', '?')}"
-            )
+            severity = inv.get("severity", "?")
+            instance = inv.get("instance", "?")
+            lines.append(f"*{inv['created_at']}* -- {severity} / {instance}")
             lines.append(f"  {findings}\n")
         respond(response_type="in_channel", text="\n".join(lines))
     else:
@@ -588,9 +589,10 @@ def _cmd_note(bot, args, respond, command):
         return
     parts = args.split(None, 1) if args else []
     if len(parts) < 2:
+        example = "`/fio note HighCPU ignore during backup window`"
         respond(
             response_type="in_channel",
-            text="Usage: `/fio note <topic> <text>` (e.g., `/fio note HighCPU ignore during backup window`)",
+            text=f"Usage: `/fio note <topic> <text>` (e.g., {example})",
         )
         return
     topic = parts[0]
@@ -619,7 +621,7 @@ def _cmd_notes(bot, args, respond):
     lines = [f"{title} ({len(notes)} found)\n"]
     for n in notes:
         lines.append(
-            f"*{n['created_at']}* -- `{n['topic']}` (by {n.get('author', '?')})"
+            f"*{n['created_at']}* -- `{n['topic']}` (by {n.get('author', '?')})",
         )
         lines.append(f"  {n['note']}\n")
     respond(response_type="in_channel", text="\n".join(lines))
@@ -641,7 +643,10 @@ COMMANDS = {
         "usage": "/fio journal [unit] [lines]",
     },
     "disk": {"desc": "Filesystem usage", "usage": "/fio disk"},
-    "containers": {"desc": "List running Docker containers", "usage": "/fio containers"},
+    "containers": {
+        "desc": "List running Docker containers",
+        "usage": "/fio containers",
+    },
     "logs": {"desc": "Tail container logs", "usage": "/fio logs <name> [lines]"},
     "inspect": {"desc": "Container details", "usage": "/fio inspect <name>"},
     "images": {"desc": "List Docker images", "usage": "/fio images"},
@@ -758,7 +763,7 @@ HANDLERS = {
 }
 
 
-def _cmd_help(bot, args, respond):
+def _cmd_help(_bot, _args, respond):
     lines = ["*`/fio` Commands*\n"]
     sections = {
         "System": ["status", "top", "uptime", "temp", "memory", "journal"],
@@ -807,6 +812,7 @@ def _safe_arg(value):
 
 
 def register(bot):
+    """Register the /fio slash command handler on the bot's Slack app."""
 
     @bot.app.command("/fio")
     def handle_fio_command(ack, command, respond):
@@ -846,5 +852,6 @@ def register(bot):
         except Exception as e:
             log.exception("Error in /fio %s: %s", subcommand, e)
             respond(
-                response_type="in_channel", text=f"Error running `{subcommand}`: {e}"
+                response_type="in_channel",
+                text=f"Error running `{subcommand}`: {e}",
             )
