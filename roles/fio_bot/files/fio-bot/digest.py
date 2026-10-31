@@ -86,8 +86,8 @@ def _services_section():
 
 def _alerts_section(bot):
     """Current alert summary kept by the alerts loop."""
-    with bot.alert_summary_lock:
-        summary = bot.alert_summary
+    with bot.alerts.summary_lock:
+        summary = bot.alerts.summary
     if summary and "No alerts" in summary:
         return f"{_status_icon(True)} *Alerts* — None firing"
     if summary:

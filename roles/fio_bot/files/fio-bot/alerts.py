@@ -173,16 +173,16 @@ def parse_alert_from_event(event, channel_id_to_category):
 def is_on_cooldown(bot, alertname, instance):
     """True if this alert/instance was processed within the cooldown window."""
     key = (alertname, instance)
-    with bot.alert_cooldowns_lock:
-        last_seen = bot.alert_cooldowns.get(key, 0)
+    with bot.alerts.cooldowns_lock:
+        last_seen = bot.alerts.cooldowns.get(key, 0)
         return (time.time() - last_seen) < bot.config.alert_cooldown_seconds
 
 
 def mark_processed(bot, alertname, instance):
     """Start the cooldown window for this alert/instance."""
     key = (alertname, instance)
-    with bot.alert_cooldowns_lock:
-        bot.alert_cooldowns[key] = time.time()
+    with bot.alerts.cooldowns_lock:
+        bot.alerts.cooldowns[key] = time.time()
 
 
 def maybe_enqueue_alert(bot, event, channel, client):
@@ -212,7 +212,7 @@ def maybe_enqueue_alert(bot, event, channel, client):
     alert_info["thread_ts"] = event["ts"]
     alert_info["client"] = client
 
-    bot.alert_queue.put(alert_info)
+    bot.alerts.pending.put(alert_info)
     log.info(
         "Enqueued alert investigation: %s (%s)",
         alert_info["alertname"],
@@ -483,7 +483,7 @@ def process_alert(bot, alert_data):
 
 def _process_next_alert(bot):
     """Block for the next queued alert and process it."""
-    alert_data = bot.alert_queue.get()
+    alert_data = bot.alerts.pending.get()
     try:
         log.info(
             "Processing alert: %s (%s)",
@@ -492,7 +492,7 @@ def _process_next_alert(bot):
         )
         process_alert(bot, alert_data)
     finally:
-        bot.alert_queue.task_done()
+        bot.alerts.pending.task_done()
 
 
 def alert_worker_loop(bot):
@@ -554,8 +554,8 @@ def fetch_alert_summary(cfg):
 def _poll_once(bot, cleanup_due):
     """Refresh the cached alert summary and, when due, prune the KB."""
     summary = fetch_alert_summary(bot.config)
-    with bot.alert_summary_lock:
-        bot.alert_summary = summary
+    with bot.alerts.summary_lock:
+        bot.alerts.summary = summary
 
     if bot.db and cleanup_due:
         try:
