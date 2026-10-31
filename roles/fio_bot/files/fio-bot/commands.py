@@ -1,7 +1,10 @@
 """Slash command handlers for /fio."""
 
+import importlib
 import logging
 import re
+import sqlite3
+import subprocess
 
 import audit
 import knowledge
@@ -9,6 +12,21 @@ from executor import execute_command
 from llm import chat_with_llm
 
 log = logging.getLogger("fio-bot")
+
+OpenAIError = importlib.import_module("openai").OpenAIError
+SlackApiError = importlib.import_module("slack_sdk.errors").SlackApiError
+
+# What a /fio subcommand can raise: Slack, the LLM, the knowledge DB,
+# subprocess/OS I/O, and malformed arguments or data.
+COMMAND_ERRORS = (
+    SlackApiError,
+    OpenAIError,
+    sqlite3.Error,
+    subprocess.SubprocessError,
+    OSError,
+    ValueError,
+    KeyError,
+)
 
 
 def _run_and_respond(cmd, respond, title, cfg):
@@ -471,8 +489,8 @@ def _cmd_ask(bot, args, respond, command):
     try:
         response = chat_with_llm(bot, thread_key, None, args)
         respond(response_type="in_channel", text=response, replace_original=False)
-    except Exception as e:
-        log.error("LLM error in /fio ask: %s", e)
+    except COMMAND_ERRORS as e:
+        log.exception("LLM error in /fio ask")
         respond(response_type="in_channel", text=f"Error: {e}", replace_original=False)
 
 
@@ -849,8 +867,8 @@ def register(bot):
                 handler(bot, args, respond, command)
             else:
                 handler(bot, args, respond)
-        except Exception as e:
-            log.exception("Error in /fio %s: %s", subcommand, e)
+        except COMMAND_ERRORS as e:
+            log.exception("Error in /fio %s", subcommand)
             respond(
                 response_type="in_channel",
                 text=f"Error running `{subcommand}`: {e}",
