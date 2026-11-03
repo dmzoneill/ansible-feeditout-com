@@ -6,6 +6,7 @@ import smtplib
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime
 from email.message import EmailMessage
@@ -25,8 +26,8 @@ REDIS_QUEUE = "banned_ips"
 SCAN_TIMEOUT = 600
 PRECHECK_TIMEOUT = 30
 MIN_EXPECTED_OUTPUT_BYTES = 500
-TMP_OUTPUT = "/tmp/nmap_result.txt"
-FASTSCAN_FILE = "/tmp/nmap_fastscan.txt"
+TMP_OUTPUT = os.path.join(tempfile.gettempdir(), "nmap_result.txt")
+FASTSCAN_FILE = os.path.join(tempfile.gettempdir(), "nmap_fastscan.txt")
 SCHEMA_FILE = "/opt/fail2counter/schema.sql"
 VPN_ROTATE_INTERVAL = 30  # rotate VPN every N scans
 VPN_SCRIPT = "/opt/fail2counter/vpn_namespace.sh"
@@ -184,14 +185,20 @@ def rotate_vpn():
     try:
         result = subprocess.run(
             [VPN_SCRIPT, "restart-vpn"],
-            capture_output=True, text=True, timeout=60,
+            capture_output=True,
+            text=True,
+            timeout=60,
         )
         capture(f"VPN rotated: {result.stdout.strip()}")
     except Exception as e:
         capture(f"VPN rotation failed: {e}", level="WARNING")
 
 
-def send_email(subject: str, body: str, to_email=os.environ.get("FAIL2COUNTER_EMAIL", "dmz.oneill@gmail.com")):
+def send_email(
+    subject: str,
+    body: str,
+    to_email=os.environ.get("FAIL2COUNTER_EMAIL", "dmz.oneill@gmail.com"),
+):
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = "root@feeditout.com"
@@ -220,7 +227,12 @@ if not REDIS_PASSWORD:
     exit(2)
 
 try:
-    r = redis.Redis(host="localhost", port=int(os.environ.get("REDIS_PORT", 6379)), db=0, password=REDIS_PASSWORD)
+    r = redis.Redis(
+        host="localhost",
+        port=int(os.environ.get("REDIS_PORT", 6379)),
+        db=0,
+        password=REDIS_PASSWORD,
+    )
     r.ping()
     capture("Connected to Redis successfully.")
 except Exception as e:
@@ -253,7 +265,7 @@ while True:
         continue
 
     # Precheck
-    precheck_file = "/tmp/nmap_precheck.txt"
+    precheck_file = os.path.join(tempfile.gettempdir(), "nmap_precheck.txt")
     capture(f"Running precheck for {ip}")
     try:
         subprocess.run(
@@ -366,7 +378,10 @@ while True:
     capture(f"[DB] About to insert host: {ip} (hostname: {hostname})", "DEBUG")
     host_id = insert_host(ip, hostname)
     capture(f"[DB] Inserted host with ID: {host_id}", "DEBUG")
-    capture(f"[DB] Connection autocommit: {conn.autocommit}, isolation_level: {conn.isolation_level}", "DEBUG")
+    capture(
+        f"[DB] Connection autocommit: {conn.autocommit}, isolation_level: {conn.isolation_level}",
+        "DEBUG",
+    )
 
     scan_type = "version"
     scan_time = datetime.utcnow()
@@ -435,7 +450,10 @@ while True:
             )
 
             for result in ai_results:
-                capture(f"[DB] Inserting exploit: {result['module_path']} for scan_id: {scan_id}", "DEBUG")
+                capture(
+                    f"[DB] Inserting exploit: {result['module_path']} for scan_id: {scan_id}",
+                    "DEBUG",
+                )
                 exploit_id = insert_exploit(
                     scan_id=scan_id,
                     host_id=host_id,
@@ -476,9 +494,7 @@ while True:
                         message=msg,
                     )
 
-            capture(
-                f"AI exploit analysis complete: {len(ai_results)} modules tested"
-            )
+            capture(f"AI exploit analysis complete: {len(ai_results)} modules tested")
 
         except Exception as e:
             capture(f"AI exploit analysis failed: {e}", level="ERROR")
@@ -497,6 +513,7 @@ while True:
         capture("[DB] Manual commit successful", "DEBUG")
     except Exception as e:
         import traceback
+
         capture(f"[DB] Manual commit failed: {e}", "ERROR")
         capture(f"[DB] Traceback:\n{traceback.format_exc()}", "ERROR")
 

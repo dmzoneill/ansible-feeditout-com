@@ -1,33 +1,41 @@
 #!/usr/bin/env python3
-import subprocess
-import yaml
+import http.client
 import os
-import sys
-import urllib.request
-import shlex
 import pprint
+import shlex
+import subprocess
+import sys
+
+import yaml
+
 
 def run(cmd, check=False):
     print(f"[+] {cmd}")
-    result = subprocess.run(cmd, shell=True, text=True, capture_output=True, check=check)
+    result = subprocess.run(
+        shlex.split(cmd), text=True, capture_output=True, check=check
+    )
     if result.stdout:
         print(result.stdout.strip())
     if result.stderr:
         print(result.stderr.strip(), file=sys.stderr)
     return result
 
+
 def chain_exists(tool, chain):
     result = run(f"/sbin/{tool} -L {chain} -n", check=False)
     return result.returncode == 0
+
 
 def ensure_chain(tool, chain):
     if not chain_exists(tool, chain):
         run(f"/sbin/{tool} -N {chain}")
 
+
 def ensure_jump(tool, parent_chain, target_chain):
     check = run(f"/sbin/{tool} -C {parent_chain} -j {target_chain}", check=False)
     if check.returncode != 0:
         run(f"/sbin/{tool} -I {parent_chain} 1 -j {target_chain}")
+
 
 def build_rule(rule_dict, chain):
     print("[DEBUG] Rule dictionary:")
@@ -43,7 +51,6 @@ def build_rule(rule_dict, chain):
     out_if = rule_dict.get("out_interface")
     jump = rule_dict.get("jump")
     log_prefix = rule_dict.get("log_prefix")
-    log_level = rule_dict.get("log_level")
 
     parts = [f"-A {chain}"]
 
@@ -83,9 +90,15 @@ def build_rule(rule_dict, chain):
     pprint.pprint(parts)
     return " ".join(parts)
 
+
 def get_current_rules(tool, chain):
     result = run(f"/sbin/{tool} -S {chain}", check=False)
-    return [line.strip() for line in result.stdout.splitlines() if line.startswith(f"-A {chain} ")]
+    return [
+        line.strip()
+        for line in result.stdout.splitlines()
+        if line.startswith(f"-A {chain} ")
+    ]
+
 
 def normalize_rule(rule_line):
     tokens = shlex.split(rule_line)
@@ -94,8 +107,8 @@ def normalize_rule(rule_line):
     except ValueError:
         return rule_line
 
-    prefix = " ".join(tokens[:index + 1])
-    args = tokens[index + 1:]
+    prefix = " ".join(tokens[: index + 1])
+    args = tokens[index + 1 :]
 
     filtered_args = []
     skip = False
@@ -109,6 +122,7 @@ def normalize_rule(rule_line):
         filtered_args.append(tok)
 
     return f"{prefix} {' '.join(filtered_args)}"
+
 
 def sync_ansible_chains(tool, rules_dict):
     for chain, desired_rules in rules_dict.items():
@@ -152,7 +166,9 @@ def sync_ansible_chains(tool, rules_dict):
             run(f"/sbin/{tool} {safe_cmd}")
             _changes[0] = True
 
+
 _changes = [False]
+
 
 def apply_rules(tool, rules_dict):
     for chain in rules_dict:
@@ -160,16 +176,23 @@ def apply_rules(tool, rules_dict):
         ensure_jump(tool, "INPUT" if "INPUT" in chain else "OUTPUT", chain)
     sync_ansible_chains(tool, rules_dict)
 
+
 def apply_policies(tool, policy_map):
     for chain, policy in policy_map.items():
         run(f"/sbin/{tool} -P {chain} {policy}")
 
+
 def github_accessible():
+    conn = http.client.HTTPSConnection("github.com", timeout=3)
     try:
-        urllib.request.urlopen("https://github.com", timeout=3)
+        conn.request("HEAD", "/")
+        conn.getresponse()
         return True
-    except:
+    except (OSError, http.client.HTTPException):
         return False
+    finally:
+        conn.close()
+
 
 def disaster_recovery():
     for tool in ("iptables", "ip6tables"):
@@ -178,6 +201,7 @@ def disaster_recovery():
         run(f"/sbin/{tool} -P INPUT ACCEPT")
         run(f"/sbin/{tool} -P OUTPUT ACCEPT")
         run(f"/sbin/{tool} -P FORWARD ACCEPT")
+
 
 def main():
     config_file = "/etc/ansible/iptables.yml"
@@ -198,10 +222,13 @@ def main():
 
     for tool in ("iptables", "ip6tables"):
         apply_rules(tool, rules)
-        apply_policies(tool, policies.get("ipv6" if tool == "ip6tables" else "ipv4", {}))
+        apply_policies(
+            tool, policies.get("ipv6" if tool == "ip6tables" else "ipv4", {})
+        )
 
     if not _changes[0]:
         print("No changes")
+
 
 if __name__ == "__main__":
     main()

@@ -15,6 +15,7 @@ import os
 import re
 import signal
 import subprocess
+import tempfile
 import time
 from dataclasses import dataclass, field
 from typing import Callable, Optional
@@ -28,7 +29,7 @@ EXPLOITS_FILE = "/opt/fail2counter/exploits.txt"
 EXPLOITS_DETAIL_FILE = "/opt/fail2counter/metasploit_exploits_with_options.txt"
 MAX_PROMPT_CHARS = 80_000
 ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
-RC_DIR = "/tmp/fail2counter_rc"
+RC_DIR = os.path.join(tempfile.gettempdir(), "fail2counter_rc")
 MSF_TIMEOUT = 120
 MAX_TOTAL_EXPLOIT_TIME = 900  # 15 minutes per IP
 NETNS = "msf_vpn"
@@ -253,7 +254,9 @@ def parse_ai_response(response_text: str, ip: str) -> list[SuggestedExploit]:
         if line.lower().startswith("use "):
             if current_module:
                 exploits.append(_build_exploit(current_module, current_lines, ip))
-            module = line.split(None, 1)[1].strip() if len(line.split(None, 1)) > 1 else ""
+            module = (
+                line.split(None, 1)[1].strip() if len(line.split(None, 1)) > 1 else ""
+            )
             current_module = module
             current_lines = [line]
         elif current_module:
