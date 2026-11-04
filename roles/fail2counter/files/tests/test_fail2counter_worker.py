@@ -111,7 +111,7 @@ def test_run_analysis_persists_and_summarises(monkeypatch) -> None:
         "module_path": "exploit/linux/ssh/x",
         "rhosts": "192.0.2.4",
         "rport": 22,
-        "rc_path": "/tmp/x.rc",
+        "rc_path": "rc-file",
         "status": "success",
         "output": "session opened",
         "exit_code": 0,
