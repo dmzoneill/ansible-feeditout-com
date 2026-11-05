@@ -15,7 +15,8 @@ ANSIBLE_PLAY     := ansible-playbook $(VERBOSITY)
         sync-services sync-mail sync-cron sync-mariadb \
         harden-ssh reboot-new full-migration \
         reconcile reconcile-role reconcile-local reconcile-local-role \
-        ansible-pull lint ansible-lint super-lint go-live
+        ansible-pull lint ansible-lint super-lint go-live \
+        setup test-setup test
 
 all: help
 
@@ -132,6 +133,21 @@ reconcile-local-role:
 
 ansible-pull:
 	$(ANSIBLE_PLAY) -i $(INVENTORY_LOCAL) playbooks/ansible-pull.yml $(VAULT_OPTS)
+
+# ---------------------------------------------------------------------------
+# Tests (run by CI's "Run unit tests" job)
+# ---------------------------------------------------------------------------
+
+PYTEST_VERSION ?= 8.4.2
+
+setup:
+	@echo "No setup required"
+
+test-setup:
+	python3 -m pip install "pytest==$(PYTEST_VERSION)"
+
+test:
+	python3 -m pytest -v roles/fail2counter/files/tests
 
 # ---------------------------------------------------------------------------
 # Linting
