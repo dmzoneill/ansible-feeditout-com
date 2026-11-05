@@ -138,3 +138,18 @@ def test_dequeue_ip_parses_entry() -> None:
     client = types.SimpleNamespace(lpop=lambda _queue: b"2026-01-01T00:00:00|192.0.2.7")
     entry = worker.dequeue_ip(client)
     assert entry == ("2026-01-01T00:00:00", "192.0.2.7")
+
+
+def test_run_iteration_survives_db_error(monkeypatch) -> None:
+    """A psycopg2 error in one iteration is logged and the loop continues."""
+    db = _make_db()
+
+    def _fail() -> None:
+        raise worker.psycopg2.Error("connection lost")
+
+    monkeypatch.setattr(db, "ensure", _fail)
+    monkeypatch.setattr(worker.time, "sleep", lambda _seconds: None)
+    client = types.SimpleNamespace(lpop=lambda _queue: None)
+    index = ai.ExploitIndex.__new__(ai.ExploitIndex)
+    assert worker.run_iteration(db, client, index, 5) == 5
+    assert any("Database error" in line for line in worker.LOGS)
