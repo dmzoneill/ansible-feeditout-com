@@ -624,6 +624,43 @@ def handle_ip(db: Database, exploit_index: "ai.ExploitIndex", ip: str) -> bool:
     return True
 
 
+def process_next(
+    db: Database,
+    redis_client: redis.Redis,
+    exploit_index: "ai.ExploitIndex",
+    scan_count: int,
+) -> int:
+    """Process one queue entry and return the updated scan count."""
+    db.ensure()
+    LOGS.clear()
+    entry = dequeue_ip(redis_client)
+    if entry is None:
+        return scan_count
+    _, ip = entry
+    if not handle_ip(db, exploit_index, ip):
+        return scan_count
+    scan_count += 1
+    if scan_count % VPN_ROTATE_INTERVAL == 0:
+        capture(f"Rotating VPN after {scan_count} scans...")
+        rotate_vpn()
+    return scan_count
+
+
+def run_iteration(
+    db: Database,
+    redis_client: redis.Redis,
+    exploit_index: "ai.ExploitIndex",
+    scan_count: int,
+) -> int:
+    """Run one loop iteration, logging database errors instead of exiting."""
+    try:
+        return process_next(db, redis_client, exploit_index, scan_count)
+    except psycopg2.Error as exc:
+        capture(f"[DB] Database error, continuing: {exc}", level="ERROR")
+        time.sleep(10)
+        return scan_count
+
+
 def main() -> None:
     """Run the worker loop: consume banned IPs and scan/analyse each."""
     if not REDIS_PASSWORD:
@@ -643,18 +680,7 @@ def main() -> None:
 
     scan_count = 0
     while True:
-        db.ensure()
-        LOGS.clear()
-        entry = dequeue_ip(redis_client)
-        if entry is None:
-            continue
-        _, ip = entry
-        if not handle_ip(db, exploit_index, ip):
-            continue
-        scan_count += 1
-        if scan_count % VPN_ROTATE_INTERVAL == 0:
-            capture(f"Rotating VPN after {scan_count} scans...")
-            rotate_vpn()
+        scan_count = run_iteration(db, redis_client, exploit_index, scan_count)
 
 
 if __name__ == "__main__":
