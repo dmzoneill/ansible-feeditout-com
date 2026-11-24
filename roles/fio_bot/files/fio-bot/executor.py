@@ -1,17 +1,20 @@
 """Shell command execution and Slack file uploads."""
 
 import logging
+import shutil
 import subprocess
 from pathlib import Path
 
 log = logging.getLogger("fio-bot")
+
+SCRIPT_BIN = shutil.which("script") or "script"
 
 
 def execute_command(cmd, timeout=30, max_output=3000):
     log.info("EXEC: %s", cmd)
     try:
         result = subprocess.run(
-            ["script", "-qefc", cmd, "/dev/null"],
+            [SCRIPT_BIN, "-qefc", cmd, "/dev/null"],
             capture_output=True,
             text=True,
             timeout=timeout,

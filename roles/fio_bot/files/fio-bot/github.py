@@ -3,6 +3,7 @@
 import json
 import logging
 import re
+import shutil
 import subprocess
 from datetime import datetime, timezone
 
@@ -10,12 +11,14 @@ from executor import execute_command
 
 log = logging.getLogger("fio-bot")
 
+GH_BIN = shutil.which("gh") or "gh"
+
 
 def _gh_json(args):
     """Run gh with JSON output, bypassing the PTY wrapper that corrupts JSON."""
     try:
         result = subprocess.run(
-            ["gh"] + args,
+            [GH_BIN] + args,
             capture_output=True,
             text=True,
             timeout=30,
