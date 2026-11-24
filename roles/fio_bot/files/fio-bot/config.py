@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class Config:
-    slack_bot_token: str
-    slack_app_token: str
+    slack_bot_credential: str
+    slack_app_credential: str
     opencode_api_key: str
     channel: str
     model: str
@@ -45,8 +45,8 @@ def load() -> Config:
     alert_cooldown_hours = int(os.environ.get("FIO_BOT_ALERT_COOLDOWN_HOURS", "4"))
 
     return Config(
-        slack_bot_token=os.environ["SLACK_BOT_TOKEN"],
-        slack_app_token=os.environ["SLACK_APP_TOKEN"],
+        slack_bot_credential=os.environ["SLACK_BOT_TOKEN"],
+        slack_app_credential=os.environ["SLACK_APP_TOKEN"],
         opencode_api_key=os.environ["OPENCODE_ZEN_API_KEY"],
         channel=os.environ.get("FIO_BOT_CHANNEL", "C0BJLKJG9U1"),
         model=os.environ.get("FIO_BOT_MODEL", "big-pickle"),

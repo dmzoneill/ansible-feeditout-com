@@ -360,7 +360,7 @@ def main():
     """Start the bot: connect to Slack and the LLM, then run Socket Mode."""
     cfg = config.load()
 
-    app = App(token=cfg.slack_bot_token)
+    app = App(token=cfg.slack_bot_credential)
     llm_client = OpenAI(api_key=cfg.opencode_api_key, base_url=cfg.api_base)
 
     bot = Bot(app=app, llm=llm_client, config=cfg)
@@ -394,7 +394,7 @@ def main():
         except SLACK_ERRORS as e:
             log.warning("Could not join audit channel %s: %s", cfg.audit_channel, e)
 
-    handler = SocketModeHandler(app, cfg.slack_app_token)
+    handler = SocketModeHandler(app, cfg.slack_app_credential)
     handler.start()
 
 
